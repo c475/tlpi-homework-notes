@@ -1,0 +1,130 @@
+#define _BSD_SOURCE /* Or: #define _SVID_SOURCE */
+#include <unistd.h>
+
+int brk(void * end_data_segment );
+Returns 0 on success, or –1 on error
+The brk() system call sets the program break to the location specified by
+end_data_segment. Since virtual memory is allocated in units of pages,
+end_data_segment is effectively rounded up to the next page boundary.
+
+void *sbrk(intptr_t increment );
+Returns previous program break on success, or (void *) –1 on error
+
+returns a pointer to the beginning of the newly allocated memory.
+
+
+SOME THOUGHTS ON MEMORY ALLOCATION:
+
+typedef struct MemoryNode {
+
+	int start;
+	int end;
+	int size;
+
+} MemoryNode;
+
+
+typedef struct ProgramBreak {
+
+	int start;
+	int end;
+	MemoryNode *nodes;
+
+} ProgramBreak;
+
+
+======================= FREE():
+
+free() doesnt necessarily adjust the program break
+
+but it will if you free a good chunk on the END of the program break.
+
+If you free something in the middle, it probably will not adjust. However it may follow its own algorithm in coalescing a large free block in the middle, shifting the blocks ahead of it down...
+
+
+When memory is free'd it uses the allocated memory itself as a feee node.
+
+It points to the next and previous free blocks, along withg the length, and the rest of the free memory afterwards.
+
+This would indicate that malloc has to allocate at least as much as is needed for this metadata.
+
+
+|------------------------------------------------------------------|
+|------------------------------------------------------------------|
+|    |            |           |                                    |
+| L  |    PREV    |    NEXT   |        REMAINING BYTES OF MEM      |
+|    |            |           |                                    |
+|------------------------------------------------------------------|
+|------------------------------------------------------------------|
+
+
+if PREV is NULL, then it is the first in the free list
+if NEXT is NULL, then it is the last in the free list
+
+
+======================= MALLOC():
+
+scans the list of free blocks (free'd) if any.
+
+if it finds some then it can use a variety of algorithms to select one, "best-fit" or "first-fit", etc.
+
+if it finds none then it must use sbrk() to increase the program break.
+
+also, it may be a good idea to clear or randomize any memory on FREE() for security.
+
+malloc doesnt call sbrk() with the number passed into it usually, usually uses a multiple of the virtual memory page size, putting the leftover memory into the list of free blocks.
+
+|------------------------------------------------------------------|
+|------------------------------------------------------------------|
+|                  |                                               |
+| LENGTH OF BLOCK  |             MEMORY                            |
+|                  |                                               |
+|------------------------------------------------------------------|
+|------------------------------------------------------------------|
+
+
+
+======================= REALLOC():
+
+realloc(ptr, 0) is the same as free(ptr) then malloc(0)...
+
+realloc(NULL, 1024) is the same as malloc(1024)...
+
+with realloc, usually it attempts to merge with the next block available in the free list, if it is big enough. 
+
+if the block being realloc()'d lies at the end of the heap, it expands the heap with sbrk().
+
+if the block being realloc()'d lies in the middle of the heap and it doesnt have enough room to grow, then the heap is expanded with brk(), the block is copied to it, then the olf block is freed. this is expensive.
+
+
+interesting case with realloc():
+
+nptr = realloc(ptr, newsize);
+if (nptr == NULL) {
+	// handle error
+} else {
+	ptr = nptr;
+}
+
+you shouldnt assign realloc() result directly to ptr because if it fails and returns NULL, you now have a dangling pointer.
+
+
+======================= ALLOCA() (STACK MEMORY):
+
+#include <alloca.h>
+
+ever wanted to do something like this:
+
+char cool_array[something + something_else] = {0};
+
+now you can:
+
+char *cool_array = alloca(something + something_else);
+
+it puts it on the stack, dynamically. don't use free() or realloc() or anything on it.
+
+if there is a stack overflow as a result of alloca(), then the results are unpredictable. the most likely outcome is SIGSEGV since it grows into the heap. ALSO:
+
+you can't use it directly as a function argument because the stack space allocated would end up sandwiched in the function arguments in the stack frame.
+
+

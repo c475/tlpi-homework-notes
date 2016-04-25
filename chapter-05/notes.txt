@@ -1,0 +1,91 @@
+int flags, accessMode;
+
+flags = fcntl(fd, F_GETFL);
+if (flags == -1)
+	errExit("fcntl");
+
+must mask flags for access control since they arent single bits
+
+accessMode = flags & O_ACCMODE;
+if (accessMode == O_WRONLY || accessMode == O_RDWR)
+	printf("file is writable\n");
+
+
+fcntl for operating on file descriptors. setting/getting flags, etc
+
+
+duplicating file descriptors:
+
+dup(fd): returns a new file descriptor pointing to the same "file description"
+dup2(fd, newfd): returns a new fd pointing to fd specified. if newfd exists, it is close()'d first
+fcntl(oldfd, F_DUPFD, startfd): makes new fd >= to startfd. good if you want it to fall in range of a fd number instead of precice number
+dup3(): same as dup2() except it takes a O_CLOEXEC flag if you want.
+
+
+calls to dup*() can always be recoded to close() and fcntl() but will not be atomic
+
+
+scatter-gather io: heads up this is weird
+
+#include <sys/uio.h>
+
+ssize_t readv(int fd , const struct iovec *iov , int iovcnt );
+ssize_t writev(int fd , const struct iovec *iov , int iovcnt );
+
+struct iovec {
+	void *iov_base;
+	size_t iov_len;
+};
+
+
+takes an array of these structs, and the number of them.
+
+IOV_MAX = 1024 on linux
+or : sysconf(_SC_IOV_MAX)
+
+
+This can be good for parsing an application protocol message over a socket, 
+or various file formats, in a message/file like this:
+
+|-------------------------------|
+|            HEADER             |
+|-------------------------------|
+|     BODY1     |     BODY2     |
+|-------------------------------|
+|            FOOTER             |
+|-------------------------------|
+
+you can use 4 iovec structs to parse this message into its 4 parts.
+
+writev() is similarly useful for writing this information either to a file or socket.
+
+
+
+Same thing but with offset...:
+
+ssize_t preadv(int fd , const struct iovec * iov , int iovcnt , off_t offset );
+Returns number of bytes read, 0 on EOF, or –1 on error
+
+ssize_t pwritev(int fd , const struct iovec * iov , int iovcnt , off_t offset );
+Returns number of bytes written, or –1 on error
+
+These system calls do not change file offset.
+
+
+#include <unistd.h>
+int truncate(const char * pathname , off_t length );
+This one opens the file, then truncates it to the specified length.
+If the file is shorter than the truncation length, it is padded with null bytes or a file hole...
+
+int ftruncate(int fd , off_t length );
+This one is for files that are already open (has a descriptor). It must be opened for writing.
+In this case, if the file is smaller than "length", it is padded (on Linux) OR it returns an error.
+
+
+#define _FILE_OFFSET_BITS 64
+
+This converts open() lseek() and family to their 64bit counterparts'
+
+off_t becomes 64 bit, so must be casted to (long long) for use in printf.
+
+

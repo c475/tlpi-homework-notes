@@ -1,0 +1,126 @@
+real time: wall clock time. the start of a process, to the end of a process.
+
+process time: amount of cpu time used by the process. since a process isnt always using the cpu in the range of real time, it is almost always going to be lower than real time im assuming. It is useful 
+
+
+first system call of the day:
+
+#include <sys/time.h>
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);
+
+struct timeval {
+	time_t      tv_sec;			// seconds since 00:00:00, 1 Jan 1970 UTC
+	suseconds_t tv_usec;		// additional microseconds (long int)
+};
+
+the "u" in tv_usec is supposed to be μ
+
+the struct timezone *tz argument is a historical artifact that would return timezone info about the system. nowadays NULL should always be passed to it.
+
+in fact, i guess gettimeofday() is obsolete, and POSIX clocks API should be used instead.
+
+
+ANOTHER, this one is simple:
+
+#include <time.h>
+
+time_t time(time_t *timep);
+
+returns # seconds since epoch, or -1 on error
+
+if "timep" is not NULL, it also places the result at that pointer.
+
+======================== ctime() ================
+
+#include <time.h>
+
+char *ctime(const time_t *timep);
+
+returns a datetime terminated by \n\0, 26 bytes
+
+the returned string is statically allocated
+
+
+================= time_t to time struct ======================
+
+
+#include <time.h>
+struct tm *gmtime(const time_t * timep );
+struct tm *localtime(const time_t * timep );
+	Both return a pointer to a statically allocated broken-down
+	time structure on success, or NULL on error
+
+struct tm {
+	int tm_sec;		// Seconds (0-60)
+	int tm_min;		// Minutes (0-59)
+	int tm_hour;	// Hours (0-23)
+	int tm_mday;	// Day of the month (1-31)
+	int tm_mon;		// Month (0-11)
+	int tm_year;	// Year since 1900
+	int tm_wday;	// Day of the week (Sunday = 0)
+	int tm_yday;	// Day in the year (0-365; 1 Jan = 0)
+
+	int tm_isdst;	// Daylight saving time flag
+					// > 0: DST is in effect;
+					// = 0: DST is not effect;
+					// < 0: DST information not available
+};
+
+
+================= time struct to time_t ======================
+
+#include <time.h>
+
+time_t mktime(struct tm *timeptr);
+	Returns seconds since the Epoch corresponding to timeptr
+	on success, or (time_t) –1 on error
+
+This may modify the time struct.
+
+Say you have tm_sec = 120. This will convert tm_sec to 0 and add 2 to tm_min;
+
+This makes datetime math easy.
+
+
+If tm_isdst is 0, treat this time as standard time (i.e., ignore DST, even if it would
+be in effect at this time of year).
+
+If tm_isdst is greater than 0, treat this time as DST (i.e., behave as though DST is
+in effect, even if it would not normally be so at this time of year).
+
+If tm_isdst is less than 0, attempt to determine if DST would be in effect at this
+time of the year. This is typically the setting we want.
+
+
+================= time struct to STRING ======================
+
+
+#include <time.h>
+
+char *asctime(const struct tm *timeptr);
+	Returns pointer to statically allocated string terminated by
+	newline and \0 on success, or NULL on error
+
+
+
+=============== strftime() ========================
+
+#include <time.h>
+
+size_t strftime(char *outstr, size_t maxsize, const char *format, const struct tm *timeptr);
+
+RETURNS NUMBER OF BYTES WRITTEN TO char *outstr
+
+char *outstr: the result...
+size_t maxsize: maximum bytes to write to outstr
+char *format: "%Y-%m-%d %H:%M:%S"
+struct tm *timeptr: the actual date info...
+
+
+================== OTHER DEFINES ======================
+
+#define _XOPEN_SOURCE
+#define _GNU_SOURCE
+
+or you wont be able to use strptime...

@@ -1,0 +1,25 @@
+start_time     : 1461524792
+last_update    : 1461534056
+fuzzer_pid     : 3307
+cycles_done    : 245
+execs_done     : 23675382
+execs_per_sec  : 2191.86
+paths_total    : 8
+paths_favored  : 3
+paths_found    : 7
+paths_imported : 0
+max_depth      : 4
+cur_path       : 7
+pending_favs   : 0
+pending_total  : 0
+variable_paths : 0
+bitmap_cvg     : 0.03%
+unique_crashes : 0
+unique_hangs   : 3
+last_path      : 1461525296
+last_crash     : 0
+last_hang      : 1461530132
+exec_timeout   : 20
+afl_banner     : check_password
+afl_version    : 2.10b
+command_line   : afl-fuzz -i ../aflin/ -o ../aflout/ ./check_password -x -ly

@@ -1,0 +1,146 @@
+============== PASSWD ==============
+
+get /etc/passwd info for given user:
+
+#include <pwd.h>
+
+struct passwd *petpwnam(const char *name);	// by username
+struct passwd *getpwuid(uid_t uid);			// by uid
+
+Both return a pointer on success, or NULL on error;
+see main text for description of the “not found” case
+
+returns this (statically allocated) struct:
+
+struct passwd {
+	char *pw_name;		// login name
+	char *pw_passwd;	// encryped password
+	uid_t pw_uid;		// user id
+	gid_t pw_gid;		// group id
+	char *pw_gecos;		// comment (user information)
+	char *pw_dir;		// home directory
+	char *pw_shell;		// login shell
+};
+
+
+the "login shell" field can actually be any program, not necessarily a shell. this is cool for point of sales systems, etc;
+
+getpwnam and getpwuid are not reentrant since the return value is statically allocated. if you dont want the structure to be overwritten then you have to copy the return value to another struct, then call it again.
+
+
+============== GRP ==============
+
+#include <grp.h>
+
+struct group *getgrnam(const char *name);
+struct group *getgrgid(git_t gid);
+
+Both return a pointer on success, or NULL on error;
+see main text for description of the “not found” case
+
+
+struct group {
+	char *gr_name;		// group name
+	char *gr_passwd;	// encrypted password (if not password shadowing)
+	gid_t gr_gid;		// group id
+	char **gr_mem;		// NULL terminated array of pointers to names of members listed in etc/group
+};
+
+This struct is also overwritten on subsequent calls to the get functions.
+
+
+======================= GENERAL =======================
+
+Common use cases of these functions is to get the id of a Username, and vice versa.
+
+Same with the ID of a group name, and vice versa.
+
+
+======================= ALL passwd/group entries =========================
+
+struct passwd *getpwent(void);
+void setpwent(void);
+void endpwent(void);
+
+getpwent sequentially reteieves users from the passwd file one by one, and returns NULL when it is done.
+
+setpwent resets the "counter" back to 0, starting from the beginning
+
+endpwent closes the /etc/passwd file, ending the stream
+
+struct passwd *pwd;
+while ((pwd = getpwent()) != NULL) {
+	printf("%-8s %5ld\n", pwd->pw_name, (long) pwd->pw_uid);
+}
+endpwent();
+
+THIS WALKS THRU THE ENTIRE PASSWD FILE
+
+
+getgrent(), setgrent(), and endgrent() ate the same thing for the /etc/groups file...
+
+
+======================= SHADOW PASSWORD FILE ===========================
+
+#include <shadow.h>
+
+struct spwd *getspnam(const char *name);
+	Returns pointer on success, NULL if error or not found
+
+struct spwd *getspent(void);
+	Walks thru shadow password file
+
+void setspent(void);
+	Resets getspent(void) counter
+
+void endspent(void);
+	Ends getspent(void) counter
+
+struct spwd {
+	char *sp_namp; //login name
+	char *sp_pwdp; // encrypted password
+
+	// the rest of the fields are "password aging" related
+
+	long sp_lstchg; 		// time of last password change (epoch time)
+	long sp_min;			// min # days between changes		
+	long sp_max;			// max # days before change required
+	long sp_warn;			// number of days beforehand that user is warned of needed change
+	long sp_inact;			// number of days after expiration that user is locked
+	long sp_expire;			// date when account expires
+	unsigned long sp_flag;	// reserved for future use
+};
+
+
+=================== CRYPT ===================
+
+#define _XOPEN_SOURCE
+#include <unistd.h>
+
+char *crypt(const char *key, const char *salt);
+	Returns pointer to statically allocated string, or NULL on error
+
+key = 8 characters
+salt = 2 characters
+
+key and salt can be [a-zA-Z0-9/.]
+
+you must link with the -lcrypt compiler flag to link against the crypt library
+
+
+=================== getpass() =================
+
+#define _BSD_SOURCE
+#include <unistd.h>
+
+char *getpass(const char *prompt)
+
+it's like python's getpass.getpass(). dsables all terminal echoing and special terminal characters (like ^C).
+
+password auth is complicated because the plaintext version has to at one point reside in memory.
+
+if there is a crash between the point of buffering the plaintext password, and erasing it, a core dump file can reveal it...
+
+also, the plaintext password can be read from swap memory... force a high-memory scenario then have the program put the plaintext buffer into swap memory.
+
+if a program has access to /dev/mem, it can be read from it in byte stream form

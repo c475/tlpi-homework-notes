@@ -1,0 +1,96 @@
+// initialized in data segment. this is an interesting case.
+// this is how static variables in a function can retain their value
+// because they do not live in a stack frame
+// but in the initialized or uninitialized data segments
+static int;
+
+
+#include <unistd.h>
+
+getpid();
+getppid();
+
+when a parent fork()s a child, and the parent is terminated, the init process orphans it, so getppid() returns 1.
+
+
+
+PARTS OF BINARY EXECUTABLE:
+
+1. Binary format identification. Metadata describing the format of the binary. Linux is mostly ELF. There is also the classic a.out (assembler output), and COFF...
+
+2. Machine language instructions, self explanatory
+
+3. Program entry point address: main()
+
+4. Data: values used to initialize variables, and literals (like strings)
+
+Symbol and relocation tables: These describe the locations and names of functions
+and variables within the program. These tables are used for a variety of pur-
+poses, including debugging and run-time symbol resolution (dynamic linking).
+
+Shared-library and dynamic-linking information: The program file includes fields
+listing the shared libraries that the program needs to use at run time and the
+pathname of the dynamic linker that should be used to load these libraries.
+Other information: The program file contains various other information that
+describes how to construct a process.
+
+
+
+MEMORY LAYOUT OF PROCESS:
+
+text segment: contains machine language instructions. read only so bad pointer values cant overwrite it (idk how true that is)
+
+initialized data segment: all global and static variables that are excplicitly initialized
+
+uninitialized data segment: global and static variables that are not explicitly initialized. these are all initialized to 0 by the kernal. the reason this is separate from initialized data segment is that this does not have to be loaded into memory until it is needed, saving space.
+
+stack: dynamically growing and shrinking area for variables inside of functions. return values are stored in a designated register.
+
+heap: malloc(), you know
+
+
+an ABI (application binary interface) is a set of rules specifying how binaries should exchange information with some service (usually the kernal). It's like a REST API for binaries and operating systems. Example: use register EBX for function return values. Rules like that.
+
+
+etext, edata, end: they are interesting.
+
+
+
+VIRTUAL MEMORY:
+
+all processes are given a virtual address space that maps to real addresses in RAM or in SWAP.
+this is for exploiting a few common properties of most processes:
+
+spacial locality: most memory access happens close to each other in address space
+temporal locality: a lot of addresses are constantly accessed as a result of looping
+
+
+
+char *getenv(const char *name); returns pointer to string
+the string you get here can be overwriten and change the environment variable! careful.
+because the string is statically allocated...
+
+
+
+LONGJMP:
+
+dont do this
+
+s = setjmp(env); /* WRONG! */
+
+only use it in conditionals since thats the standards...
+
+anyway env basically stores the stack frame: stack pointer, program counter, etc. thats how it works.
+
+YOU CANT DO LONGJMP INTO A FUNCTION THAT HAS ALREADY RETURNED. THE STACK FRAME HAS BEEN POPPED.
+
+also, longjmp has problems with optimising compilers. sounds like you should not use this feature much. From the exercise, optimization when compiling makes longjmp() and setjmp() perform as you would actually expect, really saving the stack.
+
+volatile: do not optimise this variable
+
+for portability: if you DO use setjmp(), make all variables in the function that setjmp() is set up in VOLATILE.
+
+
+
+-Wextra is a great flag, use it...
+

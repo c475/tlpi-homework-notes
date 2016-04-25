@@ -1,0 +1,58 @@
+fd = open(pathname, flags, mode)
+numread = read(fd, buffer, count): returns 0 when end of file hits
+numwritten = write(fd, buffer, count)
+status = close(fd)
+
+
+=== UNIVERSALITY OF I/O EXAMPLE ===
+
+Copy a regular file
+./copy test test.old
+
+Copy a regular file to this terminal
+./copy a.txt /dev/tty
+
+Copy input from this terminal to a regular file
+./copy /dev/tty b.txt
+
+Copy input from another terminal
+./copy /dev/pts/16 /dev/tty
+
+
+
+When access to specific features of a
+file system or device is required, a program can use the catchall ioctl() system call
+(Section 4.8), which provides an interface to features that fall outside the universal
+I/O model.
+
+
+
+open() is guaranteed to use the lowest available file descriptor.
+so if you do this close(0) or close(STDIN_FILENO), 
+then a subsequent call to open() will return file descriptor 0
+
+
+O_ASYNC: the mystical non-blocking socket? idk
+must use fcntl() to set this flag on a file descriptor AFTER open()
+otherwise it is ignored. Maybe it's O_NONBLOCK.
+
+
+O_CREAT: if you don't pass the mode parameter, it will be set to some random stack value lol
+
+
+O_EXCL: used with O_CREAT only. if this flag is used, then open() should fail if the file already exists
+
+
+O_NOATIME: dont update last-access time on a file when using open().
+	meant to be used in indexing and backup programs.
+
+
+file holes:
+	1. you can write past the "end" of a file, and leave gaps that are not filled in by null bytes
+	2. file "size" will take holes into account when displaying size via "ls -l"
+	3. however on disk, the "real" size depends on if the holes overlap on block boundries, typically in 1KB increments
+
+
+ioctl (#include <sys/ioctl.h>):
+	1. for operations that fall outside the universal IO model.
+	2. 

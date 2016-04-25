@@ -1,0 +1,166 @@
+holy shit this chapter is boring.
+
+Lot's of permissions stuff...
+
+If you set the set-uid bit, then when the program is executed it's effective uid becomes that of the owner of the executable. just remember that and come back to the rest when you want.
+
+here's the getuid() and getgid():
+
+
+=============== GETTING UID/GID ===================
+
+#include <unistd.h>
+
+uid_t getuid(void); // get real userid of calling process
+uid_t geteuid(void); // get effective user id of calling process
+
+gid_t getgid(void); // real group id
+gid_t getegid(void); // effective group id
+
+
+=============== SETTING UID/GID ===================
+
+
+int setuid(uid_t uid);
+int setgid(gid_t gid);
+
+returns 0 on success and -1 on error
+
+These can generally only be used when the effective uid is 0 (root)
+
+
+lots of confusing rules about these though:
+
+When an unprivileged process calls setuid(), only the effective user ID of the
+process is changed. Furthermore, it can be changed only to the same value as
+either the real user ID or saved set-user-ID. (Attempts to violate this constraint
+yield the error EPERM).
+
+When a privileged process executes setuid() with a nonzero argument, then the
+real user ID, effective user ID, and saved set-user-ID are all set to the value spec-
+ified in the uid argument. This is a one-way trip, in that once a privileged process
+has changed its identifiers in this way, it loses all privileges and therefore can’t
+subsequently use setuid() to reset the identifiers back to 0. If this is not desired,
+then either seteuid() or setreuid(), which we describe shortly, should be used
+instead of setuid().
+
+
+setgid() is almost the same, except that in rule 2, it can instead freely change its group id to whatever it wants, whenever it wants, so long as the effective user id of the process permits it.
+
+here is the "idiomatic" way for a root setuid program to drop its privileges:
+
+if (setuid(getuid()) == -1) {
+	errExit("setuid");
+}
+
+
+oh cool, more setuid related system calls:
+
+================ setting effective userid and groupid ==============
+
+#include <unistd.h>
+
+int seteuid(uid_t euid);
+int setegid(gid_t egid);
+
+returns 0 on success, -1 on error
+
+This one is pretty useful:
+
+Using seteuid() is the preferred method for set-user-ID and set-group-ID programs
+to temporarily drop and later regain privileges. Here’s an example:
+
+euid = geteuid();
+if (seteuid(getuid()) == -1)
+	errExit("seteuid");
+if (seteuid(euid) == -1)
+	errExit("seteuid");
+
+
+
+================= setting real AND effective uids/gids at same time ================
+
+
+#include <unistd.h>
+
+int setreuid(uid_t ruid , uid_t euid );
+int setregid(gid_t rgid , gid_t egid );
+
+Both return 0 on success, or –1 on error
+
+ruid is the new real user id, euid is the new effective uid
+
+same for the groups....
+
+if you dont want to change one of them, pass in -1.
+
+setreuid(-1, 1000) will change effective uid to 1000, leaving the real uid alone.
+
+
+An unprivileged process can set the real user ID only to the current value of
+the real (i.e., no change) or effective user ID. The effective user ID can be set
+only to the current value of the real user ID, effective user ID (i.e., no change),
+or saved set-user-ID.
+
+
+================== setting and getting SAVED uid/gid =========================
+
+Non standard but available sometimes:
+
+#define _GNU_SOURCE
+#include <unistd.h>
+
+int getresuid(uid_t *ruid , uid_t *euid , uid_t *suid);
+int getresgid(gid_t *rgid , gid_t *egid , gid_t *sgid);
+
+Both return 0 on success, or –1 on error
+
+independently change all of real, user, and saved uid/gids...
+
+pass -1 if you dont want to change it.
+
+
+
+====================== Retrieving and Modifying File-System IDs ================
+
+
+#include <sys/fsuid.h>
+
+int setfsuid(uid_t fsuid );
+Always returns the previous file-system user ID
+
+int setfsgid(gid_t fsgid );
+Always returns the previous file-system group ID
+
+
+================ Retrieving and Modifying Supplementary Group IDs ================
+
+#include <unistd.h>
+
+int getgroups(int gidsetsize , gid_t grouplist []);
+
+Returns number of group IDs placed in grouplist on success, or –1 on error
+
+
+
+================ Changing supplimentary group ids ==================================
+
+#define _BSD_SOURCE
+#include <grp.h>
+
+int setgroups(size_t gidsetsize, const gid_t *grouplist);
+int initgroups(const char *user, gid_t group);
+
+Both return 0 on success, or –1 on error
+
+The setgroups() system call replaces the calling process’s supplementary group
+IDs with the set given in the array grouplist.
+
+The initgroups() function initializes the calling process’s supplementary group
+IDs by scanning /etc/group and building a list of all groups of which the named user
+is a member. In addition, the group ID specified in group is also added to the pro-
+cess’s set of supplementary group IDs.
+
+
+initgroups() uses are creating login sessions and shell sessions. (like login)
+

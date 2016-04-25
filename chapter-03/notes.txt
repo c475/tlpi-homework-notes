@@ -1,0 +1,39 @@
+#include <gnu/libc-version.h>
+
+const char *gnu_get_libc_version(void);
+
+Returns pointer to null-terminated, statically allocated string containing GNU C library version number
+The gnu_get_libc_version() function returns a pointer to a string, such as 2.12.
+
+
+
+
+ldd myprogram: lists dynamic dependencies of an executable
+
+
+
+
+open('somefile.txt', O_RDWR | O_TRUNC, "w");
+
+fd = open(pathname, flags, mode);
+if (fd == -1) {
+	/* Code to handle the error */
+}
+
+
+
+some system calls, you should set errno = 0 to error check, because some of these system calls can return a non-zero on success... like getpriority()
+
+
+#include <stdio.h>
+perror(const char *msg) prints an error message, AND another message based on value of errno
+
+
+
+Promote system data types to long so there is no information loss.
+printf("My PID is %ld\n", (long)mypid);
+except off_t, those are %lld
+
+
+%zd for size_t and ssize_t is to be avoided I guess, since it's not available accross the board. use %ld
+
