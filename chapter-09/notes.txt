@@ -163,4 +163,3 @@ cess’s set of supplementary group IDs.
 
 
 initgroups() uses are creating login sessions and shell sessions. (like login)
-

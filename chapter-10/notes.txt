@@ -124,3 +124,138 @@ struct tm *timeptr: the actual date info...
 #define _GNU_SOURCE
 
 or you wont be able to use strptime...
+
+
+================== LOCALES ============================
+
+locale info is in /usr/share/locale or /usr/lib/locale
+
+who cares come back later
+
+
+#include <locale.h>
+
+char *setlocale(int category, const char *locale);
+return pointer to statically allocated string of the locale, else NULL if error
+
+returns "de_DE", "en_US", etc.
+
+const char *locale is "de_DE", "en_US", etc.
+
+
+all you need to know:
+
+$ LANG=de_DE ./show_time
+ctime() of time() value is: Tue Feb 1 12:23:39 2011
+asctime() of local time is: Tue Feb 1 12:23:39 2011
+strftime() of local time is: Dienstag, 01 Februar 2011, 12:23:39 CET
+
+$ LANG=de_DE LC_TIME=it_IT ./show_time
+ctime() of time() value is: Tue Feb 1 12:24:03 2011
+asctime() of local time is: Tue Feb 1 12:24:03 2011
+strftime() of local time is: martedì, 01 febbraio 2011, 12:24:03 CET
+
+$ LC_ALL=fr_FR LC_TIME=en_US
+ctime() of time() value is:
+asctime() of local time is:
+strftime() of local time is:
+
+$ LC_ALL=fr_FR LC_TIME=en_US ./show_time
+Tue Feb 1 12:25:38 2011
+Tue Feb 1 12:25:38 2011
+mardi, 01 février 2011, 12:25:38 CET
+
+
+
+====================== system clock ==================
+
+#define _BSD_SOURCE
+#include <sys/time.h>
+
+int settimeofday(const struct timeval *tv, const struct timezone *tz);
+
+returns 0 on success, -1 on error
+
+THE USE OF THE *tz arg is OBSOLETE. set to NULL instead
+
+changing the system clock abruptly can be harmful to a lot of applications, so maybe use this instead if you are worried about it:
+
+
+#define _BSD_SOURCE
+#include <sys/time.h>
+
+int adjtime(struct timeval *delta, struct timeval *olddelta);
+
+0 success, -1 error
+
+This call will adjust the time every tick of the system clock, instead of abruptly and immediately, which is easier on applications depending on the tick of the system clock itself.
+
+
+===================== PROCESS TIME =========================
+
+$ time ./myprog
+real    0m4.84s
+user	0m1.030s
+sys     0m3.43s
+
+
+user: time cpu spent in user-mode
+sys: time cpu spent in kernal-mode
+real: actual clock time
+
+
+====================== UGH ==================================
+
+#include <sys/times.h>
+
+The times() system call retrieves process time information, returning it in the struc-
+ture pointed to by buf.
+
+clock_t times(struct tms *buf);
+
+struct tms {
+	clock_t tms_utime; // user CPU time used by caller
+	clock_t tms_stime; // system CPU time
+	clock_t tms_ cutime; // user cpu time for all (waited for) children
+	clock_t tms_cstime; // system cpu time for all (waited for) children
+}
+
+The last two fields return information
+about the CPU time used by all child processes that have terminated and for which
+the parent (i.e., the caller of times()) has done a wait() system call.
+
+times() returns the REAL (clock time) since some arbitrary point in the past. it has issues though.
+
+The reliable way to measure the passage of elapsed time is to use gettimeofday() (described in Section 10.1).
+
+simpler version:
+
+#include <time.h>
+
+clock_t clock(void);
+Returns total CPU time used by calling process measured in
+CLOCKS_PER_SEC , or (clock_t) –1 on error
+
+must divide the return value of clock() by 60 to get the num of seconds since it returns a value measured in CLOCKS_PER_SEC
+
+
+======================== <sys/times.h> =========================
+
+#include <sys/times.h>
+
+ DESCRIPTION
+
+    The <sys/times.h> header defines the structure tms, which is returned by times() and includes at least the following members:
+
+
+    clock_t  tms_utime  user CPU time
+    clock_t  tms_stime  system CPU time
+    clock_t  tms_cutime user CPU time of terminated child processes
+    clock_t  tms_cstime system CPU time of terminated child processes
+
+    The clock_t type is defined as described in <sys/types.h>.
+
+    The following is declared as a function and may also be defined as a macro. Function prototypes must be provided for use with an ISO C compiler.
+
+
+    clock_t times(struct tms *);

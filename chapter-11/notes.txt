@@ -1,0 +1,56 @@
+Different types of limits:
+	- can be figured out at compile time (hardware dependent, hence always the same)
+	- are dynamic and must use sysconf(), pathconf(), or fpathconf() to determine (software limits, varies at runtime)
+
+Accodring to SUSv3, every maximum must also have a minimum.
+
+This is usually in <limits.h>
+
+INT_MAX, _POSIX_INT_MAX, etc
+
+THERE ARE THREE CATEGORIES THAT SUSv3 SPECIFIES:
+	1. runtime invariant values (possibly indeterminate)
+		-- these values are FIXED for the implementation
+		-- sometimes they cannot be determined
+	2. pathname variable values
+
+	3. runtime increasable values
+
+RUNTIME LIMIT CHECKS:
+
+	if it begins with _SC, pass it to sysconf()
+	if it begins with _PC, pass it to pathconf()
+
+
+================ GETCONF (pretty cool) =====================
+
+$ getconf variable-name [ pathname ]
+
+$ getconf ARG_MAX
+2097152
+
+$ getconf NAME_MAX /boot
+255
+
+
+================= sysconf() =========================
+
+long sysconf(int name);
+returns "name" specified on success
+returns -1 on error
+
+_SC_*
+
+
+
+================ pathconf() and fpathconf() =================
+
+#include <unistd.h>
+
+long pathconf(const char * pathname , int name );
+long fpathconf(int fd , int name );
+
+Both return value of limit specified by name,
+or –1 if limit is indeterminate or an error occurred
+
+_PC_*

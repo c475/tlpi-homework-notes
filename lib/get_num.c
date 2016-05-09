@@ -27,7 +27,6 @@ static void gnFail(const char *fname, const char *msg, const char *arg, const ch
     exit(EXIT_FAILURE);
 }
 
-
 static long getNum(const char *fname, const char *arg, int flags, const char *name)
 {
     long res;

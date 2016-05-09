@@ -1,0 +1,75 @@
+/proc/ filesystem contains a folder for each process currently running on the system
+
+the folders are named by the process' PID
+
+cmdline - Command-line arguments delimited by \0
+cwd 	- Symbolic link to current working directory
+environ - Environment list NAME=value pairs, delimited by \0
+exe 	- Symbolic link to file being executed
+fd 		- Directory containing symbolic links to files opened by this process
+maps 	- Memory mappings
+mem 	- Process virtual memory (must lseek() to valid offset before I/O)
+mounts 	- Mount points for this process
+root 	- Symbolic link to root directory
+status 	- Various information (e.g., process IDs, credentials, memory usage, signals)
+task 	- Contains one subdirectory for each thread in process (Linux 2.6)
+
+
+/proc/PID/fd directory: contains a symlink to each file descriptor the process has open
+
+
+A PROCESS CAN ACCESS ITS OWN proc/PID DIRECTORY BY OPENING /proc/self/
+
+
+========= uname() ==========
+
+#include <sys/utsname.h>
+
+
+struct utsname {
+	char sysname[_UTSNAME_LENGTH]; 			// Implementation name
+	char nodename[_UTSNAME_LENGTH]; 		// Node name on network
+	char release[_UTSNAME_LENGTH]; 			// Implementation release level
+	char version[_UTSNAME_LENGTH]; 			// Release version level
+	char machine[_UTSNAME_LENGTH]; 			// Hardware on which system is running
+	#ifdef _GNU_SOURCE 						// Following is Linux-specific
+		char domainname[_UTSNAME_LENGTH]; 	// NIS domain name of host
+	#endif
+};
+
+
+cool chapter
+
+
+========================= #include <dirent.h> =========================
+
+Dont forget these ones:
+
+struct dirent {
+   ino_t          d_ino;       /* Inode number */
+   off_t          d_off;       /* Not an offset; see below */
+   unsigned short d_reclen;    /* Length of this record */
+   unsigned char  d_type;      /* Type of file; not supported by all filesystem types */
+   char           d_name[256]; /* Null-terminated filename */
+};
+
+
+struct dirent *dp;
+DIR *dirp;
+
+
+dirp = opendir("/proc/");
+if (dirp == NULL) {
+	errExit("opendir()");
+}
+
+// read a directory, walk thru it.
+while ((dp = readdir(dirp)) != NULL) {
+	// etc
+}
+
+// REMEMBER TO USE CLOSEDIR. lots of leaked memory otherwise.
+closedir(dirp);
+
+
+readdir() returns a pointer to a statically allocated "dirent" structure

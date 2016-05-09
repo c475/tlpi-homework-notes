@@ -192,6 +192,8 @@
 
 #include "tlpi_time.h"
 
+#include "lib.h"
+
 
 typedef enum { FALSE, TRUE } Boolean;
 
