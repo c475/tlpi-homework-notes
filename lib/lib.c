@@ -3,7 +3,12 @@
 #include <pwd.h>
 #include <grp.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <dirent.h>
 #include <sys/ioctl.h>
+
+
+#define STATUS_FILE_MAX 1024
 
 
 char *_strtok(char *content, char delim)
@@ -46,7 +51,6 @@ char *_strtok(char *content, char delim)
 int isNumericString(char *str)
 {
 	char *strp = str;
-	int numeric = 1;
 
 	if (strp == NULL || *strp == '\0') {
 		return 0;
@@ -54,12 +58,11 @@ int isNumericString(char *str)
 
 	for (; *strp; strp++) {
 		if (!(*strp >= '0' && *strp <= '9')) {
-			numeric = 0;
-			break;
+			return 0;
 		}
 	}
 
-	return numeric;
+	return 1;
 }
 
 
@@ -111,12 +114,78 @@ gid_t groupIdFromName(const char *name)
 }
 
 
-struct LibWindow getWindowSize(void)
+struct WindowDimensions getWindowSize(void)
 {
 	struct winsize ws;
-	struct LibWindow win;
+	struct WindowDimensions win;
 	ioctl(0, TIOCGWINSZ, &ws);
 	win.width = ws.ws_col;
 	win.height = ws.ws_row;
 	return win;
+}
+
+
+Status *getProcessStatus(pid_t pid)
+{
+    int fd;
+    char filename[PATH_MAX] = {0};
+    char stat_file[STATUS_FILE_MAX] = {0};
+
+    Status *status = calloc(1, sizeof(Status));
+
+    snprintf(filename, PATH_MAX, "/proc/%ld/stat", (long)pid);
+
+    fd = open(filename, O_RDONLY);
+    if (fd == -1) {
+        return NULL;
+    }
+
+    if (read(fd, stat_file, STATUS_FILE_MAX) == -1) {
+        return NULL;
+    }
+
+    close(fd);
+
+    sscanf(stat_file, "%d %s %c %d %d",
+        &(status->pid),
+        status->comm,
+        &(status->state),
+        &(status->ppid),
+        &(status->pgrp)
+    );
+
+    status->prev = NULL;
+    status->next = NULL;
+
+    return status;
+}
+
+
+int endswith(char *buffer, char *suffix)
+{
+	char *substring;
+
+	if (!buffer || !suffix || !(*buffer) || !(*suffix)) {
+		return 0;
+	}
+
+	substring = strstr(buffer, suffix);
+
+	if (substring == NULL) {
+		return 0;
+	}
+
+	substring += strlen(suffix);
+
+	return *substring == '\0';
+}
+
+
+int startswith(char *buffer, char *prefix)
+{
+	if (!buffer || !prefix || !(*buffer) || !(*prefix)) {
+		return 0;
+	}
+
+	return strncmp(buffer, prefix, strlen(prefix)) == 0;
 }

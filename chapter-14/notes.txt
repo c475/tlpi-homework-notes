@@ -1,0 +1,95 @@
+***************** 14.1 Device Special Files (Devices) *****************
+
+Device driver: a unit of kernal code that implements a det of operations that correspond to input/output on this piece of hardware.
+
+Universality of I/O: open(), close(), read(), write(), and friends work on all devices, block, character, or otherwise.
+
+
+Character device: handle data on a character by character basis. Terminals and keyboards!
+
+Block devices: handle data a block at a time. It's usually a multiple 512 bytes, think hard drives, flash storage, CD-ROMS, and stuff.
+
+
+"mknode" allows you to create a device file. "make file system inode"
+
+/dev/ is straightforward, you already know this stuff
+
+/sys/ is a more organized alternative to /dev/.
+
+
+Each device has a MAJOR and a MINOR number. The MAJOR number is used to identify the appropriate device driver for the device. The MINOR number is used to identify a device within the same MAJOR device class.
+
+Here is the official listing of device numbers for the linux kernal: http://www.lanana.org/docs/device-list/devices-2.6+.txt
+
+
+Physical block: smallest unit that a disk drive can read/write at a time.
+
+
+======= DISK PARTITIONS =======
+
+Each disk partition is treated as a separate device by the linux kernal (in /dev/)
+
+A disk partition commonly holds one of the following:
+	1. File system holding regular files and directories
+	2. Data area, accessed in raw mode. Common in microcontrollers im assuming, and some database management systems.
+	3. swap area.
+
+Swap space:
+	1. mkswap(8): makes a swap space
+	2. swapon(): with CAP_SYS_ADMIN, process can notify kernal that a disk partition is to be used as a swap area.
+	3. swapoff(): tells kernal to stop using partition as swap space.
+
+
+/proc/swaps for info about currently enabled swap areas on the system.
+
+
+***************** 14.1 FILE SYSTEMS *****************
+
+mkfs: create a file system.
+
+/proc/filesystems for a list of supported file systems the kernel supports
+
+
+ext2 source code: http://e2fsprogs.sourceforge.net/ext2.html
+
+
+
+======== FILE SYSTEM STRUCTURE ===========
+
+locigal block: some multiple of contiguous physical blocks (which are usually 512 bytes). Som 512*2, 512*4, 512*8, etc.
+
+
+A FILE SYSTEM CONTAINS THESE PARTS:
+	1. Boot block: First block in the filesystem. The boot block is not used by the file system. It contains info the OS needs to boot.
+
+	2. Superblock: Contains a lot of metadata about the filesystem such as:
+		-- size of inode table
+		-- size of logical blocks in the filesystem
+		-- the size of the file system in logical blocks
+
+	3. Inode table: each file or directory has an entry in the inode table. Contains various info about the file/directory. More to come later
+
+	4. Data blocks - The data that actually forms the files and directories.
+
+EXCEPTION IN ext2 and probably a lot of other filesystems:
+	-- in ext2, after the boot block, the file system is broken into a set of block groups. each block group has a copy of thesuperblock, info about the superblock, copy of the inode table, and subsequent data blocks for this inode table. this is for optimisation reasons.
+
+
+***************** 14.1 INODES *****************
+
+inode: means index node. They are identified by their sequential location in inode table. If you do ls -li, it is the first number in the listing.
+
+Inodes contain this information:
+	1. File type (regular file, directory, symlink, character device)
+	2. Owner (UID) for the file
+	3. Group (GID) for the file
+	4. Access permissions for three categories of user: owner, group, and other (rest of the world)
+	5. Three timestamps: last access (ls -lu), last modification (ls -l), last status change (ls -lc). Interesting fact: most linux file systems do not record the creation time of a file.
+	6. Number of hard links to the file
+	7. Size of file in bytes
+	8. Number of blocks actually allocated to the file, measured in 512 units. May not be a simple correspondance between this and size of file in bytes because of file holes.
+	9. Pointers to data blocks of a file (see the diagram)
+
+INODE STRUCTURE IN ext2:
+	Contains 15 pointers to data file in each record. The first 12 point to the first 12 data blocks sequentially. The next 3 pointers are "indirection" pointers that point to pointers that point to the actual data in the file.
+

@@ -1,0 +1,207 @@
+************************ STDIO BUFFERING ************************
+
+
+write() and read() do not operate directly on disks/files. They read/write from the kernal's "buffer cache" then return immediately. This is more efficient than waiting for a disk write/read to return.
+
+write()ing larger buffers is an important performance improvement, since there is a lot of overhead in making a system call.
+
+
+======================== BUFFERING IN <stdio.h> ========================
+
+#include <stdio.h>
+
+int setvbuf(FILE *stream, char *buf, int mode, size_t size);
+
+RETURNS 0 ON SUCCESS;
+
+Controls the form of buffering in stdio library (printf etc).
+
+FILE *stream: is the FILE steam like the "stdout", "stdin", "stderr" structures, or return value from fopen().
+
+char *buf: this is the buffer that should be used for <stdio.h> buffering. If this value is NULL, <stdio.h> will automatically have a buffer allocated for use already. This buffer is eventually passed to a write() system call. THIS SHOULD BE STATICALLY OR DYNAMICALLY ALLOCATED.
+
+int mode:
+
+	_IONBF: Do not buffer I/O. So direct write() calls. This is the default for "stderr", so data is immediately written to it.
+
+	_IOLBF: Line buffering. Send the buffer to write() land whenever a newline character is written to the buffer.
+
+	_IOFBF: Fully buffered I/O. Buffer is sent to write() when the buffer fills up.
+
+
+size_t size: This is the size of the (char *buf) argument.
+
+
+EXAMPLE:
+
+#define BUF_SIZE 1024
+static char buf[BUF_SIZE];
+
+// set stdout to use FULL I/O buffering
+if (setvbuf(stdout, buf, _IOFBF, BUF_SIZE) != 0) {
+	errExit("setvbuf");
+}
+
+
+============== setbuf() =============
+
+#include <stdio.h>
+
+void setfub(FILE *stream, char *buf);
+
+This is equivalent to:
+
+setvbuf(fp, buf, buf != NULL ? _IOFBF : _IONBF, BUFSIZ);
+
+The constant BUFSIZ is defined in <stdio.h> as the default buffer size (8192).
+
+
+
+============== setbuffer() =============
+
+#define _BSD_SOURCE
+#include <stdio.h>
+
+void setbuffer(FILE *stream, char *buf, size_t size);
+
+same thing except you can specify BUFSIZ.
+
+
+
+
+================ fflush() ==============
+
+#include <stdio.h>
+
+int fflush(FILE *stream);
+
+Return 0 on success.
+
+FILE *stream: if NULL, flush ALL stdio buffers.
+
+Forces *stream buffer to write().
+
+
+
+
+
+
+************************ KERNAL BUFFERING ************************
+
+
+This is about controlling kernal buffering. For example, making sure the kernal buffer is flushed to disk.
+
+File metadata:
+	- File owner/group
+	- File permissions
+	- File size
+	- Number of (hard) links to the file
+	- Timestamps (last changed, last access, last metadata change)
+	- File data block pointers
+
+
+
+====================== fsync() ======================
+
+#include <unistd.h>
+
+int fsync(int fd);
+
+Returns 0 on success.
+
+
+Causes all buffered kernel data and metadata associated with (int fd) to be flushed to disk.
+
+
+====================== fdatasync() ======================
+
+#include <unistd.h>
+
+int fdatasync(int fd);
+
+Returns 0 on success.
+
+
+Only updates file data, not metadata.
+
+
+====================== sync() ======================
+
+#include <unistd.h>
+
+void sync(void);
+
+
+Causes ALL buffered kernal data to be flushed to disk.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~ GENERAL NOTE ~~~~~~~~~~~~~~~~~~~~~~~
+
+kupdated and pdflush kernal daemons will make sure data is flushed from the kernal buffer if it has been in there for 30 seconds
+
+/proc/sys/vm/dirty_expire_centisecs specifies this number (3000 centiseconds default)
+
+
+O_SYNC: Write straight to device or disk. Kernal buffer is immediately flushed.
+
+O_DSYNC: Same as O_SYNC except disregard writing non-crucial metadata
+
+fd = open(pathname, O_WRONLY | O_SYNC);
+
+Very largely affects performance. Consider instead using large buffers and write() sparingly.
+
+
+
+====================== posix_fadvise() ======================
+
+#include <fcntl.h>
+
+int posix_fadvise(int fd, off_t offset, off_t len, int advice);
+
+Returns 0 on success.
+
+
+int fd: the file descriptor you'd like to advise the kernal about.
+
+off_t offset: the START area of the file that you would like to advise the kernal about.
+
+off_t len: the distance from the offset you would like to advise the kernal about. 0 means from the offset and on.
+
+int advice:
+
+	POSIX_FADV_NORMAL: no special instructions
+
+	POSIX_FADV_SEQUENTIAL: will read sequentially, from offset to offset + len.
+
+	POSIX_FADV_RANDOM: access data in window in random order
+
+	POSIX_FADV_WILLNEED: loads data from disk into buffer cache
+
+	POSIX_FADV_DONTNEED: can free this block from cache, dont expect to need it.
+
+	POSIX_FADV_NOREUSE: hints it can free the window after it has been accessed once
+
+
+
+====================== RAW/DIRECT I/O ======================
+
+Very strict rules about this. Must respect memory alignment according to block size etc. That means on an ext2 file system with a physical block size of 512, memory address must be multiple of 512... It's confusing. Refer to the example program.
+
+
+
+====================== MIXING LIBRARY AND SYSTEM CALLS FOR I/O ======================
+
+
+#include <stdio.h>
+
+int fileno(FILE *stream);
+
+returns fule descriptor, or -1 on error
+
+
+FILE *fdopen(int fd, const char *mode);
+
+Returns new FILE pointer on success, NULL on error.
+
+mode: "r", "w", "a", "rw"

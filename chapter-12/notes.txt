@@ -73,3 +73,29 @@ closedir(dirp);
 
 
 readdir() returns a pointer to a statically allocated "dirent" structure
+
+
+==========================================================================
+
+READLINK(2)
+
+NAME
+       readlink, readlinkat - read value of a symbolic link
+
+SYNOPSIS
+       #include <unistd.h>
+
+       ssize_t readlink(const char *pathname, char *buf, size_t bufsiz);
+
+       #include <fcntl.h>           /* Definition of AT_* constants */
+       #include <unistd.h>
+
+       ssize_t readlinkat(int dirfd, const char *pathname,
+                          char *buf, size_t bufsiz);
+
+
+DESCRIPTION
+       readlink()  places  the  contents of the symbolic link pathname in the buffer buf, which has size bufsiz.  !!!!!!!!!!!!!!!!readlink() does not append a null!!!!!!!!!!!!!!!
+       byte to buf.  It will truncate the contents (to a length of bufsiz characters), in case the buffer is too small to hold all of the contents.
+
+

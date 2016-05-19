@@ -5,10 +5,21 @@
 #define _STRTOK_TOKENR_MAX 1024
 
 
-struct LibWindow {
+struct WindowDimensions {
 	int width;
 	int height;
 };
+
+typedef struct Status {
+    pid_t pid;
+    char comm[128];
+    char state;
+    pid_t ppid;
+    gid_t pgrp;
+    struct Status *prev;
+    struct Status *next;
+    int flags;
+} Status;
 
 
 char *userNameFromId(uid_t uid);
@@ -17,6 +28,9 @@ char *groupNameFromId(gid_t gid);
 gid_t groupIdFromName(const char *name);
 char *_strtok(char *content, char delim);
 int isNumericString(char *str);
-struct LibWindow getWindowSize(void);
+struct WindowDimensions getWindowSize(void);
+Status *getProcessStatus(pid_t pid);
+int endswith(char *buffer, char *suffix);
+int startswith(char *buffer, char *prefix);
 
 #endif
