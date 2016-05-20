@@ -93,3 +93,93 @@ Inodes contain this information:
 INODE STRUCTURE IN ext2:
 	Contains 15 pointers to data file in each record. The first 12 point to the first 12 data blocks sequentially. The next 3 pointers are "indirection" pointers that point to pointers that point to the actual data in the file.
 
+
+
+***************** 14.7 DIRECTORY HIERARCHY *****************
+
+$ mount device directory
+
+mount a device on a directory heirarchy
+
+$ mount
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+udev on /dev type devtmpfs (rw,nosuid,relatime,size=8151204k,nr_inodes=2037801,mode=755)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
+tmpfs on /run type tmpfs (rw,nosuid,noexec,relatime,size=1633908k,mode=755)
+/dev/sda4 on / type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+
+1. device name
+2. mount point
+3. file system type
+4. mount options
+
+THIS IS THE SAME AS:
+
+$ cat /proc/mounts
+
+OR /proc/PID/mounts OR /proc/self/mounts
+
+Also, newer linux kernals can have per-process mount namespaces, so a directory hierarchy may look different from process to process.
+
+
+/etc/mtab: THIS ONE IS NOT AN INTERFACE TO KERNAL DATA STRUCTURES. So be sure to update this in your program if it happens to mount/unmount and you want to rely on this file... Sounds like a file to not rely on though
+
+
+mount(8) and umount(8) keep /etc/mtab up to date
+
+your programs probably should too, other programs depend on it.
+
+The /etc/fstab file, maintained manually by the system administrator, contains
+descriptions of all of the available file systems on a system, and is used by the
+mount(8), umount(8), and fsck(8) commands.
+
+
+getfsent(3) and getmntent(3), look them up later...
+
+
+============= mount() =============
+
+#include <sys/mount.h>
+
+int mount(const char *source, const char *target, const char *fstype, unsigned long mountflags, const void *data);
+
+returns 0 on success, -1 on error
+
+const char *source: device name, ex "/dev/sda1"
+const char *target: mounting point, ex "/" or "/home/testdir/"
+const char *fstype: file system type, ex "ext2", "fat32", "ext4"
+
+unsigned long mountflags:
+
+	MS_BIND Create a bind mount (since Linux 2.4)
+
+	MS_DIRSYNC Make directory updates synchronous (since Linux 2.6)
+
+	MS_MANDLOCK Permit mandatory locking of files
+
+	MS_MOVE Atomically move mount point to new location
+
+	MS_NOATIME Don’t update last access time for files
+
+	MS_NODEV Don’t allow access to devices
+
+	MS_NODIRATIME Don’t update last access time for directories
+
+	MS_NOEXEC Don’t allow programs to be executed
+
+	MS_NOSUID Disable set-user-ID and set-group-ID programs
+
+	MS_RDONLY Read-only mount; files can’t be created or modified
+
+	MS_REC Recursive mount (since Linux 2.4.11)
+
+	MS_RELATIME Update last access time only if older than last modification time or last status change time (since Linux 2.6.20)
+
+	MS_REMOUNT Remount with new mountflags and data
+
+	MS_STRICTATIME Always update last access time (since Linux 2.6.30)
+
+	MS_SYNCHRONOUS Make all file and directory updates synchronous
+
+const void *data: 
