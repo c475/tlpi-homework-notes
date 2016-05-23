@@ -182,4 +182,240 @@ unsigned long mountflags:
 
 	MS_SYNCHRONOUS Make all file and directory updates synchronous
 
-const void *data: 
+const void *data: this is filesystem dependent data that can be passed to mount for some extra functionality/options. usually a comma separated list of values/variables.
+
+
+================= umount() =================
+
+#include <sys/mount.h>
+
+int umount(const char *target);
+
+return 0 on success, -1 on error
+
+unmounts the file system at "target"
+
+in Linux <= 2.2, you could specify the device, but now since you can mount a device at more than one target, you can no longer do that.
+
+Also, you can't unmount a busy "filesystem" or "device". If a program has its CWD in the target, or has an open fd in the target, then it will fail with EBUSY.
+
+================= umount2() =================
+
+#include <sys/mount.h>
+
+int umount2(const char *target, int flags);
+
+returns 0 on success, -1 on error
+
+unmount() with some extra options, assuming this is what the `umount` command interfaces with.
+
+Flags:
+
+	MNT_DETACH
+		-- Perform a lazy unmount. The mount point is marked so that no process can make new access to it, but processes already using it will continue to do so. When the processes are no longer using it, the device is finally unmounted.
+
+	MNT_EXPIRE
+		-- sets target to EXPIRED state.
+		-- IF target is busy: EBUSY, mount point is not set to EXPIRED.
+		-- IF target is NOT busy: EAGAIN. Target is set to EXPIRED, but not unmounted.
+		-- As long as no process uses target, target stays in EXPIRED state.
+		-- If another umount2() call is made with MNT_EXPIRE, the target is finally unmounted.
+		-- This is an easy way to unmount systems that are going unused.
+
+	MNT_FORCE
+		-- Force unmount even if busy. Can lead to data loss.
+
+	UMOUNT_NOFOLLOW
+		-- Don't dereference target if it is a symlink. This flag is designed for use in setuid programs because the target of the symlink can be changed without root permissions potentially.
+
+
+***************** 14.9 ADVANCED MOUNT FEATURES *****************
+
+In kernel 2.4+, a file system can be mounted on multiple targets within the same directory heirarchy. Changes to one will be reflected in the other.
+
+
+# mkdir testfs
+# mkdir demo
+# mount /dev/sda12 testfs
+# mount /dev/sda12 demo
+# mount | grep sda12
+/dev/sda12 on /testfs type ext3 (rw)
+/dev/sda12 on /demo type ext3 (rw)
+# touch testfs/myfile
+# ls demo
+lost+found myfile
+
+
+========= STACKING mount points
+
+In kernel 2.4+, linux allows multiple mounts on the same target. Each new mount hides the previous subtree. When the top layer is unmounted, the bottom becomes visible again.
+
+# mount /dev/sda12 testfs
+# touch testfs/myfile
+# mount /dev/sda13 testfs
+# mount | grep testfs
+/dev/sda12 on /testfs type ext3 (rw)
+/dev/sda13 on /testfs type reiserfs (rw)
+
+# touch testfs/newfile
+# ls testfs
+newfile
+
+# umount testfs
+# mount | grep testfs
+/dev/sda12 on /testfs type ext3 (rw)
+
+# ls testfs
+lost+found myfile
+
+One use of this is mounting on top of a busy mount target. Processes using the old mount operate normally, while new processes accessing this mount target will access the new filesystem.
+
+
+========= PER MOUNT options
+
+Since you can mount a device on multiple targets, there are a few flags that you can set on a per-mount basis. These are:
+
+
+MS_NOEXEC, MS_NOSUID, MS_RDONLY, MS_RELATIME
+
+
+
+========= BIND MOUNTS
+
+This is a lot like a hard link for a file or directory. You can "mount" a file or directory at another location in the filesystem, where it will also be visible. This can penetrate chroot jails, which is handy.
+
+# mkdir d1
+# touch d1/x
+# mkdir d2
+# mount --bind d1 d2      (bind d1 to target d2)
+# ls d2
+x
+
+# touch d2/y
+# ls d1
+x  y
+
+
+						FILE EXAMPLE
+
+# cat > f1
+This is some text.
+CTRL+D
+
+# touch f2
+# mount --bind f1 f2
+# mount | egrep '(d1|d2)'
+/testfs/d1 on /testfs/d2 type none (rw,bind)
+/testfs/f1 on /testfs/f2 type none (rw,bind)
+
+# cat >> f2
+Different text
+
+# rm f2
+rm: cannot unlink `f2': Device or resource busy
+
+# umount f2
+# rm f2
+
+
+
+========= RECURSIVE BIND MOUNTS
+
+This is like a bind mount of a directory, except all sub-mounts under this directory are also bound under the new target.
+
+# mkdir top
+# mkdir src1
+# touch src1/aaa
+# mount --bind src1 top
+# mkdir top/sub
+# mkdir src2
+# touch src2/bbb
+# mount --bind src2 top/sub
+# find top
+top
+top/aaa
+top/sub
+top/sub/bbb
+
+
+# mkdir dir1
+# mount --bind top dir1
+# find dir1
+dir1
+dir1/aaa
+dir1/sub      (sub is not a mount point in normal a bind mount)
+
+
+# mkdir dir2
+# mount --rbind top dir2
+# find dir2
+dir2
+dir2/aaa
+dir2/sub
+dir2/sub/bbb  (now it is)
+
+
+
+***************** 14.10 A Virtual Memory File System: tmpfs *****************
+
+tmpfs is an in-memory file system. It can use swap space if RAM is short too.
+
+# mount -t tmpfs source target
+
+Source can be any name, its only significance is that it appears in /proc/mounts and is displayed in the "mount" and "df" commands.
+
+As an example, mount stacking can be employed on the /tmp/ directory as such:
+
+# mount -t tmpfs newtmp /tmp
+# cat /proc/mounts | grep tmp
+newtmp /tmp tmpfs rw 0 0
+
+
+This can be used to improve performance of applications making very heavy use of the /tmp/ directory, like compilers.
+
+By default, tmpfs is permitted to grow to half the size of available RAM, but size=nbytes option can be passed to mount to change this.
+
+Two interesting facts:
+	1. an invisible tmpfs file system is mounted internally by the kernal, and is used for implementing System V shared memory and shared anonymous memory mappings.
+	2. a tmpfs file system mounted at /dev/shm (/run/shm on some systems) is used for glibc implementation of POSIX shared memory and POSIX semaphores.
+
+
+***************** 14.11 Obtaining Information About a File System: statvfs() *****************
+
+statvfs() and fstatvfs() functions obtain info about a mounted file system
+
+
+#include <sys/statvfs.h>
+
+int statvfs(const char *pathname, struct statvfs *statvfsbuf);
+int fstatvfs(int fd, struct statvfs *statvfsbuf);
+
+Returns 0 on success, -1 on error
+
+
+The only difference between these two is one takes a pathname of the mount target, the other takes a file decriptor to a file open in the "target".
+
+struct statvfs {
+	unsigned long f_bsize; // block size of the file system (in bytes)
+	unsigned long f_frsize; // fundamental file-system block size (in bytes)
+
+	fsblkcnt_t    f_blocks; // total number of blocks in file system (units of f_frsize)
+	fsblkcnt_t    f_bfree; // total number of free blocks
+	fsblkcnt_t    f_bavail; // number of free blocks available to unproviledged process
+
+	fsfilcnt_t    f_files; // number of inodes
+	fsfilcnt_t    f_ffree; // total number of free i-nodes
+	fsfilcnt_t    f_favail; // number of iniodes avail to unpriviledged process
+	                        // (set to f_ffree on linux)
+
+	unsigned long f_fsid; // file system id
+	unsigned long f_flag; // mount flags (AND-able with mount flgs ST_BIND, etc) [1]
+	unsigned long f_namemax; // max length of filenames
+}
+
+[1] THIS IS A BITFIELD TO USE WITH <sys/statvfs.h> SPECIFIC FLAGS... MS_BIND -> ST_BIND. ex:
+	
+	unsigned long is_bind_mount = svfs->f_flag & ST_BIND;
+
+Maybe this is because f_flag is an "unsigned long" bc it has other metadata stored within for internal use of <sys/statvfs.h> functions, and thus requires "unsigned long" flag values for checking? Idk.
+
