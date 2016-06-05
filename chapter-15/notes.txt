@@ -1,0 +1,401 @@
+This is a big long chapter about file attributes (permission bits, sticky/suid, sgid) and stuff
+
+
+******************************* 15.1 Retrieving File Information: stat() *******************************
+
+#include <sys/stat.h>
+
+int stat(const char *pathname, struct stat *statbuf);
+int lstat(const char *pathname, struct stat *statbuf);
+int fstat(int fd, struct stat *statbuf);
+
+	All return 0 on success, or -1 on error
+
+stat: 	returns info about the file pointed to by path (struct stat)
+lstat: 	returns info about a SYMLINK to a file (struct stat)
+fstat: 	returns info about the file pointed to by file descriptor
+
+
+stat and lstat dont need read/write permissions on the file, but need execute (search) permission on all directories leading up to it. difference between file and directory permissions (rwx) is highlighted later in the chapter.
+
+
+struct stat {
+	dev_t		st_dev;			// Ids of device on which file resides (major, minor)
+	ino_t		st_ino;			// I-Node number of file
+	mode_t		st_mode;		// File type and permissions
+	nlink_t		st_nlink;		// Number of (hard) links to file
+	uid_t		st_uid;			// User ID of file owner
+	gid_t		st_gid;			// Group ID of file owner
+	dev_t		st_rdev;		// IDs for device special files
+	off_t		st_size;		// Total file size (bytes), or pathname size (symlink)
+	blksize_t	st_blksize;		// Optimal block size for I/O (bytes)
+	blkcnt_t	st_blocks;		// Number of (512 B) blocks allocated 
+	time_t		st_atime;		// Time of last file access
+	time_t		st_mtime;		// Time of last file modification
+	time_t		st_ctime;		// Time of last status change
+};
+
+
+========================= st_dev =========================
+
+#define _BSD_SOURCE
+#include <sys/types.h>
+
+long maj = major(stat.st_dev)
+long min = minor(stat.st_dev);
+
+
+========================= st_mode =========================
+
+|- FILE TYPE --|  |-SUID/SGID/STICKY-| |--- USER ---|  |---- GRP ----| |--- OTHER ---|
+
+[  ][  ][  ][  ]  [ U ][ G ][ T ]      [ R ][ W ][ X ] [ R ][ W ][ X ] [ R ][ W ][ X ]
+
+
+Layout of st_mode bit mask.
+
+FILE TYPE can be extracted by ANDing (&) with S_IFMT:
+
+CONSTANT	TEST MACRO	FILE TYPE
+------------------------------------
+S_IFREG  	S_ISREG() 	Regular file
+S_IFDIR  	S_ISDIR() 	Directory
+S_IFCHR  	S_ISCHR() 	Character device
+S_IFBLK  	S_ISBLK() 	Block device
+S_IFIFO  	S_ISFIFO() 	FIFO or pipe
+S_IFSOCK  	S_ISSOCK() 	Socket
+S_IFLNK  	S_ISLNK() 	Symbolic link
+------------------------------------
+
+// is a regular file?
+if ((statbuf.st_mode & S_IFMT) == S_IFREG) {
+	printf("regular file\n");
+}
+
+// a little nicer
+if (S_ISREG(statbuf.st_mode)) {
+	printf("regular file\n");
+}
+
+
+*********************** 15.2.1 Changing File Timestamps with utime() and utimes() ***********************
+
+======================== utime() ========================
+
+#include <utime.h>
+
+int utime(const char *pathname, const struct utimbuf *buf);
+
+Returns 0 on success, or -1 on error
+
+struct utimbuf {
+	time_t actime; // access time
+	time_t modtime; // modification time
+};
+
+
+if buf is NULL, both access and modified time are set to the current time.
+
+
+if you only wanna change one of them, then you have to use stat() to retrieve both times, then set the one you dont want to change to what it already is:
+
+struct stat sb;
+struct utimbuf utb;
+if (stat(pathname, &sb) == -1)
+	errExit("stat");
+
+utb.actime = sb.st_atime;
+
+/* Leave access time unchanged */
+utb.modtime = sb.st_atime;
+
+if (utime(pathname, &utb) == -1)
+	errExit("utime");
+
+
+======================== utimes() ========================
+
+#include <sys/time.h>
+
+int utimes(const char *pathname, const struct timeval tv[2]);
+
+struct timeval {
+   time_t      tv_sec;     /* seconds */
+   suseconds_t tv_usec;    /* microseconds */
+};
+
+This allows millisecond timestamp support. The first in the array is the access time, the second is the modified time.
+
+
+
+======================== futimes() and litimes() ========================
+
+int futimes(int fd, const struct timeval tv[2]);
+int lutimes(const char *pathname, const struct timeval tv[2]);
+
+futimes() is utimes() except it takes a file descriptor
+lutimes() is utimes() except it does not dereference a symlink, it changes the link
+
+
+
+======================== utimensat() and futimens() ========================
+
+#define _X_OPEN_SOURCE 700 // or _POSIX_C_SOURCE >= 200809
+#include <sys/stat.h>
+
+int utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags);
+
+return 0 on success, -1 on error
+
+this gives millisecond timestamp support along with the ability to set modified or access times one at a time.
+
+struct timespec {
+	time_t tv_sec; // seconds
+	long tv_nsec; // nanoseconds
+};
+
+UTIME_NOW: current time.
+
+UTIME_OMIT: do not change the time
+
+AT_FDCWD: interpret pathname like utimes()
+
+struct timespec times[2];
+times[0].tv_sec = 0;
+times[0].tv_nsec = UTIME_NOW;
+times[1].tv_sec = 0;
+times[1].tv_nsec = UTIME_OMIT;
+if (utimensat(AT_FDCWD, "myfile", times, 0) == -1)
+	errExit("utimensat");
+
+#define _GNU_SOURCE
+#include <sys/stat.h>
+
+int futimens(int fd , const struct timespec times[2] );
+
+
+
+
+************************** 15.3 File Ownership ****************************
+
+When a new file is created, the Owner/User ID is taken from the effective user id of the process. Or the Group ID of the parent directory (THIS IS BSD BEHAVIOR).
+
+
+-o grpid, -o bsdgroups: when a new file is created, group id is taken from parent directory
+-o nogrpid: when a file is created, group is taken from process effective group id
+
+BUT, if set-group-id bit is set on a directory, then new files in that directory will inherit its group from it (via chmod g+s)
+
+
+
+**************** 15.3.2 Changing File Ownership: chown(), fchown(), and lchown() ******************
+
+#include <unistd.h>
+
+int chown(const char *pathname, uid_t owner, gid_t group);
+int lchown(const char *pathname, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group);
+
+Returns 0 on success, -1 on error
+
+chown does what it does
+lchown does not dereference a symlink, changes link instead
+fchown is chown() against a file descriptor
+
+-1 can be passed to owner or group to not change it.
+
+
+Only a priviledged process can change owner or group (CAP_CHOWN)
+
+If a process owns the file then it can change the file's group to any group the process.
+
+If you change the owner or group of a file, the setuid and setgid bits are turned off as a security percaution.
+
+
+
+**************** 15.4 File Permissions ******************
+
+Keep in mind everything here applies to all types of files, including FIFOs and sockets.
+
+FILES:
+	1. read: content of files may be read
+	2. write: contents may be changed
+	3. execute: file may be executed (read is also required to read contents of the script/program)
+
+
+type     owner  group   other
+-        rwx    r-x     ---
+
+
+
+#include <sys/stat.h>: has constants that can be ANDed with stat->st_mode to get permissions for user/group/other
+
+
+Constant 		Octal 	Permission bit
+--------------------------------------
+S_ISUID 		04000 	Set-user-ID
+S_ISGID 		02000 	Set-group-ID
+S_ISVTX 		01000	Sticky
+S_IRUSR 		0400	User-read
+S_IWUSR 		0200	User-write
+S_IXUSR 		0100	User-execute
+S_IRGRP 		040		Group-read
+S_IWGRP 		020		Group-write
+S_IXGRP 		010		Group-execute
+S_IROTH 		04		Other-read
+S_IWOTH 		02		Other-write
+S_IXOTH 		01		Other-execute
+--------------------------------------
+S_IRWXU 		0700	rwx (user)
+S_IRWXG 		070		rwx (group)
+S_IRWXO 		07		rwx (other)
+--------------------------------------
+
+
+
+
+DIRECTORIES:
+	1. read: can use ls in a directory, get directory listing, etc
+	2. write: can create files, remove files, rename, etc
+	3. search/execute: file contents can be accessed.
+
+INTERESTING FACT: If you have execute but not read permissions on a directory, you can access the file if you have the name of it, but are unable to list the directory contents...
+
+
+Permissions checking flows from user, then group, then other if there is no match.
+
+A privileged process can only execute a file if at least one permission group has execute set.
+
+
+================ access() (DONT USE FOR ACCESS CONTROL OR SECURITY CHECKS) =============
+
+#include <unistd.h>
+
+int access(const char * pathname , int mode );
+
+Returns 0 if all permissions are granted, otherwise –1
+
+Don't use this to validate access permissions in suid/sgid programs, because if pathname is a symlink it can be changed between the time of the check, and the time of open() or file manipulation.
+
+
+
+
+=========================== umask() =====================================
+
+#include <sys/stat.h>
+
+mode_t umask(mode_t mask );
+
+Always successfully returns the previous process umask
+
+Is the anti-permissions bitmask for file permissions.
+
+umask(0) to reset it and retrieve the previous mask
+
+
+
+================ chmod() and fchmod() ====================================
+
+#include <sys/stat.h>
+
+int chmod(const char *pathname, mode_t mode);
+int fchmod(int fd, mode_t mode);
+
+
+mode is a combination of the S_IRUSR/etc flags. fdchmod is for file descriptors.
+
+You can also give an octal argument like this
+
+chmod("/path/to/file.txt", 0666);
+
+REQUIRES: CAP_FOWNER permission, or eff-uid must match file owner
+
+
+if you want to modify individual permission bits in some situations:
+
+
+struct stat sb;
+mode_t mode;
+
+if (stat("myfile", &sb) == -1) {
+	errExit("stat()");
+}
+
+mode = (sb.st_mode | S_IWUSR) & ~S_IROTH;
+
+this is like this: chmod u+w,o-r somefile.txt
+
+
+mount -o bsdgroups: Potentially dangerous if directory is writable by anyone: So, when you use chmod() or fchmod(), it automatically turns off the set-gid bit to prevent unpriviledged users from creating a set-gid program. This has no dobut been exploited in the past because it sounds like a bandaid.
+
+
+~~~~~~~~~~~~~~~~~~ INTERESTING NOTES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A symlink is always created with RWX permissions for ALL USERS.
+
+
+
+**************** 15.5 I-node Flags ( ext2 Extended File Attributes) ******************
+
+Some linux distros support inode flags on directories and files. BSDs support a similar feature via chflags(1) and chflags(2). Linux first got this feature in ext2. They are commonly refered to as ext2 extended file attributes.
+
+chattr: change attributes
+lsattr: list attributes
+
+$ lsattr myfile
+-------- myfile
+$ sudo chattr +ai myfile			Turn on Append Only and Immutable flags
+$ lsattr myfile
+----ia-- myfile
+
+
+WITHIN A PROGRAM: inode flags can be retrieved and modified with the hefty ioctl() call.
+
+
+#include <linux/fs.h>
+
+older than 2.6:
+
+#include <linux/ext2_fs.h> etc
+
+
+Constant (ioctl) 	chattr 	Purpose
+-------------------------------------------------------------------
+FS_APPEND_FL		a 		Can only be opened with O_APPEND (priv)
+FS_COMPR_FL			c 		Enable file compression (not implemented)
+FS_DIRSYNC_FL		D 		Syncronous directory updates
+FS_IMMUTABLE_FL 	i 		Immutable (priv)
+FS_JOURNAL_DATA_FL 	j 		Enable journaling (priv)
+FS_NOATIME_FL 		A 		Dont update last access time
+FS_NODUMP_FL 		d 		No Dump
+FS_NOTAIL_FL 		t 		No Tail Packing
+FS_SECRM_FL 		s 		Secure deletion (not implemented)
+FS_SYNC_FL 			S 		Syncronous file and directory updates
+FS_TOPDIR_FL 		T 		Treat as top level directory for Orlov
+FS_UNRM_FL 			u 		File can be undeleted (not implemented)
+-------------------------------------------------------------------
+
+
+extra info:
+
+FS_IMMUTABLE_FL: cant be updated in any way (write(), truncate(), chmod()). Not even metadata.
+
+FS_NODUMP_FL: dont include this file in dump(8) backups. This flag is dependent on the -h flag to dump(8).
+
+FS_SECRM_FL: supposed to be a flag that will overwrite the file, then delete it. instead of just unlink()ing it from the inode table, allowing disk scanning programs to recover it.
+
+
+Generally when inode flags are applied to a directory they are inherited by other child files and directories.
+
+
+GET AND SET INODE FLAGS:
+
+
+int attr;
+if (ioctl(fd, FS_IOC_GETFLAGS, &attr) == -1)
+	errExit("ioctl");
+
+attr |= FS_NOATIME_FL;
+
+if (ioctl(fd, FS_IOC_SETFLAGS, &attr) == -1)
+	errExit("ioctl");

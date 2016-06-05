@@ -31,6 +31,27 @@ typedef struct FileName {
 } FileName;
 
 
+// create a virtual block device mounted on a loop device, eg /dev/loop1
+// work in progress to make testing a little easier...
+// int createVirtualDevice(const char *fstype, const char *name)
+// {
+// 	char name[128] = {0};
+// 	char dd_command[1024] = {0};
+// 	char fdisk_command[1024] = {0};
+// 	char losetup_command[1024] = {0};
+// 	char mount_command[1024] = {0};
+
+// 	snprintf(name, 127, "%s-testfs", name + 2);
+// 	snprintf(dd_command, 1023, "dd if=/dev/zero of=/tmp/%s bs=1M count=1024");
+
+// 	// create the "block device" file
+// 	system("dd if=/dev/zero of=/tmp/" name " bs=1M count=1024");
+// 	// create one partition
+// 	system();
+// 	// write the filesystem to it
+// }
+
+
 FileName *rewindFileName(FileName *fn)
 {
 	FileName *rw = fn;
@@ -159,7 +180,7 @@ int main(int argc, char *argv[])
 	FileName *filename = NULL;
 
 	if (argc < 2) {
-		usageErr("./program dir [numfiles]");
+		usageErr("./program dir fstype [numfiles]");
 	}
 
 	if (argc >= 3) {
