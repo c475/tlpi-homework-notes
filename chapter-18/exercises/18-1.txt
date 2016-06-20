@@ -1,0 +1,11 @@
+$ cc -o longrunner longrunner.c
+$ ./longrunner &
+$ vi longrunner.c
+$ cc -o longrunner longrunner.c
+
+
+This can happen since a file is not actually deallocated from the inode table / file system until the link count is reduced to 0 (which it has in this case), *AND* all processes with an open file descriptor to the file have terminated or have called close() on the file descriptor(s).
+
+Since there is still an open file descriptor to the running binary (since it is being executed), it can continue running like normal. When the process has terminated, then the first ./longrunner binary will be deallocated, and the new one will continue to exist (with a different inode ID).
+
+Also, much of the binary exists in memory, but possibly not all of it so it's a little irrelevant.

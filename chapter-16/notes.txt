@@ -1,0 +1,154 @@
+************************* 16.1 EXTENDED ATTRIBUTES Overview *************************
+
+They are used to implement ACLs and "file capabilities".
+
+But you can technically use them for whatever you want, because they are simple key-value pairs under four distinct namespaces:
+
+1. user
+	/*
+		Can be manipulated by unprivileged process.
+		Need read permissions to fetch ext. attributes.
+		Need write permissions to create ext. attributes.
+		No permission: EACCESS error.
+
+		File system must be mounted with "user_xattr" option:
+
+		mount -o user_xattr device directory
+	*/
+2. trusted
+	/*
+		Same as "user" but need CAP_SYS_ADMIN.
+	*/
+3. system
+	/*
+		Used by the kernal to associate system objects with a file.
+		Currently only ACLs are supported
+	*/
+4. security
+	/*
+		Used to store security labels for security modules, like SELinux and maybe AppArmor
+	*/
+
+
+In "user" and "trusted", EAs can be arbitrary strings. In "system" and "trusted" they can only be names explicitly permitted by the kernel (names used by ACLs)
+
+
+======================= SHELL EXAMPLE =======================
+
+$ touch testfile
+$ setfattr -n user.x -v "Cool man" testfile
+$ setfattr -n user.y -v "Other cool mane" testtile
+$ getfattr -n user.x testfile
+# file: testfile
+user.x="Cool man"
+
+$ setfattr -n user.x testfile 		# create an empty string EATTR
+$ setfattr -x user.y testfile		# remove EATTR
+$ getfattr -d testtile
+# file: testfile
+user.x
+
+
+BY DEFAULT getfattr ONLY LISTS user NAMESPACE ATTRIBUTES. To get others you need to user -m "pattern". Doesn't seem to work on my system, idk.
+
+==============================================================
+
+
+It is only possible to place user EAs on regular files and directories. Others are excluded for reasons:
+
+1. SYMLINKS: permissions are rwxrwxrwx on symlinks on linux (symlink permissions have no meaning on linux (good) for reasons in chapter 18). That means that you could not prevent any user from adding a "user" EA. So they just arent allowed.
+2. For device files, sockets, and FIFOs, permissions control the access that users are granted on them for I/O. Manipulating these permissions for the purpose of EAs would be a conflict of interest.
+
+
+======================= LIMITS =======================
+
+1. On linux EA names are limited to 255 characters.
+2. Value limited to 64kb.
+3. But really they are much smaller. On ext2,3,4 values are limited to the size of a single logical block, like 1024, 2048, 4096, ETC.
+
+
+
+************************* 16.3 System Calls for Manipulating Extended Attributes *************************
+
+
+============ SETTING the value of an EA ============
+
+#include <sys/xattr.h>
+
+int setxattr(const char *pathname, const char *name, const void *value, size_t size, int flags);
+int lsetxattr(const char *pathname, const char *name, const void *value, size_t size, int flags);
+int fsetxattr(int fd, const char *name, const void *value, size_t size, int flags);
+
+	All return 0 on success, -1 on error
+
+These three differ in the same way as the 3 stat() functions.
+
+setxattr: dereferences symlinks
+lsetxattr: does not dereference symlinks (sounds pointless since you cant set xattrs on symlinks. probably only useful if you want an error if it is a symlink).
+fsetxattr: takes a file descriptor.
+
+const char *name: name of the EA, like "user.x". Must be prefixed by the proper namespace.
+const void *value: buffer to the value you want to set name to.
+size_t size: size of the value buffer
+flags:
+
+	XATTR_CREATE: Fail (EEXIST) if "name" already exists
+	XATTR_REPLACE: Fail (ENODATA) if "name" doesn't already exist
+
+
+char *value = "Some value";
+
+if (setxattr(pathname, "user.x", value, strlen(value), 0) == -1) {
+	errExit("setxattr()");
+}
+
+
+============ GETTING the value of an EA ============
+
+#include <sys/xattr.h>
+
+int getxattr(const char *pathname, const char *name, void *value, size_t size);
+int lgetxattr(const char *pathname, const char *name, void *value, size_t size);
+int fgetxattr(int fd, const char *name, void *value, size_t size);
+
+	All return (non-negative) size of value on success, -1 on error
+
+name: name of EA
+value: buffer that will be filled with the value of EA
+size: size of the value buffer
+
+
+if "size" is 0, then "value" is ignored and the size of the EA is still returned. This is a handy way to retrieve the size of the EA so you know how big of a buffer that you need. But it is not "atomic", "reentrant", "thread-safe" etc because the EA can change between the size call and actually retrieving it...
+
+
+
+============ DELETING the value of an EA ============
+
+#include <sys/xattr.h>
+
+int removexattr(const char *pathname, const char *name);
+int lremovexattr(const char *pathname, const char *name);
+int fremovexattr(const char *pathname, const char *nane);
+
+	All return 0 on success, -1 on error
+
+Doesn't exist: ENODATA
+
+
+
+============ Get names of all EA values ============
+
+#include <sys/xattr.h>
+
+ssize_t listxattr(const char *pathname, char *list, size_t size);
+ssize_t llistxattr(const char *pathname, char *list, size_t size);
+ssize_t flistxattr(int fd, char *list, size_t size);
+
+	All return number of bytes copied into list on success, -1 on error
+
+
+The names are returned as a series of null-terminated strings in "list".
+"size" is the size of "list"
+
+NO PERMISSIONS ARE NEEDED ON THE FILE. Just Execute permission on all directories specified in path.
+

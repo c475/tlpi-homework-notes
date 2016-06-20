@@ -1,0 +1,257 @@
+************************* 17.1 Overview *************************
+
+Example Access Control List:
+
+Tag Type        Tag Qualifier   Permissions
+-------------------------------------------
+ACL_USER_OBJ    -               rwx
+ACL_USER        1007            r--
+ACL_USER        1010            rwx
+ACL_GROUP_OBJ   -               rwx
+ACL_GROUP       102             r--
+ACL_GROUP       103             -w-
+ACL_GROUP       109             --x
+ACL_MASK        -               rw-
+ACL_OTHER       -               r--
+-------------------------------------------
+
+Tag Type: indicates whether this entry applies to a user, to a group, or to some other category of user
+Tag Qualifier: identifies a specific user or group.
+Permission set: permissions that are granted to the entry.
+
+========== TAG TYPES ==========
+
+ACL_USER_OBJ:
+    -- Permissions granted to the file owner. Corresponds to traditional "owner" permissions.
+
+ACL_USER
+    -- Permissions granted to the user specified in the "tag qualifier". At most one ACL_USER entry may be specified for one user.
+
+ACL_GROUP_OBJ
+    -- Permissions granted to the file group. Corresponds to traditional "group" permissions, unless there is an ACL_MASK entry
+
+ACL_GROUP
+    -- Permissions for the group specified in the "tag qualifier". At most one entry can exist for a single group.
+
+ACL_OTHER
+    -- Permissions for users that don't match any ACL entry. Corresponds to the normal "other" permissions
+
+ACL_MASK
+    -- MAXIMUM permissions allowed for ACL_GROUP_OBJ, ACL_USER, and ACL_GROUP entries. At most ONE ACL_MASK may be specified. If there are ACL_USER or ACL_GROUP entries, then ACL_MASK is necessary.
+
+
+========= Minimal and extended ACLs =======
+
+Minimal: semantically equivalent to the normal permissions scheme: using ACL_USER_OBJ, ACL_GROUP_OBJ, ACL_OTHER.
+
+Extended: Also uses ACL_USER, ACL_GROUP, and ACL_MASK.
+
+So basically Extended offers a slight extention to normal permissions on a system. THESE ARE IMPLEMENTED AS AN EXTENDED ATTRIBUTE. "system.posix_acl_access"
+
+
+************************* 17.2 ACL Permission-Checking Algorithm *************************
+
+1. If process is privileged, all access is granted except execute. There needs to be at least one ACL entry granting execute permissions.
+2. If the effective user id is the owner of the file, process is granted permissions in ACL_USER_OBJ.
+3. If the effective user id matches an ACL_USER entry, it is granted ACL_USER & ACL_MASK permissions.
+4. If processes group id matches ACL_GROUP_OBJ, or ACL_GROUP:
+    Matches ACL_GROUP_OBJ: ACL_GROUP_OBJ & ACL_MASK
+    Matched ACL_GROUP: ACL_GROUP & ACL_MASK
+    Else: PERMISSION DENIED
+5. Otherwise permissions to ACL_OTHER are granted, which apparently are NOT masked with ACL_MASK.
+
+
+************************* 17.3 Long and Short Text Forms for ACLs *************************
+
+Set and get ACLS: setfacl, getfacl.
+
+There are two forms ACLs can be represented in.
+
+Long text form:
+    
+    One ACL entry per line.
+    May include comments with the # character.
+    getfacl displays the lontext form
+    "setfacl -M acl-file" takes an acl file formatted in longtext form
+
+
+
+Short text form:
+
+    Sequence of acl entries separated by commas
+
+
+FORMAT:
+
+    tag-type:[tag-qualifier]:permissions
+
+    tag-qualifier can be the numeric id or the username
+
+
+EXAMPLE:
+
+These all mean the same thing:
+
+u::rw-,g::r-x,o::---
+u::rw,g::rx,o::-
+user::rw,group::rx,other::-
+
+Here's a detailed explanation of these short forms:
+
+u::rw,u:paulh:rw,u:annabel:rw,g::r,g:teach:rw,m::rwx,o::-
+
+Tag text forms      Qualifier?      Corresponding tag type          Entry for
+----------------------------------------------------------------------------------------
+u,user              N               ACL_USER_OBJ                    File owner (user)
+u,user              Y               ACL_USER                        Specified user
+g,group             N               ACL_GROUP_OBJ                   File group
+g,group             Y               ACL_GROUP                       Specified group
+m,mask              N               ACL_MASK                        Mask for group class
+o,other             N               ACL_OTHER                       Other users
+----------------------------------------------------------------------------------------
+
+If you dont specify a specific user in tag-qualifier, it is interpreted as *_OBJ i guess
+
+
+
+************************* 17.4 The ACL_MASK Entry and the ACL Group Class *************************
+
+Long story short the ACL_MASK exists so changes to classic permissions via chmod() do not destroy the semantics of ACL permissions if the program is ACL aware.
+
+
+
+
+************************* 17.5 The getfacl and setfacl Commands *************************
+
+$ umask 022
+$ touch tfile
+$ getfacl tfile
+# file: tfile
+# owner: mtk
+# group: users
+user::rw-
+group::r--
+other::r--
+
+
+CHANGES TO PERMISSIONS ARE CARRIED THRU TO THE MINIMAL ACL:
+
+$ chmod u=rwx,g=rx,o=x tfile
+$ getfacl --omit-header tfile
+user::rwx
+group::r-x
+other::--x
+
+
+THE ACL_MASK IS CREATED AUTOMATICALLY...
+
+$ setfacl -m u:dbond:rx,g:root:rwx tfile
+$ getfacl tfile
+# file: tfile
+# owner: dbond
+# group: dbond
+user::rwx
+user:dbond:r-x
+group::r-x
+group:root:rwx
+mask::rwx
+other::--x
+
+
+-m: creates or modifies an ACL.
+
+-R: apply to a directory for recursively adding an ACL
+
+
+ALSO SEE THE x AT THE END OF THE PERMISSIONS, that means it's an extended ACL:
+
+$ ls -l
+total 0
+-rwxrwx--x+ 1 dbond dbond 0 Jun 11 22:00 tfile
+
+
+let's see what happens if we disable everything but EXECUTE on the ACL:
+
+$ setfacl -m m::x tfile
+$ getfacl --omit-header tfile
+
+user::rwx
+user:dbond:r-x          #effective:--x
+group::r-x              #effective:--x
+group:root:rwx          #effective:--x
+mask::--x
+other::--x
+
+"effective" because the pesky mask is only allowing execute.
+
+
+Classic permissions reflect this:
+
+$ ls -l
+total 0
+-rwx--x--x+ 1 dbond dbond 0 Jun 11 22:00 tfile
+
+
+-x: REMOVE ACL.
+
+-n: ONLY CREATE. NO MODIFY.
+
+-b: PURGE ALL ACL ENTRIES. LEAVE MINIMAL ENTRIES
+
+
+
+************************* 17.6 Default ACLs and File Creation *************************
+
+system.posix_acl_default
+
+default ACLs are put on a directory to dictate the default ACl places on new children files and directories.
+
+-d: set the default acl on a directory
+
+$ mkdir sub
+$ setfacl -d -m u::rwx,u:dbond:rx,g::rx,g:dbond:rwx,o::- sub
+
+-k: remove default ACL
+
+$ setfacl -k lol
+
+Consequences of a default ACL:
+    1. A new subdirectory will ingherit the default ACL.
+    2. Same goes with files. AND masked with mode properties of open() etc.
+    3. Process umask had NO effect on the inherited ACL...
+
+Example of ACL inheritance:
+
+int fd = open("sub/tfile", O_RDWR | O_CREAT, S_IRWXU | S_IXGRP | S_IXOTH); // rwx--x--x
+
+New file would have this ACL in the sub dir:
+
+user::rwx
+user:paulh:r-x #effective:--x
+group::r-x #effective:--x
+group:teach:rwx #effective:--x
+mask::--x
+other::---
+
+
+************************* 17.7 ACL Implementation Limits *************************
+
+1. ext2, ext3, ext4: all bytes of ACL on a file must fit in a single logical block disk, allowing (realistically) about 50 short ACLs... but theoretically around 500.
+2. xfs: limited to 25 entries
+3. Reiserfs and JFS, can have up to 8191 entries on a file.
+
+Avoid large ACLs because they're hard.
+
+
+************************* 17.8 The ACL API *************************
+
+#include <sys/acl.h>
+
+SOMETIMES:
+
+#include <sys/libacl.h> using -lacl compiler flag
+
+acl(5) for nasty details (yeah no thanks)
+
+
+Come back to this chapter for the finer details if you ever need them, you have a good enough grasp of ACLs at this point to move on.

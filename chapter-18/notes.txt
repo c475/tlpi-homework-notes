@@ -1,0 +1,675 @@
+******************** 18.1 Directories and (Hard) Links ********************
+
+Directories are stored in a similar manner to files, except:
+	1. A directory is marked as a different file type in its inode entry
+	2. a directory is a file with special organization. It is more like a table consisting of filenames and inode numbers.
+
+
+Inode notes:
+	1. Inode table numbering starts at 1 because 0 indicates an unused inode. Inode 1 is used to mark bad blocks on a filesystem. The root directory is always inode 2.
+	2. a FILE inode itself does not store its filename. It is the direcotry mapping that holds the filename, and matches it to an inode id.
+	3. This can be useful, as a symlink doesnt need to reference an inode ID like a hard link does. A symlink only references an arbitrary string that *should* refer to an actual file or directory somewhere, but doesn't have to.
+
+========== CREATING HARD LINKS (ln command) ==========
+
+$ echo -n "It is good to collect things," > abc
+$ ls -li abc
+1046633 -rw-rw-r-- 1 dbond dbond 30 Jun 15 23:16 abc
+$ ln abc xyz
+$ echo " but it is better to go on walks." >> xyz
+$ cat abc
+It is good to collect things,
+ but it is better to go on walks.
+$ ls -li
+total 8
+1046633 -rw-rw-r-- 2 dbond dbond 64 Jun 15 23:18 abc
+1046633 -rw-rw-r-- 2 dbond dbond 64 Jun 15 23:18 xyz
+
+NOTICE THEY HAVE THE SAME INODE NUMBER. THIS IS THE KEY TO HARD LINKS. Symlinks DO NOT do that. This is the reason hard links cannot span filesystems, because each file system stores its own inode table. However, symlinks are technically arbitrary strings, thus can span file systems.
+
+
+Inode ID 	Perms 			Link count		Owner	Size (bytes)	Last modified		Name
+---------------------------------------------------------------------------------------------
+1046633 	-rw-rw-r-- 		2 dbond 		dbond 	64 				Jun 15 23:18 		abc
+1046633 	-rw-rw-r-- 		2 dbond 		dbond 	64 				Jun 15 23:18 		xyz
+---------------------------------------------------------------------------------------------
+
+
+$ rm abc
+$ ls -li xyz
+-rw-rw-r-- 1 dbond dbond 64 Jun 15 23:18 xyz
+
+LINK COUNT REDUCED TO 1.
+
+An inode entry (hence the file) is only deallocated when the link count drops to 0.
+
+ALSO: You can't directly get the name of a file using a file descriptor. You can sorta do it by examining /proc/self or proc/PID/fd (and call readlink() on it). lsof(1) and fuser(1) are also handy.
+
+Hard link limitations:
+	1. Can't span file systems
+	2. Cant be made to a directory (because it would confuse programs)
+
+
+
+******************** 18.2 Symbolic (Soft) Links ********************
+
+Create a symlink:
+
+	$ ls -s file otherfile
+
+$ touch xyx
+$ ln -s xyz abc
+$ ls -F
+abc@  xyz
+
+$ rm -f xyz     # abc is now a dangling link
+$ touch xyz     # not any more
+
+
+Cool symlink facts:
+	1. can chain them
+	2. SUSv3 rule: must allow at least _POSIX_SYMLOOP_MAX dereferences in a chain
+	3. /somedir/somesubdir/file, somedir and somesubdir are links, they are guaranteed to be dereferenced by a system call, but file isn't necessarily depending on if you use an l-prefixed system call like lstat().
+	4. are always rwxrwxrwx. The file the link points to is subject to permissions, however.
+
+
+******************** 18.3 Creating and Removing (Hard) Links: link() and unlink() ********************
+
+
+=====================================================
+
+#include <unistd.h>
+
+int link(const char *oldpath, const char *newpath);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+creates a hard link to oldpath, at newpath.
+
+if newpath exists, EEXIST is set at errno
+
+portable applications should avoid "oldpath" being a symlink, since newpath will end up being a hardlink to a symlink.
+
+
+=====================================================
+
+#include <unistd.h>
+
+int unlink(const char *pathname);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+Removes a link, and if the link count in the inode entry drops to 0, also deletes the file (hence the entry) from the inode table.
+
+If pathname doesn't exist, ENOENT.
+
+If pathname is a directory, either EPERM (SUSv3) or EISDIR (linux) may be set on errno. Be prepared to handle either case.
+
+Cannot remove a directory, use rmdir() for that.
+
+Unlink does not dereference symlinks, but it will remove the link...
+
+
+
+================== An open file is deleted only when all file descriptors are closed ==============
+
+In addition to maintaining a link count for each inode, the kernal also counts open file descriptors.
+
+This means that if a file's link number is reduced to 0, but a process has an open file descriptor to it, it is not actually deleted until that process exits or close() is called on it (this is how tmpfile() works).
+
+
+
+
+******************** 18.4 Changing the Name of a File: rename() ********************
+
+=====================================================
+
+#include <stdio.h>
+
+int rename(const char *oldpath, const char *newpath);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+THIS DOES NOT MOVE FILE DATA. IT ONLY MODIFIES DIRECTORY LISTINGS! This is way more efficient than creating a new file, moving contents to the new file, then deleting the old file.
+
+This also means that rename()ing a file has no consequence on hard links or programs with open file descriptors to the file.
+
+RULES:
+
+	1. If "newpath" exists, it is overwritten
+	2. If "newpath" and "oldpath" are the same file, then nothing happens and the call succeeds
+	3. Does not dereference symlinks.
+	4. If "oldpath" is a file, then "newpath" cannot sumply specify a directory to put the file in, it needs a name too, like this: rename("sub1/x", "sub2/y"), not rename("sub1/x", "sub2/");
+	5. If "oldpath" is a directory, then "newpath" must be nonexistant, or an empty directory.
+	6. If "oldpath" is a directory, then "newpath" must not have the same directory prefix. This is forbidden: rename("/home/someguy/lol", "/home/someguy/lol/otherlol")
+	7. "oldpath" and "newpath" must both be on the same filesystem because a directory is a listing of inode ids and filenames, and each filesystem stores its own copies of these.
+
+
+******************** 18.5 Working with Symbolic Links: symlink() and readlink() ********************
+
+=====================================================
+
+#include <unistd.h>
+
+int symlink(const char *filepath, const char *linkpath);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+If "linkpath" already exists, then errno is set to EEXIST.
+
+"filepath" does NOT need to exist at the time of symlink(). It simply creates a dangling link.
+
+
+
+=====================================================
+
+#include <unistd.h>
+
+ssize_t readlink(const char *pathname, char *buffer, size_t bufsiz);
+
+	Returns number of bytes written to "buffer" on success, -1 on error
+
+=====================================================
+
+Writes the contents of a symlink into "buffer", of "bufsiz" size.
+
+If the length of the link exceeds bufsiz, then it is truncated.
+
+Just make sure buffer is PATH_MAX + 1 in size, to accomidate the null terminating character.
+
+
+
+******************** 18.6 Creating and Removing Directories: mkdir() and rmdir() ********************
+
+
+=====================================================
+
+#include <sys/stat.h>
+
+int mkdir(const char *pathname, mode_t mode);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+Pathname may be relative or absolute. Mode is the permissions bitmask like S_IRUSR | S_IWUSR | S_IRGRP. It is ANDed against the process umask().
+
+If the sticky bit S_ISVTX is in mode, it is set on the directory.
+
+mkdir("aaa/bbb/ccc", mode) will only create "ccc" of course. Though the mkdir shell command has a -p option that creates all directories in a path.
+
+
+=====================================================
+
+#include <unistd.h>
+
+int rmdir(const char *pathname);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+THE DIRECTORY MUST BE EMPTY FOR THIS TO SUCCEED.
+
+
+******************** 18.7 Removing a File or Directory: remove() ********************
+
+
+=====================================================
+
+#include <stdlib.h>
+
+int remove(const char *pathname);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+If pathname is a file, it calls unlink(). If pathname is a directory, it calls rmdir(). Does not dereference symlinks.
+
+
+
+******************** 18.8 Reading Directories: opendir() and readdir() ********************
+
+=====================================================
+
+#include <dirent.h>
+
+DIR *opendir(const char *dirpath);
+
+	Returns DIR handle on success, NULL in error
+
+=====================================================
+
+
+Returns a handle to a directory stream that is consumed by readdir() to get directory entries.
+
+=====================================================
+
+#include <dirent.h>
+
+DIR *fopendir(int fd);
+
+	Returns DIR handle on success, NULL in error
+
+=====================================================
+
+Pass in a fd to a directory. This can avoid certain race conditions that can result from removing a directory before opendir() can return a handle to it.
+
+
+
+=====================================================
+
+#include <dirent.h>
+
+struct dirent *readdir(DIR *dirp);
+
+	Returns pointer to statically allocated struct describing next directory entry, or NULL on error
+
+=====================================================
+
+Each structure returned from readdir() is overwritten on subsequent calls, since it is statically allocated.
+
+The book seems to recommend calling stat() using direntp->d_name to get further information about the file, for compatibility reasons.
+
+ls -f lists files in the order that they appear in the inode entry describing the directory.
+
+how to check readdir() for end, or error:
+
+errno = 0;
+direntp = readdir(dirp);
+if (direntp == NULL) {
+	if (errno != 0) {
+		// error
+	} else {
+		// end of stream
+	}
+}
+
+readdir() may not pick up entries that have been added since the first call to opendir(). It is unspecified.
+
+
+=====================================================
+
+#include <dirent.h>
+
+void *rewinddir(DIR *dirp);
+
+	Rewinds the directory stream.
+
+=====================================================
+
+
+
+=====================================================
+
+#include <dirent.h>
+
+int closedir(DIR *dirp);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+
+ALSO I guess directory streams have an associated file descriptor. Here's how to get it:
+
+
+=====================================================
+
+#define _BSD_SOURCE
+#include <dirent.h>
+
+int dirfd(DIR *dirp);
+
+	Returns fd on success, -1 on error
+
+=====================================================
+
+For example, you can pass this fd to fchdir() to change the CWD to the one being operated on.
+
+
+ALSO opendir() sets the FD_CLOEXEC on the fd associated with the directory stream (closes the file when exec() is called).
+
+
+EXAMPLE PROGRAM:
+
+$ mkdir sub
+$ touch sub/a sub/b
+$ ./list_files sub
+sub/a
+sub/b
+
+
+=====================================================
+
+#include <dirent.h>
+
+int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result);
+
+	Returns 0 on success, or positive number on error
+
+=====================================================
+
+This is a reentrant version of readdir().
+
+Places a directory entry in "entry".
+
+When the stream finishes, NULL is put in "result".
+
+
+******************** 18.9 File Tree Walking: nftw() ********************
+
+The grand daddy: this one walks an entire directory subtree.
+
+
+=====================================================
+
+#define _XOPEN_SOURCE 500
+#include <ftw.h>
+
+int nftw(
+	const char *dirpath,
+	int (*func) (const char *pathname, const struct stat *statbuf, int typeflag, struct FTW *ftwbuf),
+	int nopenfd,
+	int flags
+)
+
+	Returns 0 after successful walk of the entire tree,
+
+	or -1 on error,
+
+	or the first non-zero value returned by a call to func()
+
+=====================================================
+
+
+By default, nftw will process all directories before the contents of those directories. This can be changed by a flag.
+
+"dirpath": path to the directory
+"func": a callback function that processes each durectory entry and instructs nftw() to continue or halt processing
+"nopenfd": maximum number of file descriptors nftw may hold open at a time.
+"flags": many flags that can change the behavior of nftw()
+
+
+FLAGS:
+
+	FTW_CHDIR
+
+		Do a chdir() into each directory before processing its contents.
+
+	FTW_DEPTH
+
+		Process all files before processing the containing directory with func()
+
+	FTW_MOUNT
+
+		Do not cross over into another filesystem.
+
+	FTW_PHYS
+
+		Do not dereference symbolic links. Passes typeflag as FTW_SL to func() instead.
+
+
+func() args:
+
+	const char *pathname
+
+		Pathname to the file or directory. 
+		It is absolute if "dirname" was an absolute path, otherwise it is relative.
+
+	const struct stat *statbuf
+
+		The stat structure describing the file or directory.
+
+	int typeflag
+
+		FTW_D: this is a directory
+
+		FTW_DNR: this is a directory that could not be read
+
+		FTW_DP: Doing a postorder traversal (FTW_DEPTH), and this is a directory whose contents have already been processed.
+
+		FTW_F: File of any type other than a directory or symbolic link.
+
+		FTW_NS: Calling stat() failed (probably permissions). "statbuf" is undefined.
+
+		FTW_SL: Symbolic link. Only passed in if using FTW_PHYS flag.
+
+		FTW_SLN: Dangling symbolic link. Only passed in if FTW_PHYS is NOT used.
+
+struct FTW *ftwbuf:
+
+	struct FTW {
+		int base; 	// offset to basename part of pathname
+		int level; 	// depth of file within tree traversal
+	};
+
+
+func() return values:
+
+	0 to continue
+	any other value than 0 to halt and return this value from nftw()
+
+
+FTW_ACTIONRETVAL:
+
+	Changes behavior of the return value from func(). func() can return the following in this case:
+
+		FTW_CONTINUE
+
+			Continue processing
+
+		FTW_SKIP_SIBLINGS
+
+			Don't process any further in the current directory
+
+		FTW_SKIP_SUBTREE
+
+			If pathname is a directory, don;t call func() for entries in this directory. I imagine this works better when not using FTW_DEPTH (postorder traversal)
+
+		FTW_STOP
+
+			Don't process any further entries in this directory
+
+
+
+******************** 18.10 The Current Working Directory of a Process ********************
+
+=====================================================
+
+#include <unistd.h>
+
+char *getcwd(char *cwdbuf, size_t size);
+
+	Returns cwdbuf on success, NULL on error
+
+=====================================================
+
+If the current working directory path is larger than size, then it returns NULL and fails, which is pretty nice.
+
+Returns a maximum of PATH_MAX bytes (4096).
+
+This function cannot reliably be used when the pathname exceeds 4096 bytes in size.
+
+If cwdbuf is NULL and size is 0, then a buffer is allocated on the heap and returned. This is a glibc extension however. But it is a lot nicer and consistent.
+
+Another way to get the CWD is to readlink() the /proc/PID/cwd symlink. Need the right permissions though (owner, or CAP_SYS_PTRACE).
+
+
+
+=====================================================
+
+#include <unistd.h>
+
+int chdir(const char *pathname);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+Changes process's current working directory.
+
+=====================================================
+
+#include <unistd.h>
+
+int fchdir(int fd);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+Same, but with a file descriptor.
+
+
+
+******************** 18.11 Operating Relative to a Directory File Descriptor ********************
+
+REFER TO PAGE 410 FOR LIST OF "at" system calls.
+
+=====================================================
+
+#define _XOPEN_SOURCE 700
+#include <fcntl.h>
+
+int openat(int fd, const char *pathname, int flags, mode_t mode);
+
+	-1 on error, fd on success
+
+=====================================================
+
+if "pathname" is relative, then it is interpreted relative to "fd"
+
+Come back to these if needed.
+
+
+******************** 18.12 Changing the Root Directory of a Process: chroot() ********************
+
+=====================================================
+
+#define _BSD_SOURCE
+#include <unistd.h>
+
+int chroot(const char *pathname);
+
+	Returns 0 on success, -1 on error
+
+=====================================================
+
+A process always has a root directory from which absolute pathnames are derived. In most cases this is the real root of the filesystem ("/").
+
+This system call changes the root directory, so that all absolute pathnames are derived from it. This is called a "chroot jail" since it confines a process to a particular spot in the file system.
+
+The root directory of any process can be retrieved by a call to readlink() on /proc/PID/root symlink.
+
+A classic example of chroot() usage is the directory that an FTP server reserves for anonymous logins, so an anonymnous user cannot traverse the entire file system (hopefully). This relies on the face that the root directory is its OWN PARENT:
+
+someguy@mycpu:~/Desktop$ cd /
+someguy@mycpu:/$ ls
+bin    core  home            lib         media  proc  sbin  tmp  vmlinuz
+boot   dev   initrd.img      lib64       mnt    root  srv   usr  vmlinuz.old
+cdrom  etc   initrd.img.old  lost+found  opt    run   sys   var
+someguy@mycpu:/$ cd ..
+someguy@mycpu:/$ ls
+bin    core  home            lib         media  proc  sbin  tmp  vmlinuz
+boot   dev   initrd.img      lib64       mnt    root  srv   usr  vmlinuz.old
+cdrom  etc   initrd.img.old  lost+found  opt    run   sys   var
+
+
+HARD LINKS COMPRIMISE CHROOT JAILS, since they are inode entries.
+
+SYMBOLIC LINKS do not, since the path of a symlink is interpreted within the framework of the new root directory.
+
+Normally arbitrary programs cannot be executed within a chroot jail since it does not have access to shared ibraries. However, bind mounts can come in handy inside a chroot jail to give some access to shared libraries and other things. Not sure how secure that is.
+
+Chroot is not completely secure and requires a lot of care. Don't put SUID programs in there if at all possible. Also if a process has CAP_MKNOD capability then you can create a virtual memory device, giving access to RAM.
+
+
+COUPLE TIPS:
+
+	1. call chdir() BEFORE a call to chroot(), because chroot() does not change to the new root directory. Therefore, if you have an open file descriptor open outside of the new chroot() location, you can do this:
+
+		int fd;
+
+		fd = open("/", O_RDONLY);
+		chroot("/home/someguy");   // jailed
+		fchdir(fd);
+		chroot(".");               // out of jail
+
+
+	SO, CLOSE ALL FILE DESCRIPTORS PRIOR TO A CHROOT CALL, at the very least.
+
+	2. A process can use a unix domain socket to recieve a file descriptor from outside of the jail... then use fchdir() to move outside of the jail.
+
+
+******************** 18.13 Resolving a Pathname: realpath() ********************
+
+=====================================================
+
+#include <stdlib.h>
+
+char *realpath(const char *pathname, char *resolved_path);
+
+	Returns pointer to resolved_path on success, NULL on error
+
+=====================================================
+
+RESOLVES THE FULL PATHNAME OF A SYMLINK, even if the symlink is a relative path.
+
+glibc: if resolved_path is NULL, a buffer is allocated on the heap and returned, must call free() on it.
+
+general rule:
+
+	readlink(): get raw contents of link, which may or may not be an absolute path
+	realpath(): get the absolute pathname of the file the symlink points to.
+
+EXAMPLE PROGRAM:
+
+$ pwd
+/home/mtk
+$ touch x
+$ ln -s x y
+$ ./view_symlink y
+readlink: y --> x
+realpath: y --> /home/mtk/x
+
+
+
+******************** 18.14 Parsing Pathname Strings: dirname() and basename() ********************
+
+=====================================================
+
+#include <libgen.h>
+
+char *dirname(char *pathname);
+char *basename(char *pathname);
+
+	Both return a pointer to null terminated (possibly statically allocated) string
+
+=====================================================
+
+
+Pathname string 		dirname() 			basename()
+-------------------------------------------------------
+/ 						/ 					/
+/usr/bin/zip 			/usr/bin 			zip
+/etc/passwd//// 		/etc 				passwd
+/etc////passwd 			/etc				passwd
+etc/passwd 				etc 				passwd
+passwd 					. 					passwd
+passwd/ 				. 					passwd
+.. 						. 					..
+NULL 					. 					.
+-------------------------------------------------------
+
+dirname() and basename() may alter the character string, so you will have to pass a copy of it if you want to keep "pathname" intact.
+
