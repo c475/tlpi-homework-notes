@@ -474,7 +474,7 @@ FTW_ACTIONRETVAL:
 
 		FTW_SKIP_SUBTREE
 
-			If pathname is a directory, don;t call func() for entries in this directory. I imagine this works better when not using FTW_DEPTH (postorder traversal)
+			If pathname is a directory, don;t call func() for entries in this directory.
 
 		FTW_STOP
 
@@ -606,7 +606,7 @@ COUPLE TIPS:
 		chroot(".");               // out of jail
 
 
-	SO, CLOSE ALL FILE DESCRIPTORS PRIOR TO A CHROOT CALL, at the very least.
+	SO, CLOSE ALL FILE DESCRIPTORS PRIOR TO A CHROOT CALL, OR DONT OPEN ANY UNTIL AFTER CHROOT at the very least.
 
 	2. A process can use a unix domain socket to recieve a file descriptor from outside of the jail... then use fchdir() to move outside of the jail.
 

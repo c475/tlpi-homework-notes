@@ -12,12 +12,23 @@ struct FTW2 {
 
 
 struct Book {
-	dev_t mount;
+	dev_t current_mount;
 	struct FTW2 state;
 };
 
 
-static struct Book FTW_BOOK = {0};
+// typedef struct FTW_BOOKKEEPING {
+
+// 	int active_size;
+// 	int resting_size;
+// 	int active_fd[1024];
+// 	int resting_fd[1024];
+
+// } FTW_BOOKKEEPING;
+
+
+// static FTW_BOOKKEEPING 	FTW_BOOK  = {0};
+// static struct FTW2 	    FTW_LEVEL = {0};
 
 /*
 	int typeflag
@@ -126,14 +137,12 @@ int somefunc(const char *pathname, const struct stat *sb, int type, struct FTW2 
 
 		case FTW_SL:
 			printf("FTW_SL: %s\n", pathname);
-			break;
+			return -1;
 
 		case FTW_SLN:
 			printf("FTW_SLN: %s\n", pathname);
 			break;
 	}
-
-	getchar();
 
 	return 0;
 }
@@ -245,15 +254,6 @@ static inline int ftw_skip(const char *pathname)
 }
 
 
-static inline void ftw_clean_chdir(int fd, int flags)
-{
-	if (flags & FTW_CHDIR) {
-		fchdir(fd);
-		close(fd);
-	}
-}
-
-
 int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct stat *sbuf, int type, struct FTW2 *ftwb), 
 	int numfd, int flags)
 {
@@ -266,13 +266,9 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 	int func_val;
 	int nftw_val;
 	int skip_subtree;
-	int skip_mount;
-	int fd;
 
 	path = NULL;
 	skip_subtree = 0;
-	skip_mount = 0;
-	fd = -1;
 
 	memset(&statbuf, 0, sizeof(struct stat));
 
@@ -284,24 +280,10 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 		return 0;
 	}
 
-	if (flags & FTW_CHDIR) {
-		fd = open(".", O_RDONLY);
-		if (fd == -1) {
-			return 0;
-		}
-
-		chdir(dirname);
-
-		dirp = opendir(".");
-
-	} else {
-		dirp = opendir(dirname);
-	}
-
+	dirp = opendir(dirname);
 	// can't read directory
 	if (dirp == NULL) {
 		func(dirname, NULL, FTW_DNR, NULL);
-		ftw_clean_chdir(fd, flags);
 		return 0;
 	}
 
@@ -319,7 +301,6 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 		path_len = strlen(dirname) + strlen(direntp->d_name) + 2;
 		path = calloc(1, path_len);
 		if (path == NULL) {
-			ftw_clean_chdir(fd, flags);
 			return 0;
 		}
 
@@ -333,17 +314,16 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 
 		func_val = func(path, &statbuf, ftype, 0);
 
+
 		if ((flags & FTW_ACTIONRETVAL) && func_val != FTW_CONTINUE) {
 
 			if (func_val == FTW_STOP) {
-				ftw_clean_chdir(fd, flags);
 				free(path);
 				closedir(dirp);
 				return FTW_STOP;
 			}
 
 			if (func_val == FTW_SKIP_SIBLINGS) {
-				ftw_clean_chdir(fd, flags);
 				free(path);
 				break;
 			}
@@ -355,7 +335,6 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 		} else {
 
 			if (func_val != 0) {
-				ftw_clean_chdir(fd, flags);
 				free(path);
 				closedir(dirp);
 				return func_val;
@@ -365,22 +344,11 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 
 		if (is_dir(NULL, &statbuf)) {
 
-			if (flags & FTW_MOUNT) {
-				if (FTW_BOOK.mount == 0) {
-					FTW_BOOK.mount = statbuf.st_dev;
-				}
-
-				if (FTW_BOOK.mount != statbuf.st_dev) {
-					skip_mount = 1;
-				}
-			}
-
-			if (skip_subtree == 0 && skip_mount == 0) {
+			if (skip_subtree == 0) {
 
 				nftw_val = t_nftw(path, func, numfd, flags);
 
 				if (nftw_val != 0) {
-					ftw_clean_chdir(fd, flags);
 					free(path);
 					closedir(dirp);
 					return nftw_val;
@@ -391,9 +359,6 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 		free(path);
 	}
 
-
-	ftw_clean_chdir(fd, flags);
-
 	closedir(dirp);
 
 	return 0;
@@ -402,7 +367,6 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
 
 int main(int argc, char *argv[])
 {
-	int ret = t_nftw(argv[1], somefunc, 10, FTW_PHYS | FTW_CHDIR);
-	printf("ntfw returned with: %d\n", ret);
+	t_nftw(argv[1], somefunc, 10, FTW_PHYS);
 	exit(EXIT_SUCCESS);
 }
