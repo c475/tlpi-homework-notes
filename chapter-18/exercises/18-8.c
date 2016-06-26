@@ -165,7 +165,7 @@ static inline void ftw_clean_chdir(int fd, int flags)
 }
 
 
-// ugly, and not quite done (no numfd support, havent finished struct FTW)
+// ugly, and not quite done (no numfd support, havent finished struct FTW). a small failure. this one is difficult.
 int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct stat *sbuf, int type, struct FTW2 *ftwb), 
     int numfd, int flags)
 {
@@ -352,3 +352,64 @@ int main(int argc, char *argv[])
     t_nftw(argv[1], somefunc, 10, 0);
     exit(EXIT_SUCCESS);
 }
+
+
+
+/*
+    vanilla nftw() with no flags beats this one by quite a bit
+    it is very difficult to detect a symlink loop (efficiently) if the looping point exists deep enough in a subtree...
+    which is why "ftw_skip" exists to sort of mitigate the problem, but it will not always work, just for this environment.
+    it can cause nftw() to run forever, or until its stack or the heap overflows
+
+    big problem is memory allocation...
+
+    $ valgrind ./18-8 /
+    ==3864== Memcheck, a memory error detector
+    ==3864== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+    ==3864== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+    ==3864== Command: ./18-8 /
+    ==3864== 
+    ==3864== 
+    ==3864== HEAP SUMMARY:
+    ==3864==     in use at exit: 0 bytes in 0 blocks
+    ==3864==   total heap usage: 665,390 allocs, 665,390 frees, 2,387,567,180 bytes allocated
+    ==3864== 
+    ==3864== All heap blocks were freed -- no leaks are possible
+    ==3864== 
+    ==3864== For counts of detected and suppressed errors, rerun with: -v
+    ==3864== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+    $ valgrind ./18-7 /
+    ==3868== Memcheck, a memory error detector
+    ==3868== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+    ==3868== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+    ==3868== Command: ./18-7 /
+    ==3868== 
+    ==3868== 
+    ==3868== HEAP SUMMARY:
+    ==3868==     in use at exit: 0 bytes in 0 blocks
+    ==3868==   total heap usage: 47,811 allocs, 47,811 frees, 1,569,952,864 bytes allocated
+    ==3868== 
+    ==3868== All heap blocks were freed -- no leaks are possible
+    ==3868== 
+    ==3868== For counts of detected and suppressed errors, rerun with: -v
+    ==3868== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+    $ time ./18-8 /
+
+    real    0m1.291s
+    user    0m0.368s
+    sys 0m0.920s
+
+
+    $ time ./18-7 /
+
+    real    0m0.567s
+    user    0m0.048s
+    sys 0m0.512s
+
+
+    Done trying with this one.
+*/
