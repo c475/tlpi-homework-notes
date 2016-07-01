@@ -305,7 +305,8 @@ int t_nftw(const char *dirname, int (*func) (const char *pathname, const struct 
         }
 
         if (postorder) {
-            func_val = func(path, &statbuf, ftype, 0);
+
+            func_val = func(path, &statbuf, FTW_DP, 0);
 
             // DNRY but clean up later
             if ((flags & FTW_ACTIONRETVAL) && func_val != FTW_CONTINUE) {
@@ -401,14 +402,14 @@ int main(int argc, char *argv[])
 
     real    0m1.291s
     user    0m0.368s
-    sys 0m0.920s
+    sys     0m0.920s
 
 
     $ time ./18-7 /
 
     real    0m0.567s
     user    0m0.048s
-    sys 0m0.512s
+    sys     0m0.512s
 
 
     Done trying with this one.

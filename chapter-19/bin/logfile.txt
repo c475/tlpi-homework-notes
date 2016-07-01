@@ -1,0 +1,23 @@
+[Thu Jun 30 21:49:33 2016] created file: weqweqwe
+[Thu Jun 30 21:49:44 2016] created file: ffffffffff
+[Thu Jun 30 21:49:46 2016] created file: fffffffffggggg
+[Thu Jun 30 21:49:49 2016] created file: aa
+[Thu Jun 30 21:49:50 2016] created file: ad
+[Thu Jun 30 21:49:54 2016] created file: q
+[Thu Jun 30 21:50:03 2016] created file: i
+[Thu Jun 30 21:50:05 2016] created file: o
+[Thu Jun 30 21:50:06 2016] created file: p
+[Thu Jun 30 21:50:12 2016] deleted file: a
+[Thu Jun 30 21:50:12 2016] deleted file: aa
+[Thu Jun 30 21:50:12 2016] deleted file: ad
+[Thu Jun 30 21:50:12 2016] deleted file: b
+[Thu Jun 30 21:50:12 2016] deleted file: fffffffffggggg
+[Thu Jun 30 21:50:12 2016] deleted file: i
+[Thu Jun 30 21:50:12 2016] deleted file: o
+[Thu Jun 30 21:50:12 2016] deleted file: p
+[Thu Jun 30 21:50:12 2016] deleted file: q
+[Thu Jun 30 21:50:12 2016] deleted file: weqweqwe
+[Thu Jun 30 22:02:21 2016] created directory: lol
+[Thu Jun 30 22:02:32 2016] directory moved from watch zone: lol
+[Thu Jun 30 22:02:32 2016] directory moved into watched directory: wtf
+[Thu Jun 30 22:02:50 2016] deleted directory: wtf

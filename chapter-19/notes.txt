@@ -1,0 +1,208 @@
+This chapter is about a linux specific API for monitoring file/directory events.
+
+Imagina a daemon wants to monitor its configuration file.
+
+Or a Dropbox type application that syncs a directory to a server.
+
+
+****************** 19.1 Overview ******************
+
+Steps in use of the inotify api:
+
+	1. int infd = inotify_init();
+	2. int wfd = inotify_add_watch(infd, "path/to/file/or/dir", BIT | MASK | ETC);
+	3. inotify_rm_watch(infd, watch_fd); to remove a watch.
+	4. To obtain notifications, perform read() on infd to obtain a struct. It blocks until an event is available.
+		(Or you can make it non-blocking)
+	5. close(infd) to end the watch. This also closes all "watch file desciptors" obtained via inotify_add_watch()
+
+When watching a directorty, events for the directory *and* its containing files/subdirectories are received. But not for subdirectory CONTENTS. It is not recursive.
+
+
+
+****************** 19.2 The inotify API ******************
+
+=====================================
+
+#include <sys/inotify.h>
+
+int inotify_init(void);
+
+	Returns file descriptor on success, -1 on error.
+
+=====================================
+
+Your handle to an inotify instance
+
+
+There is also this (2.6+ ONLY):
+
+
+=====================================
+
+#include <sys/inotify.h>
+
+int inotify_init1(int flags);
+
+	Returns file descriptor on success, -1 on error.
+
+   IN_NONBLOCK Set the O_NONBLOCK file status flag on the new open file description.  Using this flag saves extra calls to fcntl(2) to  achieve the same result.
+
+   IN_CLOEXEC  Set  the  close-on-exec  (FD_CLOEXEC) flag on the new file descriptor.  See the description of the O_CLOEXEC flag in open(2) for reasons why this may be useful.
+
+=====================================
+
+
+
+ADDING FILES OR DIRECTORIES TO WATCH:
+
+
+
+=====================================
+
+#include <sys/inotify.h>
+
+int inotify_add_watch(int fd, const char *pathname, uint32_t mask);
+
+	Returns file descriptor on success, -1 on error.
+
+=====================================
+
+
+You have to have read permission on the file to watch it. Once you have the file descriptor it doesnt matter if the permissions on the watched file change, since you have an open handle to it already.
+
+If you call inotify_add_watch() on the file a second time, the mask passed the second time will overwrite the old mask.
+
+If you call it with IN_MASK_ADD, then it will OR the old mask with the new mask.
+
+Removing a watch with inotify_rm_watch() causes an IN_IGNORED event.
+
+
+
+****************** 19.3 inotify Events ******************
+
+
+Bit value 			In 		Out 		Description
+-----------------------------------------------------------------------------
+IN_ACCESS 			X 		X 			File was accessed
+IN_ATTRIB 			X 		X 			File metadata changed
+IN_CLOSE_WRITE 		X 		X 			File opened for writing was closed
+IN_CLOSE_NOWRITE 	X 		X 			File opened for O_RDONLY was closed
+IN_CREATE 			X 		X 			File/dir created inside watched directory
+IN_DELETE 			X 		X 			File/directory deleted from within watched directory
+IN_DELETE_SELF 		X 		X 			Watched file/directory was itself deleted
+IN_MODIFY 			X 		X 			File was modified
+IN_MOVE_SELF 		X 		X 			Watched file/directory was itself moved
+IN_MOVED_FROM 		X 		X 			File moved out of watched directory
+IN_MOVED_TO 		X 		X 			File moved into watched directory
+IN_OPEN 			X 		X 			File was opened
+-----------------------------------------------------------------------------
+IN_ALL_EVENTS 		X 		 			Shorthand for all of the above input events
+IN_MOVE 			X 		 			Shorthand for IN_MOVED_FROM | IN_MOVED_TO
+IN_CLOSE 			X 					Shorthand for IN_CLOSE_WRITE | IN_CLOSE_NOWRITE
+-----------------------------------------------------------------------------
+IN_DONT_FOLLOW 		X		 			Don’t dereference symbolic link (since Linux 2.6.15)
+IN_MASK_ADD 		X		 			Add events to current watch mask for pathname
+IN_ONESHOT 			X		 			Monitor pathname for just one event
+IN_ONLYDIR 			X		 			Fail if pathname is not a directory (since Linux 2.6.15)
+-----------------------------------------------------------------------------
+IN_IGNORED 					X			Watch was removed by application or by kernel
+IN_ISDIR 					X 			Filename returned in name is a directory
+IN_Q_OVERFLOW 				X 			Overflow on event queue
+IN_UNMOUNT 					X 			File system containing object was unmounted
+-----------------------------------------------------------------------------
+
+
+In: Can give this flag as input to inotify_add_watch()
+Out: Can only be output as an event from read(infd);
+
+
+IN_ATTRIB: metadata changed, like link count, permissions, ownership, extended attributes, user id, groupid
+IN_DELETE_SELF: monitored file is deleted, or a file/directory inside a monitored directory is deleted.
+IN_MOVE_SELF: Object that is being monitored is renamed.
+IN_MOVED_FROM: Object that is within a monitored directory is moved out of it.
+IN_MOVED_TO: Object is moved TO a monitored directory.
+IN_DONT_FOLLOW: Don't dereference symlinks. This is an OUT flag only.
+IN_MASK_ADD: Add to the current watch mask.
+IN_ONESHOT: Watch a file/directory for ONE event only. An IN_IGNORED event is not fired afterwards.
+IN_ONLYDIR: Make sure watched file is a directory. This prevents race conditions because you dont have to first check if it's a directory.
+
+
+
+****************** 19.4 Reading inotify Events ******************
+
+If non-blocking is set on the file descriptor, then if no messages are ready it returns immediately and sets errno to EAGAIN.
+
+If not, then read() blocks until an event comes, much like a blocking socket.
+
+read() returns one or more of these buffers:
+
+struct inotify_event {
+	int wd; // watch descriptor returned by inotify_add_watch()
+	uint32_t mask; // bits describing the event that occurred (inotify_event.mask & IN_ACCESS) etc
+	uint32_t cookie; // cookie for related events (IN_MOVE_SELF and IN_MOVE_TO helper value)
+	uint32_t len; // size of "name" field, PLUS variable number of NULL bytes
+	char name[]; // optional null-terminated filename
+};
+
+
+The application is recommended to keep it's own records of "fd: pathname" records, and the like.
+
+"mask" is a rangr of bits that are registered as "out" in the above table.
+
+
+
+IN_IGNORED: generated when a watch is removed by inotify_rm_watch() or by the kernal (file/direcotry is deleted outside of the application, or filesystem is unmounted).
+
+If the event is related to a directory, then the IF_ISDIR bit will be set in "mask".
+
+IN_UNMOUNT: event informs application that the filesystem has been unmounted. An IN_IGNORED event follows this one.
+
+
+The cookie field is used to tie related events together (ONLY USED WHEN A FILE IS RENAMED). If a file is renamed inside a watched direcotry, IN_MOVED_FROM and IN_MOVED_TO will both be fired, but hve the same unique "cookie" value so they can be tied together. For all other events, "cookie" is set to 0.
+
+
+The "name" field is only used for a file inside of a monitored directory. If the monitored file is a single file, then "name" is unused, and "len" will be 0.
+
+"len" is the length of the "name" string plus a variable number of null byte padding between the next struct. So, the length of an inotify structure is sizeof(struct inotify_event) + len.
+
+IF the buffer passed to read() is too small, -1 is returned and EINVAL is set. Though in kernal < 2.6.21 read() returns 0. This problem should be avoided by making sure the buffer is big enough before a read() call. THEREFORE the buffer should always be at least:
+
+
+sizeof(struct inotify_event) + NAME_MAX + 1
+
+though it is smarter to do something like: (sizeof(struct inotify_event) + NAME_MAX + 1) * 5, so you can receive multiple structs per call to read()
+
+
+spoilers: ioctl(fd, FIONREAD, &numbytes) gives you the available number of bytes to read in "numbytes". Much handier if you are dynamically allocating space for this struct.
+
+The events read from an inotify form an ordered queue, meaning IN_MOVED_FROM will always preceed IN_MOVED_TO.
+
+If two of the exact same event occur, they are merged into one (meaning wd, mask, and cookie are the same).
+
+
+****************** 19.5 Queue Limits and /proc Files ******************
+
+Queueing inotify events requires kernel memory, so there are limits placed on the queue depth.
+
+Superuser can comfigure this limit, and others, through the /proc/ file system. As far as inotify goes, here are three options that can be configured in the /proc/sys/fs/inotify directory:
+
+	max_queued_events (16,384 typical)
+		when inotify_init() is called, it gets the max queued events from this file for the inotify instance.
+		if this limit is exceeded, then IN_Q_OVERFLOW event is fired, and inotifybuf->wd == -1.
+
+	max_user_instances (128 typical)
+		limit on the number of inotify instances that can be created per real user id.
+
+	max_user_watches (8192 typical)
+		Limit on number of watches per real user id.
+
+
+****************** 19.6 An Older System for Monitoring File Events: dnotify ******************
+
+Disadvantages of dnotify:
+	1. uses signals to provide notification, which is more complicated
+	2. can only monitor directories (hence, dnotify)
+	3. dnotify opens a file descriptor for a directory, which means it will be "busy" and cant be unmounted while the daemon/program is running.
+	4. if a file in a directory is changes, a notifcation is fired, but doesnt tell you which file... so you have to keep your own cache of directory entries to determine what has changed.
+	5. sometimes it's just unreliable i guess
