@@ -325,5 +325,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// would need a signal handler to get here without deleting monitored directory... next chapter lol
+	WatchNode *node = TheList->first;
+	WatchNode *next = NULL;
+	while (node != NULL) {
+		nxt = node->next;
+		rm_watch(InotifyBook.fd, node->fd);
+		node = nxt;
+	}
+
+	close(logfile);
+	close(InotifyBook.fd);
+
 	exit(EXIT_SUCCESS);
 }

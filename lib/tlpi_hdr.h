@@ -194,6 +194,8 @@
 
 #include "lib.h"
 
+#include "signal_functions.h"
+
 
 typedef enum { FALSE, TRUE } Boolean;
 

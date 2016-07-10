@@ -1,0 +1,599 @@
+Chapter covers this:
+
+    1. Various signals and their purposes
+    2. Reasons the kernal would generate a signal for a process
+    3. SYstem calls to send a signal to a process (including itself)
+    4. How a process responds to a signal by default
+    5. How a process can change its response to a signal (signal handlers)
+    6. Masking a signal, blocking its delivery until it is unmasked
+    7. How a process can suspend execution and wait for the delivery of a "continue" signal
+
+
+*************** 20.1 Concepts and Overview ***************
+
+Each signal is defined by a unique integer, starting from 1. The defginitions for these signals are in <signal.h>
+
+When you press "Control-C", SIGINT is sent to the process.
+
+A signal is said to be "generated" for a process (PENDING SIGNAL), then "delivered" to the process.
+
+Normally it is delivered as soon as it is scheduled to run again (use the CPU), or immediately if the process sends a signal to itself.
+
+If you need to make sure a signal does not interrupt a block of code, then you can add signals to the process's "signal mask", then remove the signals from the mask when the program is prepared to accept signals again.
+
+
+Things that can happen when signal is produced:
+
+    1. Dropped before it is delivered (signal mask)
+    2. Process is killed. This may or may not produce a core dump file.
+    3. Process is suspended/stopped.
+    4. Process is resumed from a suspended state
+
+
+A process can install a signal handler and change its signal "disposition". A program can set the following to happen on receiving a signal:
+
+    1. A default action should occur. This is useful to set a signal handler back to default after changing it.
+    2. Signal is ignored. This is useful for a signal whose default action would be to terminate the process.
+    3. "Signal handler" is executed.
+
+When a signal handler handles a signal, it is said to have "caught" or "handled".
+
+abort() generates a SIGABRT signal for the process, which causes it to produce a core dump and terminate.
+
+/proc/PID/status contains various bitmasks that can be inspected to determine a process's treatment of signals. These are displayed in HEX. least significant bit is signal 1, second-least significant bit is signal 2, etc.
+
+    SigPnd: per-thread pending signals
+    ShdPnd: process-wide pending signals
+    SigBlk: blocked signals
+    SigIgn: ignored signals
+
+    SigPnd and ShdPnd differences will be highlighted in ch33.
+
+
+Signal          Action  Description
+-----------------------------------------------------------------------------------
+SIGABRT         A       Process abort signal. (abort() called)
+
+SIGALRM         T       Alarm clock. (wall clock time, alarm() or setitimer() expired)
+
+SIGBUS          A       Access to an undefined portion of a memory object. (bus error)
+
+SIGCHLD         I       Child process terminated (exit(), or killed by signal)
+
+SIGCONT         C       Continue executing, if stopped.
+
+SIGFPE          A       Erroneous arithmetic operation. (floating point exception, div by 0)
+
+SIGHUP          T       Hangup (terminal session exited)
+
+SIGILL          A       Illegal machine language instruction. 
+
+SIGINFO                 (BSD) Control-T to obtain process info
+
+SIGINT          T       Terminal interrupt signal.
+
+SIGIO                   with fcntl(), can arrange for this signal to be generated for i/o event, like input being available on a socket or terminal
+
+SIGIOT                  Linux: synoinym for SIGABRT, others may be custom hardware fault signal.
+
+SIGKILL         T       Kill (cannot be caught or ignored).
+
+SIGLOST                 Unused on Linux, used on some UNIX implementations for NFS clients.
+
+SIGPIPE         T       Write on a pipe with no one to read it
+
+SIGPOLL                 Linux: same as SIGIO
+
+SIGPROF                 setitimer() profiling timer expired (measures user, and kernal mode time)
+
+SIGPWR                  power failure, for signaling backup power is about to run out
+
+SIGQUIT         A       Terminal quit signal. (Control-\)
+
+SIGSEGV         A       Invalid memory reference.
+
+SIGSTKFLT               Stack fault on coprocessor. Unused on Linux
+
+SIGSTOP         S       Stop executing (cannot be caught or ignored).
+
+SIGSYS                  Bad system call. 0x80 trap was recieved, but system call number was bad.
+
+SIGTERM         T       Termination signal. Default of kill() syscall. Applications should handle this signal gracefully (cleanup)
+
+SIGTRAP                 For implementing debugger breakpoints.
+
+SIGTSTP         S       Terminal stop signal. (Control-Z)
+
+SIGTTIN         S       Background process attempting read from controlling terminal.
+
+SIGTTOU         S       Background process attempting write to controlling terminal.
+
+SIGUNUSED               Unused signal. Though on many implementations it is (SIGSYS)
+
+SIGURG                  Out of band data (urgent) on a socket.
+
+SIGUSR1         T       User-defined signal 1.
+
+SIGUSR2         T       User-defined signal 2.
+
+SIGPOLL         T       Pollable event. [Option End]
+
+SIGPROF         T       Profiling timer expired. [Option End]
+
+SIGSYS          A       Bad system call.
+
+SIGTRAP         A       Trace/breakpoint trap. [Option End]
+
+SIGURG          I       High bandwidth data is available at a socket.
+
+SIGVTALRM       T       Virtual timer expired.
+
+SIGXCPU         A       CPU time limit exceeded.
+
+SIGXFSZ         A       File size limit exceeded.
+-----------------------------------------------------------------------------------
+
+
+
+
+*************** 20.3 Changing signal dispositions ***************
+
+===============================
+
+#include <signal.h>
+
+void ( *signal(int sig, void (*handler)(int)) ) (int);
+
+
+    Returns previous signal disposition on success, SIG_ERR on error
+
+===============================
+
+First argument is the signal you want to handle. The second argument is the function that handles the signal. The handler takes one argument: the signal nunber...
+
+
+void handler(int signal)
+{
+    // handle signal
+}
+
+The same handler can be used to handle a multitude of different signals, which is why the signal number has to be passed in.
+
+Here is an example:
+
+
+void newHandler(int signal)
+{
+    printf("Some handler\n");
+}
+
+int main(int argc, char *argv[])
+{
+    void (*oldHandler)(int);
+
+    oldHandler = signal(SIGINT, newHandler);
+    if (oldHandler == SIG_ERR) {
+        errExit("signal()");
+    }
+
+    // DO SOMETHING
+
+    if (signal(SIGINT, oldHandler) == SIG_ERR) {
+        errExit("signal()");
+    }
+
+    // BACK TO NORMAL HANDLING OF SIGINT
+}
+
+
+TO MAKE THIS EASIER:
+
+typedef void (*sighandler_t)(int);
+
+....
+
+sighandler_t oldHandler;
+
+oldHandler = signal(SIGINT, newHandler);
+if (oldHandler == SIG_ERR) {
+    errExit("signal()");
+}
+
+
+Instead of specifying a handler as an argument to signal():
+
+    SIG_DFL: reset the disposition to default handler
+
+    SIG_IGN: Ignore the signal. You can later set it back to default.
+
+
+
+
+*************** 20.4 Introduction to Signal Handlers ***************
+
+Keep signal handlers simple, and I guess printing to stdout is dangerous inside signal handlers. More later.
+
+See eample program.
+
+
+
+*************** 20.5 Sending signals ***************
+
+You send signals to programs with kill().
+
+It's called kill() because it's an ancient system call, from when most signals would terminate a process (still the case i think, just less so).
+
+===========================================
+
+#include <signal.h>
+
+int kill(pid_t pid, int sig);
+
+    Returns 0 on success, -1 on error
+
+===========================================
+
+
+pid > 0: sends specified signal to the process (by PID)
+
+pid == 0: sends signal to every process in the same process group as the calling process, including itself.
+
+pid < -1: sends signal to every process in process group that has the ID of the PID argument. finds a particular use in shell job control.
+
+pid == -1: signal is sent to every process that the calling process has permission to (this should be fun), EXCEPT itself, and "init" (PID 1). These are called broadcase signals.
+
+
+If no process matches the PID argument, kill() fails and errno is set to ESRCH ("No such process")
+
+
+SIGNAL SENDING PERMISSIONS:
+
+    1. Has CAP_KILL privilege
+    2. "init" (PID 1) can only be sent a signal that it has a handler for, so the sysadmin can't acidentally kill init.
+    3. Unprivileged process can send a signal in these circumstances:
+        1. Real-Uid or Effective-Uid of sender matches reciever's Real-Uid or Saved-Suid.
+            This allows processes to send signals to other processes that they have started.
+            This also means the "started" process can use setresuid() to prevent that...
+
+    4. SIGCONT is different. Unprivileged process can send this signal to any process in the same session. This is used in job control shells.
+
+If the process can't send a siglal, kill() fails and errno is set to EPERM.
+
+Where "pid" specifies a set pf processes (-pid), kill() succeeds if at least one process could be signaled.
+
+
+
+*************** 20.6 Checking for the existence of a process ***************
+
+The kill() system call can serve another purpose, checking for the existence of a process.
+
+You can set "sig" argument to 0, which sends the "null signal". The null signal does nothing, so you can use it to see if you get ESRCH from it. H0wever, you can't know 100% if it is the process you really want since PIDs arte recycled, and it could end up being a "zombie" process that isnt doing anything. A process becomes a zombie when the child process (zombie) dies, but the parent process has not checked its termination status via wait() (Chapter 26)
+
+Other techniques:
+
+    1. wait() system calls. (chapter 26). Then can be used only if the monitored process is a child of the caller.
+    2. Semaphores and file locks. If the calling process can take control of either, then the process must be dead (assuming the monitored process holds them open for its lifetime).
+    3. IPC channels like pipes and FIFOs. The monitoring process can set up a read end of the pipe, the monitored process can set up a write end of the pipe. When a read is performed by the moinitoring process and retuns EOF, then you know the monitored process is dead.
+    4. Checking to see if /proc/PID exists... lol.
+
+
+*************** 20.7 Other Ways of Sending Signals: raise() and killpg() ***************
+
+
+===========================================
+
+#include <signal.h>
+
+int raise(int sig);
+
+    Returns 0 on success, nonzero on error
+
+===========================================
+
+This sends a signal to the calling process. In a single threaded program this is:
+
+    kill(getpid(), sig);
+
+If it is a multithreaded application this would deliver the signal to ALL threads.
+
+
+On a system that calls threads, raise(sig) is implemented as:
+
+    pthread_kill(pthread_self(), sig)
+
+This allows the signal to be delivered to the calling thread, not all the threads.
+
+
+
+===========================================
+
+#include <signal.h>
+
+int killpg(pid_t pgrp, int sig);
+
+    Returns 0 on success, -1 on error
+
+===========================================
+
+killpg() is the same as kill(-pg, sig);
+
+kill(0, sig) is interpreted to mean killing everything in the same process group as the caller.
+
+
+
+*************** 20.8 Displaying Signal Descriptions ***************
+
+Get a char * representation of a signal:
+
+===========================================
+
+#define _BSD_SOURCE
+#include <signal.h>
+
+extern const char *const sys_siglist[];
+
+
+#define _GNU_SOURCE
+#include <string.h>
+
+char *strsignal(int sig);
+
+    Returns pointer to signal description string
+
+===========================================
+
+Don't use the sys_siglist[] array directly, since strsignal() is locale sensitive and does bounds checking.
+
+
+===========================================
+
+#include <signal.h>
+
+void psignal(int sig, const char *msg);
+
+    Prints signal along with message to stderr...
+
+===========================================
+
+Not sure why this one is useful.
+
+
+
+*************** 20.9 Signal Sets ***************
+
+A signal set is a datatype for representing a set of signals... Usually these are bitfields but they can also be structs, so don't work on them outside of the APIs provided.
+
+These are needed since most signals use more than one bit to represent themselves, so you can't just do (SIGSEGV | SIGINT) etc.
+
+APIs discussed:
+
+    sigaction(): block or unblock delivery of signals in a signal set
+    sigprocmask(): block signals in a set from delivery
+    sigpending(): get a set of signals that are currently pending for a process
+
+
+
+===========================================
+
+#include <signal.h>
+
+int sigemptyset(sigset_t *set);
+int sigfillset(sigset_t *set);
+
+    Both return 0 on success, -1 on error
+
+===========================================
+
+sigset_t sigset;
+
+if (sigemptyset(&sigset) == -1) {
+    errExit("sigemptyset()");
+}
+
+// now have empty set
+
+
+IT IS NOT RIGHT TO USE memset(&sigset, 0, sizeof(sigset)), don't do it. Use these functions instead.
+
+
+ADDING AND DELETING FROM A SET:
+
+===========================================
+
+#include <signal.h>
+
+int sigaddset(const sigset_t *set, int sig);
+int sigdelset(const sigset_t *set, int sig);
+
+    Both return 0 on success, -1 on error
+
+===========================================
+
+Somehow adds and deletes from a const sigset_t *, maybe that's a typo?
+
+
+===========================================
+
+#include <signal.h>
+
+int sigismember(const sigset_t *set, int sig);
+
+    Returns 1 if sig is a member of set, 0 otherwise
+
+===========================================
+
+
+SET OPERATIONS:
+
+===========================================
+
+#define _GNU_SOURCE
+#include <signal.h>
+
+int sigandset(sigset_t *dest, sigset_t *left, sigset_t *right);
+int sigorset(sigset_t *dest, sigset_t *left, sigset_t *right);
+
+    Returns 0 on success, -1 on error
+
+
+int sigisemptyset(const sigset_t *set);
+
+    Returns 1 if set is empty, 0 otherwise;
+
+===========================================
+
+
+
+*************** 20.10 The Signal Mask (Blocking Signal Delivery) ***************
+
+Each process maintains its own signal mask (it is actually a per-thread attribute, but that comes later).
+
+
+===========================================
+
+#include <signal.h>
+
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+
+    Returns 0 on success, -1 on error
+
+===========================================
+
+
+how:
+
+    SIG_BLOCK: the signals in "set" are added (ORed) to the current signal mask
+
+    SIG_UNBLOCK: unblock signals in "set"
+
+    SIG_SETMASK: signals in "set" are the new signal mask
+
+
+if "oldset" is not NULL, then the old signal mask is assigned to "oldset".
+
+
+Here is how to temporarily block as set of signals:
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sigset_t blockSet, prevMask;
+
+sigemptyset(&blockset);
+sigemptyset(&blockset, SIGINT);
+
+if (sigprocmask(SIG_BLOCK, &blockSet, &prevMask) == -1) {
+    errExit("sigprocmask1");
+}
+
+// code that is not interrupted by SIGINT
+
+// restore the old process signal mask
+
+if (sigprocmask(SIG_SETMASK, &prevmask, NULL) == -1) {
+    errExit("sigprocmask2");
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sigprocmask() silently ignores attempts to block SIGKILL and SIGSTOP.
+
+
+
+*************** 20.11 Pending Signals ***************
+
+
+===========================================
+
+#include <signal.h>
+
+int sigpending(sigset_t *set);
+
+    Returns 0 on success, -1 on error
+
+===========================================
+
+It returns the pending signal inside the structure passed to it. It can then be examined by sigismember() if needed.
+
+A way to remove a pending signal is to use signal(sig, SIG_IGN), then the signal can be safely unmasked without a handler (default or otherwise) neing called.
+
+
+
+*************** 20.12 Signals Are Not Queued ***************
+
+Signals are not queued. If a signal happens twice while it is masked, it is only delivered. THIS IS ONE DIFFERENCE OF REALTIME AND STANDARD SIGNALS, realtime signals are queued.
+
+example program demonstrating they are not queued:
+
+$ ./sig-sender PID num-sigs sig-num [sig-num2]
+
+
+
+*************** 20.13 Changing Signal Dispositions: sigaction() ***************
+
+sigaction() is the better way to change a signal's disposition, and the only portable way to do it.
+
+
+===========================================
+
+#include <signal.h>
+
+int sigaction(int sig, const struct sigaction *act, struct sigaction *oldact);
+
+    Returns 0 on success, -1 on error
+
+===========================================
+
+
+// struct sigaction is actually more complicated, more in the next chapter
+struct sigaction {
+    void (*sa_handler)(int);        // address of handler function (or SIG_IGN, or SIG_DFL)
+    sigset_t sa_mask;               // signals blocked during handler invocation (if sa_handler is not SIG_IGN or SIG_DFL)
+    int sa_flags;                   // flags controlling handler invocation (if sa_handler is not SIG_IGN or SIG_DFL)
+    void (*sa_restorer)(void);      // not for application use...
+};
+
+
+sa_restorer: this function is used internally to make sure that the sigreturn() system call is called after completion of a signal handler. Maybe this would prevent the CTRL+c prematurely ending sleep() issue earlier in the chapter? Because signal probably does not ensure that this happens.
+
+sa_mask: a signal mask of signals that should not interrupt the execution of a signal handler. Any signals in this mask that occur in this time period are added to the process signal mask. When the signal handler returns, they are immediately removed from the process mask. Also, the signal that caused the handler to fire will be added to the process signal mask until the handler returns, to prevent bad things from happening if the handler gets called multiple times in succession.
+
+sa_flags:
+
+    Various options can be ORed together
+
+    SA_NOCLDSTOP:
+        If sig is SIGCHLD, dont generate this signal when a child process is stopped ot resumed as a consequence of receiving a signal.
+
+    SA_NOCLDWAIT
+        If sig is SIGCHLD, dont transform children into zombies when they terminate.
+
+    SA_NODEFER:
+        When this signal is caught, font automaticall add it to the process signal mask while the handler is executing (SA_NOMASK is a synonym)
+
+    SA_ONSTACK:
+        Invoke the handler for this signal using an alternate stack installed by signaltstack().
+
+    SA_RESETHAND:
+        When this signal is caught, reset the handler to the default (SIG_DFL) before calling the handler. (SA_ONESHOT)
+
+    SA_RESTART:
+        Automatically restart system calls interrupted by the signal handler.
+
+    SA_SIGINFO:
+        Invofe the signal handler with additional arguments providing additional info about the signal.
+
+
+*************** 20.14 Waiting for a Signal: pause() ***************
+
+===========================================
+
+#include <signal.h>
+
+int pause(void);
+
+    Always returns -1 with errno set to EINTR
+
+===========================================
+
+pause() suspends the process unti lthe call is interrupted by a signal handler (or an unhandled signal terminates the process)

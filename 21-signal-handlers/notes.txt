@@ -1,0 +1,224 @@
+******************** 21.1 Designing Signal Handlers ********************
+
+Two common degigns for signal handlers:
+
+	1. If a program is a select() oriented program, then the signal handler can write to a pipe that is included in the select() call to communicate with the program that a signal handler has been invoked.
+
+	2. Uses longjmp()...
+
+A signal is blocked until its handler has returned, unless you use the SA_NODEFER flag on struct sigaction, and sigaction().
+
+Again, you cannot reliably count the number of times a signal has been recieved.
+
+To make a signa handler async-safe, you have to make your handlers free of any non-reentrant system calls and statically allocated variables.
+
+The SUSv3 definition of a reentrant function is one “whose effect, when called
+by two or more threads, is guaranteed to be as if the threads each executed the
+function one after the other in an undefined order, even if the actual execu-
+tion is interleaved.”
+
+REMINDER: malloc(), free() and friends are not reentrant since they use data structures (among them, linked lists) that are not thread-safe. same with the <stdio.h> family because they use statically allocated structures for internal bookkeeping.
+
+
+HERE IS A LIST OF SYSTEM CALLS THAT ARE ASYNC-SIGNAL-SAFE:
+
+
+_Exit() (v3)
+_exit()
+abort() (v3)
+accept() (v3)
+access()
+aio_error() (v2)
+aio_return() (v2)
+aio_suspend() (v2)
+alarm()
+bind() (v3)
+cfgetispeed()
+cfgetospeed()
+cfsetispeed()
+cfsetospeed()
+chdir()
+chmod()
+chown()
+clock_gettime() (v2)
+close()
+connect() (v3)
+creat()
+dup()
+dup2()
+execle()
+execve()
+fchmod() (v3)
+fchown() (v3)
+fcntl()
+fdatasync() (v2)
+fork()
+fpathconf() (v2)
+fstat()
+fsync() (v2)
+ftruncate() (v3)
+getegid()
+geteuid()
+getgid()
+getgroups()
+getpeername() (v3)
+getpgrp()
+getpid()
+getppid()
+getsockname() (v3)
+getsockopt() (v3)
+getuid()
+kill()
+link()
+listen() (v3)
+lseek()
+lstat() (v3)
+mkdir()
+mkfifo()
+open()
+pathconf()
+pause()
+pipe()
+poll() (v3)
+posix_trace_event() (v3)
+pselect() (v3)
+raise() (v2)
+read()
+readlink() (v3)
+recv() (v3)
+recvfrom() (v3)
+recvmsg() (v3)
+rename()
+rmdir()
+select() (v3)
+sem_post() (v2)
+send() (v3)
+sendmsg() (v3)
+sendto() (v3)
+setgid()
+setpgid()
+setsid()
+setsockopt() (v3)
+setuid()
+shutdown() (v3)
+sigaction()
+sigaddset()
+sigdelset()
+sigemptyset()
+sigfillset()
+sigismember()
+signal() (v2)
+sigpause() (v2)
+sigpending()
+sigprocmask()
+sigqueue() (v2)
+sigset() (v2)
+sigsuspend()
+sleep()
+socket() (v3)
+sockatmark() (v3)
+socketpair() (v3)
+stat()
+symlink() (v3)
+sysconf()
+tcdrain()
+tcflow()
+tcflush()
+tcgetattr()
+tcgetpgrp()
+tcsendbreak()
+tcsetattr()
+tcsetpgrp()
+time()
+timer_getoverrun() (v2)
+timer_gettime() (v2)
+timer_settime() (v2)
+times()
+umask()
+uname()
+unlink()
+utime()
+wait()
+waitpid()
+write()
+
+
+SUSv3 says that all signals not in this list are to be deemed unsafe for use inside a signal handler.
+
+If you choose to use system calls or library functions outside of this list in a signal handler, then you must make sure that you add all signals to the process mask when the handler is executing.
+
+But generally it is safer to stick to the functions above and refrain from accessing statically allocated or global data structures.
+
+Something else kind of interesting: Since the handler can set errno to something that different, it must be saved:
+
+
+void handler(int sig)
+{
+	int old_errno = errno;
+
+	// do things
+
+	errno = old_errno;
+}
+
+
+A lot of the time a signal handler's job is to set a global variable that is then checked by the main program. These must always be declared with the "volatile" qualifier to keep the compiler from optimizing them into a cpu register. There is this special data type:
+
+sig_atomic_t
+
+Sicne other data types may require more than one machine language instruction to read/write to it, it is technically not safe for use as a signal handler flag. This type is guaranteed to use only a single machine language instruction to read/write, so it is safe for use as a global flag that indicates a signal handler has been called. Usage:
+
+volatile sig_atomic_t flag;
+
+INCREMENTING IT WITH += ++ or -= -- IS NOT NECESARILY SAFE ON SOME ARCHITECTURES. ONLY SETTING/GETTING IT IS. This is because the compiler may generate machine code that moves the data structure into a different register, then increment/decrement it, requiring two instructions instead of one (just speculation).
+
+
+******************** 21.2 Other Methods of Terminating a Signal Handler ********************
+
+Sometimes it's not useful to simply return from a signal (oh boy), especially when a hardware-generated signal hits the program.
+
+Other ways to terminating a signal handler:
+
+	1. _exit(). You don;t use exit() because it flushes stdio buffers which is not async-signal-safe.
+	2. kill() or raise().
+	3. Nonlocal goto (lonjmp())
+	4. abort()
+
+Those last two will be discussed now
+
+====== setjmp() and longjmp() ======
+
+This provides a way to recover from a hardware exception (like a memory access violation) since it restores the stack and registers to a saved state. For example on SIGINT, the shell performs a longjmp() to restore the terminal to a state that existed before running the program and return control to itself. One problem with this is that rhe signal mask may not be restored after longjmp(). BSD is smart and adds the process signal mask to the "env" argument so you dont have to worry about this. Linux does not do this.
+
+If _BSD_SOURCE is defined then it follows the BSD semantics for exiting a signal handler with longjmp().
+
+Luckily there these handy function calls that handle this difference:
+
+=================================================
+
+#include <setjmp.h>
+
+int sigsetjmp(sigjmp_buf env, int savesigs);
+	
+	Returns 0 on initial call, nonzero on return via siglongjmp()
+
+void siglongjmp(sigjmp_buf env, int val);
+
+=================================================
+
+Same as setjmp() and longjmp() except for a different data type that can save the process mask, and the "savesigs" argument. If "savesigs" is non-zero, it will save the process mask. If it is 0, it does not.
+
+
+
+******************** 21.2.2 Terminating a Process Abnormally: abort() ********************
+
+=================================================
+
+#include <stdlib.h>
+
+void abort(void);
+
+=================================================
+
+
+Terminates the process with the SIGABRT signal. Produces core dump file by default. This is required to terminate the process UNLESS the handler never returns (goes into an infinite loop) (VERY INTERESTING).
