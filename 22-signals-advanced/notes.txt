@@ -1,0 +1,185 @@
+*************** 22.1 Core Dump Files ***************
+
+Control-\ causes SIGQUIT, which produces a core dump.
+
+$ ulimit -c unlimited
+$ sleep 30
+CTRL-\
+Quit (core dumped)
+$ ls -l core
+-rw-------    1 mtk    users    57344 Nov 30 13:39 core
+
+
+When a core dump file cannot be created:
+
+	1. process doesnt have permission to write the core dump file.
+
+	2. a regular file shares the same name
+
+	3. process limit for the size of a core file is too small (0). can be changed with the "ulimit" command.
+
+	4. process limit of size of a file too low (0)
+
+	5. the executable does not have read permissions on it. This is a security measure to prevent users from obtaining a core dump file that would essentially give them access to the contents of the binary.
+
+	6. the filesystem the executable is on is marked read only
+
+	7. SUID programs executed by users other than the file owner do not dump core for obvious reasons. (UNLESS you use prctl() to allow it)
+
+	8. current file system ran out of inodes, mounted readonly, or is full
+
+	9. who cares
+
+
+/proc/PID/coredump_filter can be used on a per-process basis in LINUX, to determine which types of memory mappings are written to a core dump file. You can choose the name of coredump files in this file.
+
+
+
+*************** 22.2 Special Cases for Delivery, Disposition, and Handling ***************
+
+SIGKILL and SIGSTOP are unstoppable.
+
+SIGCONT will always restart a process. If other signals are pending while stopped, and SIGCONT comes in, it takes priority. THEn the other signals are delivered.
+
+Don't change the disposition of ignored terminal generated signals.
+
+
+*************** 22.3 Interruptible and Uninterruptible Process Sleep States ***************
+
+TASK_INTERRUPTABLE:
+	Process is waiting for an event, like something on a socket, terminal device, data to be written to a pipe.
+	BUT it can be interrupted by a signal.
+
+TASK_UNINTERRUPTIBLE:
+	Process cannot be interrupted by a signal, most likely due to disk I/O in progress.
+	Usually isn't in this state for long unless it is performing raw disk I/O (O_DIRECT), since writing to the kernal buffer is generally quick.
+
+TASK_KILLABLE (Linux only):
+	like TASK_UNINTERRUPTABLE, but with an exception for fatal signals.
+
+
+*************** 22.4 Hardware-Generated Signals ***************
+
+1. Returning from the signal handler is a bad idea, because you will likely end in an infinite loop, or worse.
+2. Doesn't make much sense to ignore it either.
+3. Don;t block them.
+4. IF YOU MUST, use longjmp to exit from the signal handler to a state where the signal will not be recieved again.
+5. Signal handlers for these signals (SIGBUS, SIGILL, SIGSEGV, SIGFPE) should be used for cleanup then EXITING, if at all. Make sure to use _exit() so stdio streams are not flushed.
+
+
+*************** 22.5 Synchronous and Asynchronous Signal Generation ***************
+
+So far signals have been discussed in the asyncronous tense. An example of a syncronous signal is kill() on itself, or raise(). Hardware signals are another example of syncronous signals.
+
+
+
+*************** 22.6 Timing and Order of Signal Delivery ***************
+
+When is a signal delivered?:
+	1. When a process is rescheduled due to a time out.
+	2. At the completion of a system call (when coming out of kernel mode for some process).
+
+
+If multiple signals are pending, then are unblocked, they are delivered in ascending order. SIGINT(2), SIGQUIT(3) (LINUX)
+
+You cant portably rely on this though since delivery order is up to the implementation.
+
+IF A SYSTEM CALL IS MADE IN A SIGNAL HANDLER, you run the risk of having another signal handler being invoked because of the context switch.
+
+
+*************** 22.7 Implementation and Portability of signal() ***************
+
+Early implementations of signal handlers:
+
+1. On entry to a signal handler, the signal's handler was reset to default (SIG_DFL) (Same as SA_RESETHAND via sigaction()).
+	The programmer would have to call signal() again to set the disposition back to the handler. But there is the time between invocation of the handler, and resetting it, that the signal could again be delivered and take its default action.
+
+2. Delivery of the same signal was not blocked when it's handler was called, which could overflow the stack with a quick enough stream of signals.
+
+3. Did not provide a way to restart system calls that were interrupted by a signal.
+
+See example program for implementation of signal() with sigaction()
+
+
+newer versions of glibc provide the new, safe semantics of signal(). To get the old version:
+
+=============================================
+
+#define _GNU_SOURCE
+#include <signal.h>
+
+void ( *sysv_signal(int sig, void (*handler)(int)) ) (int);
+
+=============================================
+
+
+Just use sigaction()
+
+
+*************** 22.8 Realtime Signals ***************
+
+1. More signals that can be used for application defined purposes (instead of just SIGUSR1 and SIGUSR2).
+2. Realtime signals are queued! You can send the same signal more than once, and it will be delivered more than once.
+3. You can specify data to be sent along with the signal as an integer or pointer value.
+4. The order of delivery is guaranteed. The are delivered from high to low, and if multiple signals with the same number are sent, they are delivered in the order that they are sent.
+
+There must be at least _POSIX_RTSIG_MAX realtime signals avaulable (defined as 8).
+
+Linux defines 33 different real time signals, numbered from 32 to 64.
+
+RTSIG_MAX: number of available realtime signals
+SIGRTMIN: lowest signal
+SIGRTMAX: highest signal
+
+int i;
+for (i = SIGRTMIN; i <= SIGRTMAX; i++) {
+	// something
+}
+
+
+On systems emplying LinuxThreads implementation, SIGRTMIN is 35 because LinuxThreads uses the first two realtime signals internally. Probably for thread locks and stuff. For systems using NPTL instead, it's 34 because NPTL uses 33 internally.
+
+And sometimes SIGRTMIN and SIGRTMAX are functions?
+
+
+============ LIMITS ON NUMBER OF QUEUED SIGNALS ===============
+
+The kernel has to keep data structures related to pending/queued signals so naturally there is an upper limit to the number of queued signals allowed.
+
+This limit must be at least _POSIX_SIGQUEUE_MAX (32)
+
+int lim = sysconf(_SC_SIGQUEUE_MAX);
+
+cat /proc/sys/kernel/rtsig-max
+
+
+============ ACTUALLY USING REALTIME SIGNALS ============
+
+In order for a pair of processes to send and receive realtime signals:
+
+	1. The sending process sends the signal plus its accompanying data using the sigqueue() system call.
+
+		A realtime signal can also be sent via kill(), killpg(), and raise.
+		However not all unix implementations actually queue these signals.
+
+	2. The receiving process establishes a handler for the signal using sigaction() that specifies SA_SIGINFO flag. This is so you can get the data associated with the realtime signal.
+
+
+*************** 22.8.1 Sending Realtime Signals ***************
+
+====================================================
+
+#define _POSIX_C_SOURCE 199309
+#include <signal.h>
+
+int sigqueue(pid_t pid, int sig, const union sigval value);
+
+	Returns 0 on success, -1 on error
+
+====================================================
+
+Follows the same permissions model as kill(). See Chapter 20.
+
+You can't use negative values like with kill() though.
+
+See example program.

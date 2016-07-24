@@ -221,4 +221,172 @@ void abort(void);
 =================================================
 
 
-Terminates the process with the SIGABRT signal. Produces core dump file by default. This is required to terminate the process UNLESS the handler never returns (goes into an infinite loop) (VERY INTERESTING).
+Terminates the process with the SIGABRT signal. Produces core dump file by default. This is required to terminate the process UNLESS the handler never returns (goes into an infinite loop, or uses siglongjmp()) (VERY INTERESTING). In this manner you can nullify SIGABRT.
+
+
+******************** 21.3 Handling a Signal on an Alternate Stack: sigaltstack() ********************
+
+There are a lot of reasons that you might want the signal handler to use an alternate stack, but here's how to do it:
+
+
+=================================================
+
+#include <signal.h>
+
+int sigaltstack(const stack_t *sigstack, stack_t *old_sigstack);
+
+	Returns 0 on success, -1 on error
+
+=================================================
+
+sigstask: points to a structure specifying the location and attributes of the alternate signal stack. Can be NULL.
+
+oldstack: pass it a stack_t struct to return the old signal stack, if there is one. Can be NULL.
+
+You can get the current signal stack by doing this:
+
+sigaltstack(NULL, &some_stack_t_struct);
+
+
+HERE IT IS:
+
+typedef struct {
+	void *ss_sp;		// starting address of alternate stack
+	int ss_flags;		// Flags: SS_ONSTACK, SS_DISABLE
+	size_t ss_size;		// Size of alternate stack
+} stack_t;
+
+
+The kernal automatically pads the ss_sp field appropriately.
+
+The alternate stack is dynamically or statically allocated.
+
+Two constants:
+	
+	SIGSTKSZ: typical value when allocating the size of a signal handler alternate stack
+	MINSIGSTKSZ: minimum amount of space that should be allocated for the alternate signal stack.
+
+Don't let this stack overflow, it sounds really bad.
+
+
+SS_ONSTACK
+	If the old alternate stack ("old_sigstack") is retrieved and this flag is set, then the program is currently executing on this stack, and a new alternate signal stack cannot be set on it currently. Attempts to do so will result in errno = EPERM
+
+SS_DISABLE
+	Returned in "old_sigstack", this flag indicates there is no currently established alternate signal stack.
+
+	When specified in "sigstack", this disables a currently established alternale signal stack (and i assume returns to normal behavior, allocating it on the current program stack instead)
+
+
+
+******************** 21.4 The SA_SIGINFO Flag ********************
+
+to get extra info about the signal with SA_SIGINFO flag, declare the handler like this:
+
+void handler(int sig, siginfo_t *siginfo, void *ucontext);
+
+SINCE IT HAS A DIFFERENT PROTOTYPE than the normal signal handlers, you cannot use the sa.sa_handler field...
+
+Instead it uses the sa.sa_sigaction field. Here is the real definition of the "struct sigaction"
+
+
+=============================================================
+
+struct sigaction {
+
+	union {
+		void (*sa_handler)(int);
+		void (*sa_sigaction)(int, siginto_f *, void *);
+	} __sigaction_handler;
+
+	sigset_t sa_mask;
+	int      sa_flags;
+	void     (*sa_restorer)(void);
+
+};
+
+
+#define sa_handler __sigaction_handler.sa_handler
+#define sa_sigaction __sigaction_handler.sa_sigaction
+
+=============================================================
+
+It's more complicated than previously shown.
+
+
+struct sigaction act;
+
+sigemptyset(&act.sa_mask);
+act.sa_sigaction = handler;
+act.sa_flags = SA_SIGINFO;
+
+if (sigaction(SIGINT, &act, NULL) == -1) {
+	errExit("sigaction()");
+}
+
+==================== siginfo_t ====================
+
+
+typedef struct {
+	
+	int si_signo; 			// signal number
+
+	int si_code;		 	// signal code (further signal information (table below))
+
+	int si_trapno;			// trap number for hardware generated signal (usually unused)
+
+	union sigval si_value; 	// accompanying data from sigqueue()
+
+	pid_t si_pid; 			// process id of sending process
+
+	uid_t si_uid; 			// real user id of sending process
+
+	int si_errno; 			// errno of error that caused the signal (usually unused)
+
+	void *si_addr; 			// address that generated signal (hw generated signals)
+							// SIGSEGV and SIGBUS: address that caused invalid memory access
+							// SIGILL and SIGFPE:  address of program instruction that caused signal
+
+	int si_overrun;			// overrun count (POSIX timers)
+
+	int si_timerid; 		// id of POSIX timer
+
+	long si_band; 			// band event (SIGPOLL/SIGIO)
+
+	int si_fd; 				// file descriptor (SIGPOLL/SIGIO)
+
+	int si_status; 			// exit status or signal (SIGCHLD)
+
+	clock_t si_utime; 		// user CPU time spent by child process
+
+	clock_t si_stime;	 	// system time spent by child process
+
+} siginfo_t;
+
+
+si_code: FURTHER INFORMATION ABOUT THE SIGNAL THAT WAS RECEIVED. Come to Page 482 if needed.
+
+
+void handler(int sig, siginto_t *siginfo, void *ucontext);
+
+
+ucontext is an unspecified struct that contains information about the process before the signal was invoked.
+
+
+
+*************** 21.5 Interruption and Restarting of System Calls ***************
+
+========================================
+
+#include <signal.h>
+
+int siginterrupt(int sig, int flag);
+
+	Return 0 on success, -1 on error
+
+========================================
+
+Altering wether a blocking system call will be restarted after the delivery of a signal.
+
+siginterrupt(SIGINT, 1): will restart system call
+siginterrupt(SIGINT, 0); will not restart system call
