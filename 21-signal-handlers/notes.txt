@@ -364,6 +364,12 @@ typedef struct {
 } siginfo_t;
 
 
+union sigval {        	/* Data passed with notification */
+	int     sival_int;	/* Integer value */
+	void   *sival_ptr;	/* Pointer value */
+};
+
+
 si_code: FURTHER INFORMATION ABOUT THE SIGNAL THAT WAS RECEIVED. Come to Page 482 if needed.
 
 

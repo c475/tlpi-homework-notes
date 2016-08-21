@@ -1,0 +1,322 @@
+******************** 23.1 Interval Timers ********************
+
+Think of setInterval() in javascript... except it sends a signal to execute a function (the handler), instead of just calling a function.
+
+
+==============================
+
+#include <sys/time.h>
+
+int setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value);
+
+	Returns 0 on success, -1 on error
+
+==============================
+
+
+int which: the type of timer
+
+	ITIMER_REAL:
+		counts down in wall-clock time, then SIGALRM is generated
+
+	ITIMER_VIRTUAL:
+		Counts down in process virtual time (user-mode CPU time). Generates SIGVTALRM
+
+	ITIMER_PROF:
+		Profiling timer. Counts time spent in user + kernal time
+
+struct itimerval {
+	struct timeval it_interval; // interval for periodic timer
+	struct timeval it_value;	// time until expiration
+};
+
+struct timeval {
+	time_t tv_sec;			// seconds
+	suseconds_t tv_usec;	// microseconds
+};
+
+it_interval: specifies if this is a periodic timer
+it_value: the actual time limit to expire
+
+
+If both fields of it_interval are 0, then the timer expires just once.
+
+If one of them is not 0, then it will renew the timer at the specified interval.
+
+A process has only one of each type of timer. Subsequent calls to setitimer() with the same "which" will overwrite the timer.
+
+old_value: if not NULL, return the value of the previous timer in the struct.
+
+
+
+==============================
+
+#include <sys/time.h>
+
+int getitimer(int which, struct itimerval *curr_value);
+
+	Returns 0 on success, -1 on error
+
+==============================
+
+get the timer specified by "which", and load it into "curr_value"
+
+This is the same info returned in "old_value" in setitimer().
+
+See example program....
+
+
+
+==============================
+
+#include <unistd.h>
+
+unsigned int alarm(unsigned int seconds);
+
+	Always succeeds, returning then umber of seconds
+		remaining on any previously set timer,
+		 or 0 if no timer was set.
+
+	Raises SIGALRM
+
+==============================
+
+
+Setting a timer with alarm() overrides any other timer.
+
+
+
+******************** 23.2 Scheduling and Accuracy of Timers ********************
+
+Timer accuracy of course depends on system load since a program has to share resources.
+
+This makes them slightly inaccurate.
+
+Millisecond accuracy is dependant on the system clock. This is in most cases "good enough".
+
+Modern Linux kernals support "high-resolution timers" whos accuracy is instead dependant on the actual CPU clock.
+
+
+
+******************** 23.3 Setting Timeouts on Blocking Operations ********************
+
+1. Establish handler for SIGALRM (sigaction())
+2. call alarm() or seritimer()
+3. Make blocking system call
+4. After system call returns, call alarm() or setitimer() again to disable timer (if it exists)
+5. Check errno = EINTR to see if the call was interrupted (timeout)
+
+See example program...
+
+
+
+******************** 23.4 Suspending Execution for a Fixed Interval (Sleeping) ********************
+
+==============================
+
+#include <unistd.h>
+
+unsigned int sleep(unsigned int sleep);
+
+	Returns 0 on normal completion, 
+	or number of unslept seconds if prematurely terminated
+
+==============================
+
+
+If sleep() is interrupted by a signal, then sleep returns the number of seconds it had left.
+
+On Linux, sleep() is implemented using nanosleep(), but on some systems sleep() uses alarm(), which can interfere with the timer functions.
+
+For portability, you should avoid the use of sleep() with alarm() and setitimer().
+
+
+==============================
+
+#define _POSIX_C_SOURCE 199309
+#include <time.h>
+
+int nanosleep(const struct timespec *request, struct timespec *remain);
+
+	Return 0 on successful sleep, -1 on interrupted sleep with errno = EINTR
+
+==============================
+
+IT IS NOT IMPLEMENTED WITH SIGNALS. 
+
+struct timespec {
+	time_t tv_sec; // seconds
+	long tv_nsec; // nanoseconds
+};
+
+request: how long to sleep.
+
+remain: how much time is left on the sleep.
+
+If desired, remain can be used to restart an interrupted nanosleep() call.
+
+Due to rounding errors, if a stream of signals comes in fast enough and you continuously restart a call to nanosleep(), it may never be able to complete its sleep. This can be avoided using clock_nanosleep() with TIMER_ABSTIME option.
+
+
+
+
+******************** 23.5 POSIX clocks ********************
+
+==============================
+
+#define _POSIX_C_SOURCE 199309
+#include <time.h>
+
+int clock_gettime(clockid_t clockid, struct timespec *tp);
+int clock_getres(clockid_t clockid, struct timespec *res);
+
+	Returns 0 on success, -1 on error
+
+==============================
+
+clockid_t:
+
+	CLOCK_REALTIME				Settable system-wide realtime clock
+	CLOCK_MONOTONIC				Nonsettable monotonic clock (Linux: TIME SINCE STARTUP)
+	CLOCK_PROGRESS_CPUTIME_ID	Per-process CPU-time clock
+	CLOCK_THREAD_CPUTIME_ID		Per-thread CPU-time clock
+
+
+==============================
+
+#define _POSIX_C_SOURCE 199309
+#include <time.h>
+
+int clock_settime(clockid_t clockid, const struct timespec *tp);
+
+	Returns 0 on success, -1 on error
+
+==============================
+
+
+A privileged process (CAP_SYS_TIME) can change CLOCK_REALTIME
+
+
+==============================
+
+#include <time.h>
+
+int clock_getcpuclockid(pid_t pid, clockid_t *clockid);
+
+	Returns 0 on success, or a positive error number on error
+
+==============================
+
+Returns the clock id of a process based on clocid_t argument. Really not sure what this function is useful for.
+
+
+==============================
+
+#include <pthread.h>
+#include <time.h>
+
+int pthread_getcpuclockid(pthread_t thread, clockid_t *clockid);
+
+	Returns 0 on success, or a positive error number on error
+
+==============================
+
+Same, but for a thread id.
+
+
+
+IMPROVED HIGH RESOLUTION SLEEPING: clock_nanosleep() (getting ridiculous)
+
+==============================
+
+#include <time.h>
+
+int clock_nanosleep(clockid_t clockid, int flags, const struct timespec *request, struct timespec *remain);
+
+	Returns 0 on successful sleep, positive number on error or interrupted sleep
+
+==============================
+
+
+"request" and "remain" are similar to nanosleep()'s usage of them.
+
+If "flags" is 0, then the sleep interval is relative (like nanosleep()).
+
+But if TIMER_ABSTIME is in "flags", then "request" specifies an absolute time as measured by "clockid".
+
+This is to prevent the oversleeping problem of previous timer functions, as making the calculations necessary can alone cause the clock to oversleep?
+
+We can avoid the oversleeping problem by making an initial call to clock_gettime() to retrieve the time, adding the desired amount to that time, and then calling clock_nanosleep() with the TIMER_ABSTIME flag (and restarting the system call if it is interrupted by a signal handler).
+
+OK. When TIMER_ABSTIME is specified, the "remain" argument is unused. You only need to pass in the same "request" structure to restart the timer if it is interrupted.
+
+Also, instead of just realtime, you can specify these clocks:
+
+	CLOCK_MONOTONIC				Nonsettable monotonic clock (Linux: TIME SINCE STARTUP)
+	CLOCK_PROGRESS_CPUTIME_ID	Per-process CPU-time clock
+	CLOCK_THREAD_CPUTIME_ID		Per-thread CPU-time clock
+
+To time CPU time etc...
+
+Now I get these functions...
+
+USAGE:
+
+
+==============================
+
+struct timespec request;
+
+// get current value of CLOCK_REALTIME
+if (clock_gettime(CLOCK_REALTIME, &request) == -1) {
+	errExit("clock_gettime");
+}
+
+request.tv_sec += 20; // sleep for 20 seconds from now
+
+s = clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &request, NULL);
+if (s != 0) {
+	if (s == EINTR) {
+		printf("Interrupted bu signal handler\n");
+	} else {
+		errExitEN(s, "clock_nanosleep");
+	}
+}
+
+==============================
+
+
+
+******************** 23.6 POSIX Interval Timers ********************
+
+Limitations of setitimer():
+
+	1. Can set only one timer for each type: ITIMER_REAL, ITIMER_VIRTUAL, ITIMER_PROF
+	2. The only way to be notified of a timer expiration is via signal delivery (and can't change the signal either).
+	3. If an interval timer expires multiple times while the signal is blocked, the signal is delivered only once, leading the program to believe that the timer expired fewer times than it did. (timer overrun)
+
+
+Just look at the example program...
+
+
+TIMER OVERRUNS:
+
+==============================
+
+#define _POSIX_C_SOURCE 199309
+#include <time.h>
+
+int timer_getoverrun(timer_t timerid);
+
+	Returns overrun cound on success, -1 on error
+
+==============================
+
+Realtime signals can be queued but can easily overflow the system limit so you can;t just count the number of signals that come in. Instead you can fetch the number of times the timer has "overrun" between the signal generation, and the signal delivery.
+
+
+
+NOTIFICATIONS VIA THREAD:
+
+Instead of receiving a signal, you can choose to instead run a function in a separate thread using the SIGEV_THREAD flag.
+

@@ -183,3 +183,18 @@ Follows the same permissions model as kill(). See Chapter 20.
 You can't use negative values like with kill() though.
 
 See example program.
+
+
+
+sigsuspend():
+
+same as:
+
+sigprocmask(SIG_SETMASK, &mask, &prevMask);
+pause();
+sigprocmask(SIG_SETMASK, &prevMask, &mask);
+
+IT RESTROES THE MASK AFTER A CALL.
+
+This is essential to avoid race conditions where you may need to constantly wait for a signal inside a loop.
+

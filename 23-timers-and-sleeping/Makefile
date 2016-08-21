@@ -11,4 +11,4 @@ HEADERS=$(wildcard $(DIRECT)/$(FILE).h ../lib/*.h)
 
 
 target:
-	$(CC) $(CFLAGS) $(SOURCES) -o $(OUTPUT)
+	$(CC) $(CFLAGS) $(SOURCES) timers/itimerspec_from_str.c -lrt -o $(OUTPUT)

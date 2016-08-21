@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
 	sa.handler = handler;
 	sigfillset(&sa.sa_mask);
-	sa.sa_mask = SA_SIGINFO;
+	sa.sa_flags = SA_SIGINFO;
 
 	for (i = 1; i < NSIG; i++) {
 		if (sigaction(i, &sa, NULL) == -1) {
