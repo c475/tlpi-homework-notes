@@ -244,11 +244,11 @@ If "flags" is 0, then the sleep interval is relative (like nanosleep()).
 
 But if TIMER_ABSTIME is in "flags", then "request" specifies an absolute time as measured by "clockid".
 
-This is to prevent the oversleeping problem of previous timer functions, as making the calculations necessary can alone cause the clock to oversleep?
+This is to prevent the oversleeping problem of previous timer functions, because of rounding issues when the requested sleep is not a multiple of the software clock's granularity.
 
 We can avoid the oversleeping problem by making an initial call to clock_gettime() to retrieve the time, adding the desired amount to that time, and then calling clock_nanosleep() with the TIMER_ABSTIME flag (and restarting the system call if it is interrupted by a signal handler).
 
-OK. When TIMER_ABSTIME is specified, the "remain" argument is unused. You only need to pass in the same "request" structure to restart the timer if it is interrupted.
+OK. When TIMER_ABSTIME is specified, the "remain" argument is unused (because of internal bookkeeping probably). You only need to pass in the same "request" structure to restart the timer if it is interrupted.
 
 Also, instead of just realtime, you can specify these clocks:
 
@@ -320,3 +320,12 @@ NOTIFICATIONS VIA THREAD:
 
 Instead of receiving a signal, you can choose to instead run a function in a separate thread using the SIGEV_THREAD flag.
 
+Come back when you know pthreads better. Just know you can do that if you want.
+
+
+
+NOTIFICATIONS VIA FILE DESCRIPTOR:
+
+
+
+******************** 23.7 Timers That Notify via File Descriptors: The timerfd API ********************

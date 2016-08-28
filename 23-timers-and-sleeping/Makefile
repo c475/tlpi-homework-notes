@@ -1,6 +1,6 @@
 CC=cc
 
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -lrt
 
 OUTPUT="bin/$(OUT)"
 DIRECT=$(D)
@@ -11,4 +11,4 @@ HEADERS=$(wildcard $(DIRECT)/$(FILE).h ../lib/*.h)
 
 
 target:
-	$(CC) $(CFLAGS) $(SOURCES) timers/itimerspec_from_str.c -lrt -o $(OUTPUT)
+	$(CC) $(CFLAGS) $(SOURCES) timers/itimerspec_from_str.c -o $(OUTPUT)

@@ -1,0 +1,152 @@
+******************** 24.1 Overview of fork() , exit() , wait() , and execve() ********************
+
+fork(): create a child process that is almost a duplicate of the parent
+
+exit(status): terminates a process and frees memory
+
+wait(&status): waits for a child process to terminate, and returns the child's termination status
+
+execve(pathname, argv, envp): loads a new process into memory specified by pathname. argv is the argument list, envp is the environment list. The stack, heap, and data segments of the process are destroyed and recreated. There are some variations of this system call.
+
+
+A program can choose not to wait(), but it is usually desirable to get a return code from the child.
+
+
+
+******************** 24.2 Creating a new process: fork() ********************
+
+=========================
+
+#include <unistd.h>
+
+pid_t fork(void);
+
+	In parent: returns the pid of child on success, -1 on error;
+
+	In child: always returns 0;
+
+=========================
+
+When you call fork, there are now two processes... duh.
+
+The two programs are executing the same program text, but they have separate stack, data, and heap segments.
+
+At the time of fork(), the child's stack, data, and heap segments are initially exact duplicates of the parent's. After fork(), they can (and usually do) diverge.
+
+For the parent, fork() return's the child's PID, in the child it always returns 0.
+
+The child can get its parent's PID using getppid()
+
+
+COMMON fork() IDIOM:
+
+pid_t childPid;
+
+switch((childPid = fork())) {
+	
+	case -1:
+		errExit("fork");
+		break;
+
+	case 0:
+		printf("I'm the child\n");
+		break;
+
+	default:
+		printf("I'm the parent...");
+		break;
+}
+
+
+RACE CONDITION: After fork(), it is indeterminate which process will be scheduled to run next, and in what order, and how time is allocated for them. This can lead to race conditions, so be careful.
+
+
+>>>>>>>>> FILE SHARING BETWEEN PARENT AND CHILD <<<<<<<<<<
+
+When fork() is performed, the child receives copies of the parent's file descriptors. These file descriptors are made in the manner of dup(). That means they share the same file description (offset and flags (O_APPEND, O_DIRECT, etc) included).
+
+See example program.
+
+If this sharing is undesired then wait until after the fork() to open() files, or immediately close undesired file descriptors after fork().
+
+
+
+>>>>>>>>> MEMORY SEMANTICS OF FORK <<<<<<<<<<
+
+You can conceptually think about fork() copying the heap, stack, data, and text segments. Older UNIX implementations DID do that, by copying all of those things to the swap area.
+
+Most implementations do this now:
+
+Text segment: Just creates some page tables for the new process that points to the same area of virtual memory.
+
+Everything else: epmloys a "copy-on-write" algorithm where the kernel will allocate page tables (pointing to the same addresses) for the child process, and only when either the parent or child attempts to change the contents of the data in these tables, is a separate copy made for each of them.
+
+Look at the example snippet to see a clever way to prevent heap fragmentation or other things by doing the dirty work in the child process, leaving the parent untouched.
+
+
+===================================================
+
+pid_t childPid;
+int status;
+
+childPid = fork();
+if (childPid == -1) {
+	errExit("fork");
+}
+
+if (childPid == 0) {
+	exit(func(arg)); // return func() as exit code
+}
+
+if (wait(&status) == -1) {
+	errExit("wait");
+}
+
+// do something with "status"
+
+===================================================
+
+
+
+******************** 24.3 The vfork() system call ********************
+
+Early BSD implentations of fork() did a liter copy of the parent's data (which sux).
+
+So then vfork() was invented, and is supposed to be used where exec() is called immediately after.
+
+
+======================================
+
+#include <unistd.h>
+
+pid_t vfork(void);
+
+	Parent: pid of child or -1 (error)
+	Child: always 0
+
+======================================
+
+Two things that make it different from fork():
+
+	1. The child actually shares the parent's memory until a successful exec(), or _exit(), no duplicate page tables then copy-on-write stuff.
+	2. Execution od the parent process is suspended until the child has performed exec() or _exit()
+
+
+
+******************** 24.4 Race Conditions After fork() ********************
+
+There is no guarantee as to whether the child runs first or the parent runs first.
+
+However it gets close. On linux the parent is schedukled first almost always. This wasnt always the case.
+
+It was changed to child-first for a time because the fork()/exec() idiom is so common that page tables would never have to be copied (since the child exec()s immediately). But then it was realized that it is still faster to have the parent scheduled first because the parent's state is already saved in the CPU registers... so it is back to running the parent first.
+
+THIS BEHAVIOR CAN BE CHANGED HERE: /proc/sys/kernel/sched_child_runs_first
+
+See example program.
+
+
+
+******************** 24.5 Avoiding Race Conditions by Synchronizing with Signals ********************
+
+tldr you can syncronize parent/child processes with signals. See example program.

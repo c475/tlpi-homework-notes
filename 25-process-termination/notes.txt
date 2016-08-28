@@ -1,0 +1,116 @@
+******************** 25.1 Terminating a Process: _exit() and exit() ********************
+
+A process can terminate abnormally (signal) or normally (_exit() and exit())
+
+==================================
+
+#include <unistd.h>
+
+void _exit(int status);
+
+==================================
+
+"status" is the termination status of the process, which is made available to the parent via "wait()".
+
+although it is an "int", only the first 8 bits are used.
+
+By convention, 0 means success, anything else means abnormal termination.
+
+EXIT_SUCCESS: 0
+EXIT_FAILURE: 1
+
+A process is always terminated by _exit() (that is, _exit or exit() never return)
+
+ANYTHING GREATER THAN 128 WILL CAUSE CONFUSION. When a terminal command is terminated by a signal, the shell variable $? is set to 128 + SIGNAL_NUMBER.
+
+Programs usually don't call _exit() directly. Then instead use exit()
+
+
+==================================
+
+#include <stdlib.h>
+
+void exit(int status);
+
+==================================
+
+the following actions are performed by exit():
+
+1. Exit handlers (atexit(), on_exit(), etc) are called in reverse order of their registration.
+2. stdio buffers are flushed.
+3. _exit() is called with "status"
+
+_exit() is unix specific. exit() is a standard library function and is available on all platforms within reason.
+
+calling "return x;" from main() instead of exit() is usually the same, since the run-time function that invokes main() will typically use the return value from main() to call exit().
+
+
+STRANGE THINGS CAN HAPPEN IF YOU RETURN FROM MAIN???
+
+c89: grabs random value off the stack, or CPU register... I don't rmemever that ever happening but the book says it can happen.
+
+c99: falling off the end of main() is the same as exit(0);
+
+
+
+******************** 25.2 Details of Process Termination ********************
+
+1. File descriptors, directory streams (DIRP *), "message catalog descriptors", and "conversion descriptors" are all closed.
+
+2. File locks are released because of #1
+
+3. System V shared memory segments are detached.
+
+4. A bunch of other stuff I don;t know about yet, come back to page 578.
+
+
+
+******************** 25.3 Exit Handlers ********************
+
+An exit handler is a function that is called when exit() is called (NOT _exit() or signal termination). Usually for cleanup/extra logging/etc. It gets tricky when a process is terminated by a signal though, as calling exit() inside a signal handler isn't particularly safe to do.
+
+==================================
+
+#include <stdlib.h>
+
+int atexit(void (*func)(void));
+
+	0 on success, nonzero on error;
+
+==================================
+
+Here is an example of an exit handler:
+
+void exit_handler(void)
+{
+	// do some stuff
+}
+
+You can set multiple functions to run at exit... including the same handler more than once.
+
+You can pretty much do anything in an exit handler including registering additional exit handlers. If one of the exit handlers does not return (via raise() kill() etc) then the rest of the handlers are not called. Also, remaining actions performed by exit() are not done, like flushing STDIO buffers.
+
+On some systems calling exit() inside of an exit handler can cause the exit handlers to be invoked until the stack overflows. Don't do it.
+
+When using fork() a child process inherits all exit handlers, so this is one reason to use _exit() in a child process. If a child process uses exec(), the exit handlers are removed.
+
+You cannot unregister an exit handler, but you can set a global variable indicating whether or not it should run.
+
+You also don;t know what status was passed to exit() but I imagine a similar technique could be used (settinga global flag with the exit status).
+
+You also cant pass arguments to exit handlers.
+
+To overcome these issues, glibc provides this function:
+
+==================================
+
+#define _BSD_SOURCE
+#include <stdlib.h>
+
+int on_exit(void (*func)(int, void *), voud *arg);
+
+	0 on success, nonzero on error
+
+==================================
+
+
