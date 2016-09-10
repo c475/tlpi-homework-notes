@@ -1,0 +1,401 @@
+******************** 26.1 Waiting on a Child Process ********************
+
+===================================
+
+#include <sys/wait.h>
+
+pid_t wait(int *status);
+
+	Returns process ID of terminated child, or -1 on error
+
+===================================
+
+1. If no previously unwated-for child process has terminated, then this call blocks until one of the children terminates. If the child has terminated before wait(), then it returns immediately.
+
+2. Child status is returned in "status". Includes the exit code and signal information (if terminated by a signal).
+
+3. Kernal adds CPU times and resource usage stats to running totals for all children of the parent proces.
+
+4. wait() returns the PID of the child process (cool).
+
+On error, wait returns -1. If there is no child process to wait on, then errno is set to ECHILD (also cool).
+
+Which means you can just loop until all children are done:
+
+=========================================
+
+while ((childPid = wait(&status)) != -1) {
+	continue;
+}
+
+if (errno != ECHILD) {
+	errExit("wait");
+}
+
+=========================================
+
+Or:
+
+=========================================
+
+for (;;) {
+
+	childPid = wait(&status);
+	if (childPid == -1) {
+
+		if (errno == ECHILD) {
+			break;
+		} else {
+			errExit("wait");
+		}
+
+	}
+
+	// do something?
+}
+
+=========================================
+
+Things apparently get weird if children sleep/operate for the same amount of time with wait().
+
+See example program for wait() stuff.
+
+
+!!!!!!!!!!!!!!! waitpid() !!!!!!!!!!!!!!!
+
+1. Can wait for a specific child process, in the event that there are multiple children.
+2. wait() always blocks. Sometimes that is not desirable.
+3. It is not possible to find out if a child process is stopped via SIGSTOP, it is with waitpid()
+
+=========================================
+
+#include <sys/wait.h>
+
+pid_t waitpid(pid_t pid, int *status, int options);
+
+	Returns proess ID of child, 0, or -1 on error;
+
+=========================================
+
+pid:
+
+	1. If PID is greater than 0, wait for the child whose process ID equals PID.
+	2. If PID equals 0, wait for any child in the same "process group" as the caller (parent).
+	3. If PID is less than -1, wait for any child whose "process group identifier" equals the absolute value of PID.
+	4. If PID equals -1, wait for any child. The call wait(&status) is equivalent to the call waitpid(-1, &status, 0);
+
+options:
+
+	WUNTRACED:
+
+		In addition to returning information about terminated children, also return info when a child is "stopped" by a signal.
+
+	WCONTINUED
+
+		Also return status information about stopped children that have been resumed by SIGCONT
+
+	WNOHANG
+
+		If no child specified by PID has yet changed state, then return immediately, instead of blocking (perform a "poll"). In this case, the return value of waitpid() is 0. If the calling process has no children, then errno = ECHILD and returns -1
+
+
+========== WAIT STATUS VALUE ============
+
+Allows you to distinguish the following events:
+
+1. Child terminated calling _exit() (or exit()) with the status.
+2. Child was terminated due to unhandled signal.
+3. Child was stopped by a signal, and waitpid() was called with WUNTRACED flag.
+4. Child was resumed by SIGCONT, and waitpid() was called with WCONTINUED flag.
+
+
+NORMAL TERMINATION (_exit() or exit())
+
+[ ---- EXIT STATUS ----] [ --------- 0 --------- ]
+
+0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+
+
+KILLED BY SIGNAL
+
+                           V===========================CORE DUMPED FLAG
+[ ------- UNUSED -------] [X --- SIG NUMBER --- ]
+
+0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+
+
+STOPPED BY SIGNAL
+
+[ ---- STOP SIGNAL ----] [ ------- 0x7F ------- ]
+
+0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+
+
+CONTINUED BY SIGNAL
+
+[ ------------------ 0xFFFF -------------------- ]
+
+0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+
+
+<sys/wait.h> header includes some macros to help dissect a Status value.
+
+WIFEXITED(status)
+
+	Returns true if the child process exited normally.
+
+	WEXITSTATUS(status) to get the exit status.
+
+WIFSIGNALED(status):
+
+	Returns true if a child process was killed by a signal.
+
+	WTERMSIG(status) returns the signal number.
+
+	WCOREDUMP(status) returns true if the signal caused a core dump.
+
+WIFSTOPPED(status):
+
+	Returns true if the child process was stopped by a signal.
+
+	WSTOPSIG(status) returns the number of the signal that stopped the process.
+
+WIFCONTINUED(status):
+	
+	Returns true if the child was resumed by the delivery of SIGCONT.
+
+See that example program...
+
+
+************** Process Termination from a Signal Handler *************
+
+Say the child process establishes a handler for a signal (for cleanup purposes or whatever), but you want to let the parent process know that the child exited due to a signal.
+
+The way to do this is to set the handler back to default inside the handler, then raise() the signal:
+
+
+void handler(int sig)
+{
+	// do stuff
+
+	signal(sig, SIG_DFL);
+	raise(sig);
+}
+
+
++++++++++++++++++++= waitid() =++++++++++++++++++
+
+
+==============================================
+
+#include <sys/wait.h>
+
+int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+
+	Returns 0 on success or if WNOHANG was specified and
+	there are no children to wait for, or -1 on error;
+
+==============================================
+
+
+1. if idtype is P_ALL, wait for any child, "id" is ignored
+2. if iftype is P_PID, wait for the child whose process ID equals id
+3. if idtype is P_PGID, wait for any child whose process group ID equals id.
+
+	You cannot specify 0 as "id" to mean any child in the same process group.
+	You must specify the process group id.
+
+Here is where it differs from waitpid():
+
+WEXITED:
+
+	Wait for children that have terminated, either normally or abnormally (signal)
+
+WSTOPPED:
+
+	Wait for children that have been stopped by a signal
+
+WCONTINUED:
+
+	Wait for children that have been resumed by a SIGCONT signal
+
+WNOHANG:
+
+	Same as waitpid(). Returns 0 if no child has terminated, -1 and errno = ECHILD if no children.
+
+WNOWAIT:
+
+	Normally when a child process has been waited for using waitid(), the "status" event is consumed.
+	With this flag, the child status is returned but the child remains in a waitable state, so you can
+	call waitid() on it again to retrieve the same information.
+
+
+SIGINFO_T INFORMATION:
+
+si_code:
+
+	CLD_EXITED: child used _exit()
+
+	CLD_KILLED: killed by signal
+
+	CLD_STOPPED: stopped by a signal
+
+	CLD_CONTINUED: got SIGCONT, continuing
+
+si_pid:
+
+	PID of the child whose state was changed
+
+si_signo:
+
+	This is always SIGCHLD
+
+si_status:
+
+	Either the exit status, or the signal number that terminated the child.
+	Can distinguish between the two via si_code.
+
+sui_uid:
+
+	Real UID of the child.
+
+
+
+typedef struct {
+	
+	int si_signo; 			// signal number
+
+	int si_code;		 	// signal code (further signal information (table below))
+
+	int si_trapno;			// trap number for hardware generated signal (usually unused)
+
+	union sigval si_value; 	// accompanying data from sigqueue()
+
+	pid_t si_pid; 			// process id of sending process
+
+	uid_t si_uid; 			// real user id of sending process
+
+	int si_errno; 			// errno of error that caused the signal (usually unused)
+
+	void *si_addr; 			// address that generated signal (hw generated signals)
+							// SIGSEGV and SIGBUS: address that caused invalid memory access
+							// SIGILL and SIGFPE:  address of program instruction that caused signal
+
+	int si_overrun;			// overrun count (POSIX timers)
+
+	int si_timerid; 		// id of POSIX timer
+
+	long si_band; 			// band event (SIGPOLL/SIGIO)
+
+	int si_fd; 				// file descriptor (SIGPOLL/SIGIO)
+
+	int si_status; 			// exit status or signal (SIGCHLD)
+
+	clock_t si_utime; 		// user CPU time spent by child process
+
+	clock_t si_stime;	 	// system time spent by child process
+
+} siginfo_t;
+
+
+
+THERE IS A CONNUNDRUM with waitid():
+
+If WNOHANG is specified and returns 0, then two cases could happen:
+
+1. A child has already changed state, and waitid() returns info in siginfo_t
+2. No child has changed state.
+
+The only way to reliably tell the difference is to zero out the siginfo_t structure and then call waitid().
+
+Not all UNIX implementations will set it to zero if no child has changed state...
+
+
+siginfo_t info;
+
+...
+
+memset(&info, 0, sizeof(siginfo_t));
+if (waitid(idtype, id, &info, options | WNOHANG) == -1) {
+	errExit("waitid");
+}
+
+if (info.si_pid == 0) {
+	// no child changed state
+} else {
+	// child changed state, details are provided in "info"
+}
+
+
+
+################### wait3() and wait4() ###################
+
+
+===============================================
+
+#define _BSD_SOURCE
+#include <sys/resource.h>
+#include <sys/wait.h>
+
+pid_t wait3(int *status, int options, struct rusage *rusage);
+
+pid_t wait4(pid_t pid, int *status, int options, struct rusage *rusage);
+
+===============================================
+
+Don't worry about it until later I guess.
+
+wait3: waitid(-1, &status, options);
+
+wait4: waitid(pid, &status, options);
+
+
+
+
+******************** 26.2 Orphans and Zombies (finally) ********************
+
+1. If a parent terminates before a child process, the child is "orphaned" to the init process (PID 1). getppid() returns 1.
+
+2. When a child terminates before the parent can call wait(), then it is turned into a "zombie".
+	Most of the resources associated with it are realeased back to the kernel.
+	Resourse usage stats, exit status, among other things are kept by the kernel for wait() calls.
+
+ZOMBIES CANNOT BE KILLED BY ANYTHING (even the "silver bullet" SIGKILL). The parent must wait() for them, or the parent must terminate. If the parent terminates, the zombies are orphaned to init, then killed via wait().
+
+This has implications for network servers and shells. ALWAYS WAIT FOR THE DEAD CHILDREN. Either syncronously (wait()-type calls) or asyncronously (SIGCHLD signal, or waitpid() or waitid() with WNOHANG).
+
+
+
+
+******************** 26.3 The SIGCHLD Signal ********************
+
+It's useful to instead employ a listener for SIGCHLD instead of having to call wait() or similar, in a continuous loop (which also wastes CPU time).
+
+There is a problem though. Since SIGCHLD will be blocked when its handler is executing, then if two children terminate in rapid succession then the signal will only be caught once...
+
+The solution to this is to loop in the handler forever with WNOHANG until all children are dead, but this is annoying since you may want the program to resume ASAP:
+
+while (waitpid(-1, NULL, WNOHANG) > 0) {
+	continue;
+}
+
+DESIGN ISSUE WITH SIGCHLD HANDLERS:
+
+Always set the handler up before calling fork(), because it is left unspecified in SUSv3 if SIGCHLD is sent if a child terminates before the handler is set up (i.e. resending it...).
+
+Also, you should save errno as a local variable upon entry to these handlers, and reset it upon returning from a handler, if the main program depends on the value of it.
+
+See example program.
+
+
+
+IGNORING DEAD CHILD PROCESSES:
+
+signal(SIGCHLD, SIG_IGN);
+
+this causes children that terminate to NOT become zombies. Just let them exit.
+
+this does not discard current zombie children at the time of the signal() call. On some systems this happens though.
+
+if SIGCHLD is set to SIG_IGN, wait() will block until ALL children have terminated, except in linux kernel 2.4 and below, where it will block until just one child terminates.
+

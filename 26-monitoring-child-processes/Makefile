@@ -6,8 +6,8 @@ OUTPUT="bin/$(OUT)"
 DIRECT=$(D)
 FILE=$(FILE)
 
-SOURCES=$(wildcard $(DIRECT)/$(FILE).c ../lib/*.c)
-HEADERS=$(wildcard $(DIRECT)/$(FILE).h ../lib/*.h)
+SOURCES=$(wildcard ../lib/*.c $(DIRECT)/$(FILE).c)
+HEADERS=$(wildcard ../lib/*.h $(DIRECT)/$(FILE).h)
 
 
 target:

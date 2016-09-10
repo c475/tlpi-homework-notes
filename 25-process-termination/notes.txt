@@ -114,3 +114,24 @@ int on_exit(void (*func)(int, void *), voud *arg);
 ==================================
 
 
+this is the handler:
+
+void exit_handler(int status, void *arg)
+{
+	// stuff
+}
+
+
+Pretty nice, you get an argument and the exit() status of the program.
+
+
+
+******************** 25.4 Interactions Between fork() , stdio Buffers, and _exit() ********************
+
+See example program for some side effects of stdio buffering, fork(), and _exit()
+
+Just keep in mind that fork() will create a copy of the stdio buffers for the child process. This can have unintended consequences when the contents of those buffers are not directed at the terminal.
+
+You can also use sefbuf() or setvfub(), or fflush() prior to fork().
+
+Or, _exit() from the child so it doesnt flush stdio buffers.

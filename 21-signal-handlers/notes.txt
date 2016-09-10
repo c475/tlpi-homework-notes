@@ -305,7 +305,6 @@ struct sigaction {
 
 };
 
-
 #define sa_handler __sigaction_handler.sa_handler
 #define sa_sigaction __sigaction_handler.sa_sigaction
 

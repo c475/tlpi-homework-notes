@@ -196,6 +196,8 @@
 
 #include "signal_functions.h"
 
+#include "print_wait_status.h"
+
 
 typedef enum { FALSE, TRUE } Boolean;
 
