@@ -1,0 +1,286 @@
+******************** 27.1 Executing a New Program: execve() ********************
+
+execve() loads a new program into memory, discarding the old one.
+
+after executing various C lbrary runtime startup code anf program initialization code (like C++ static constructors or C functions declared with the GCC "constructor" attribute), the new program calls main().
+
+commonly used right after a fork() in the child.
+
+various exec() family calls are layered on top of execve().
+
+====================================
+
+#include <unistd.h>
+
+int execve(const char *pathname, char *const argv[], char *const envp[]);
+
+       Never returns on success, -1 on error
+
+====================================
+
+"pathname" is the absolute or relative path of the program
+
+argv is argv (NULL terminated array of strings)
+
+env is the environment listing, same deal as above basically
+
+
+Book would like to remind me of this for some reason:
+
+"""
+The Linux-specific /proc/ PID /exe file is a symbolic link containing the absolute
+pathname of the executable file being run by the corresponding process.
+"""
+
+
+The PID of the process stays the same.
+
+If the set-user-id (set-group-id) permission bit is set on the program, then wen the file is execed, the effective user (group) id of the process is changes to be the same of the execed program. This is a mechanism for temporarily granting privileges to users while running a specific program.
+
+After optionally changing the effective IDs, and regardless of whether they were changed, an execve() copies the value of the process’s effective user ID into its saved set-user-ID, and copies the value of the process’s effective group ID into its saved set-group-ID (so you can get them back in the event that they were changed by a saved-set-uid or saved-set-gid exec())
+
+ERRORS
+       E2BIG  The total number of bytes in the environment (envp) and argument
+              list (argv) is too large.
+
+       EACCES Search permission is denied on a component of the path prefix of
+              filename or  the  name  of  a  script  interpreter.   (See  also
+              path_resolution(7).)
+
+       EACCES The file or a script interpreter is not a regular file.
+
+       EACCES Execute  permission  is  denied  for the file or a script or ELF
+              interpreter.
+
+       EACCES The filesystem is mounted noexec.
+
+       EAGAIN (since Linux 3.1)
+              Having changed its real UID using one of  the  set*uid()  calls,
+              the  caller was—and is now still—above its RLIMIT_NPROC resource
+              limit (see setrlimit(2)).  For a more  detailed  explanation  of
+              this error, see NOTES.
+
+       EFAULT filename  or  one  of  the  pointers in the vectors argv or envp
+              points outside your accessible address space.
+
+       EINVAL An ELF executable had more than  one  PT_INTERP  segment  (i.e.,
+              tried to name more than one interpreter).
+
+       EIO    An I/O error occurred.
+
+       EISDIR An ELF interpreter was a directory.
+
+       ELIBBAD
+              An ELF interpreter was not in a recognized format.
+
+       ELOOP  Too  many  symbolic links were encountered in resolving filename
+              or the name of a script or ELF interpreter.
+
+       EMFILE The per-process limit on the number of open file descriptors has
+              been reached.
+
+       ENAMETOOLONG
+              filename is too long.
+
+       ENFILE The system-wide limit on the total number of open files has been
+              reached.
+
+       ENOENT The file filename or a script or ELF interpreter does not exist,
+              or  a  shared  library  needed for file or interpreter cannot be
+              found.
+
+       ENOEXEC
+              An executable is not in a recognized format, is  for  the  wrong
+              architecture,  or has some other format error that means it can‐
+              not be executed.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       ENOTDIR
+              A component of the path prefix of filename or a  script  or  ELF
+              interpreter is not a directory.
+
+       EPERM  The filesystem is mounted nosuid, the user is not the superuser,
+              and the file has the set-user-ID or set-group-ID bit set.
+
+       EPERM  The process is being traced, the user is not the  superuser  and
+              the file has the set-user-ID or set-group-ID bit set.
+
+       ETXTBSY
+              Executable was open for writing by one or more processes.
+
+
+Executable and Linking Format (ELF) is a specification for executable files. However it also lets you define/write interpreters that are responsible for loading an executable, so that's cool. More in Chapter 41.
+
+
+
+******************** 27.2 The exec() library functions ********************
+
+#include <unistd.h>
+
+int execle(const char * pathname , const char * arg , ...
+/* , (char *) NULL, char *const envp [] */ );
+
+int execlp(const char * filename , const char * arg , ...
+/* , (char *) NULL */);
+
+int execvp(const char * filename , char *const argv []);
+
+int execv(const char * pathname , char *const argv []);
+
+int execl(const char * pathname , const char * arg , ...
+/* , (char *) NULL */);
+
+Some take a vector for argv and env, some take a list of strings via va_args in <stdarg.h>
+
+Some require the full path, some require the path and filename.
+
+See Appendix C for why you need to cast (char *)NULL in the last argument...
+
+probably because it's a macro that expands to something like (void *)0x00 idk.
+
+
+
+function        program file spec        spec of args        source of environment
+------------------------------------------------------------------------------------
+execve()        pathname                 array               envp arg
+execle()        pathname                 list                envp arg
+execlp()        filename + $PATH         list                envp arg
+execvp()        filename + $PATH         array               envp arg
+execv()         pathname                 array               envp arg
+execl()         pathname                 array               envp arg
+
+fexecve()       FILE DESCRIPTOR          array               array
+
+
+******************** 27.3 Interpreter Scripts ********************
+
+#!/path/to/interpreter [optional arg (for interpreter flags usually)]
+
+then the shell calls the interpreter with the args using execvp()
+
+the program is usually in PATH
+
+
+
+******************** 27.4 File Descriptors and exec() ********************
+
+File descriptors are carried over after an exec() call. Unless open() was called with the O_CLOEXEC flag.
+
+Say this command happens:
+
+$ ls /tmp > dir.txt
+
+1. Shell forks a child shell.
+2. Child opens a file descriptor and makes it the same as STDOUT_FILENO (close(STDOUT_FILENO) or dup2())
+3. Child exec()s the command.
+4. The command prints to STDOUT, which is actually dir.txt.
+
+> is a build in shell thing. It has meaning only to the hell, not the program being executed.
+
+other commands are built into the shell for efficiency reasons, or because it changes the state of the shell (like cd, source, jobs, fg, etc)
+
+IT IS GOOD SECURITY PRACTIVE TO open() with O_CLOEXEC if you have an exec() call in your program, just do it. Beware of libraries that open file descriptors, they may not be O_CLOEXEC (even tho they should be)
+
+
+O_CLOEXEC also retains your file descriptors in the event that exec() fails (really nice).
+
+get file flags:
+
+========================================
+
+int flags;
+
+flags = fcntl(fd, F_GETFD);
+if (flags == -1) {
+    errExit("fcntl");
+}
+
+
+flags |= FD_CLOEXEC;
+if (fcntl(fd, F_SETFD, flags) == -1) {
+    errExit("fcntl");
+}
+
+========================================
+
+
+FD_CLOEXEC is actually the only bit used in the file descriptor flags (interesting).
+
+FD_CLOEXEC == 1;
+
+fcntl(fd, F_SETFD, 1) will set the FD_CLOEXEC flag
+
+dup(), dup2(), or fcntl() if used to create a duplicate file descriptor, all clear the FD_CLOEXEC flag, so it has to be reset.
+
+see example program.
+
+
+
+******************** 27.5 Signals and exec() ********************
+
+When you do exec() you lose all your signal handlers (sorry).
+
+SPECIAL CASE: some unix implementations do not reset SIGCHLD when set to SIG_IGN. Linux resets it. (Ignoring SIGCHLD prevents zombie children).
+
+signalstack() space is also cleared
+
+The signal mask and set of pending signals ARE PRESERVED.
+
+This means you can at least queue up signals, exec(), set up handlers for them in the new program, then unblock them.
+
+
+******************** 27.6 Executing a Shell Command: system() ********************
+
+======================================
+
+#include <stdlib.h>
+
+int system(const char *command);
+
+    See below for description of the return value.
+
+======================================
+
+system() creates a child process that invokes a shell to execute a command.
+
+system("ls | wc");
+
+system() is mostly a convenience method for 
+
+1. fork()
+2. exec()
+3. wait()
+4. exit()
+
+I think... maybe it exec()s a shell and passes the commands instead of exec()ing the command directly
+
+
+RETURN VALUES:
+
+    1. if "command" is NULL, then system() returns nonzero if a shell is available, 
+        and 0 if no shell is available. A shell might not be available if chroot() was called first,
+        without a bind mount to /bin/ or /usr/bin, or a similar method.
+
+    2. if a shell could not be exec()ed in the child process, child exits with _exit(127)
+
+    3. If all system calls succeed, then the child returns the exit code of the child shell.
+
+see example program on system() usage.
+
+Also, don't use system() in SUID/SGID programs, because security.
+
+
+
+******************** 27.7 Implementing system() ********************
+
+# can pass in shell snippets and execute them with the -c flag
+$ sh -c "ls | wc"
+
+
+Anyway, there is a messed up race condition where the main program is making children, AND using system(). If the call made by system() raises SIGCHLD then the SIGCHLD handler in the main program can be invoked.
+
+Also, make sure SIGCHLD is never set to SIG_IGN when calling system(), because system will never be able to obtain the status of the child program that calls exec()...
+
+Sometimes /bin/sh does not exist. To get a shell in that case:
+
