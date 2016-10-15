@@ -1,0 +1,317 @@
+******************** 28.1 Process Accounting ********************
+
+Process accounting is a kernel feature that stores information about a process when it terminates (such as CPU time, etc). This was originally used for charging users on shared UNIX terminals. It's not a SUSv3 standard though.
+
+
+====================================
+
+#define _BSD_SOURCE
+#include <unistd.h>
+
+int acct(const char *acctfile);
+
+	Returns 0 on success, -1 on error
+
+====================================
+
+acctfile MUST ALREADY EXIST...
+
+typical places for the accounting file are /var/log/pacct or /usr/account/pacct
+
+see example program...
+
+It writes these structs to "acctfile":
+
+
+==================================================
+
+#define ACCT_COMM 16
+
+typedef u_int16_t comp_t;
+
+struct acct {
+   char ac_flag;           /* Accounting flags */
+
+   u_int16_t ac_uid;       /* Accounting user ID */
+   u_int16_t ac_gid;       /* Accounting group ID */
+   u_int16_t ac_tty;       /* Controlling terminal */
+   u_int32_t ac_btime;     /* Process creation time (seconds since the Epoch) */
+   comp_t    ac_utime;     /* User CPU time */
+   comp_t    ac_stime;     /* System CPU time */
+   comp_t    ac_etime;     /* Elapsed time */
+   comp_t    ac_mem;       /* Average memory usage (kB) */
+   comp_t    ac_io;        /* Characters transferred (unused) */
+   comp_t    ac_rw;        /* Blocks read or written (unused) */
+   comp_t    ac_minflt;    /* Minor page faults */
+   comp_t    ac_majflt;    /* Major page faults */
+   comp_t    ac_swaps;     /* Number of swaps (unused) */
+   u_int32_t ac_exitcode;  /* Process termination status (see wait(2)) */
+   char      ac_comm[ACCT_COMM+1]; /* Command name (basename of last executed command; null-terminated) */
+   char      ac_pad[X];    /* padding bytes (future use) */
+};
+
+enum {          /* Bits that may be set in ac_flag field */
+   AFORK = 0x01,           /* Has executed fork, but no exec */
+   ASU   = 0x02,           /* Used superuser privileges */
+   ACORE = 0x08,           /* Dumped core */
+   AXSIG = 0x10            /* Killed by a signal */
+};
+
+
+==================================================
+
+struct acct_v3 {
+   char      ac_flag;      /* Flags */
+   char      ac_version;   /* Always set to ACCT_VERSION (3) */
+   u_int16_t ac_tty;       /* Controlling terminal */
+   u_int32_t ac_exitcode;  /* Process termination status */
+   u_int32_t ac_uid;       /* Real user ID */
+   u_int32_t ac_gid;       /* Real group ID */
+   u_int32_t ac_pid;       /* Process ID */
+   u_int32_t ac_ppid;      /* Parent process ID */
+   u_int32_t ac_btime;     /* Process creation time */
+   float     ac_etime;     /* Elapsed time */
+   comp_t    ac_utime;     /* User CPU time */
+   comp_t    ac_stime;     /* System time */
+   comp_t    ac_mem;       /* Average memory usage (kB) */
+   comp_t    ac_io;        /* Characters transferred (unused) */
+   comp_t    ac_rw;        /* Blocks read or written (unused) */
+   comp_t    ac_minflt;    /* Minor page faults */
+   comp_t    ac_majflt;    /* Major page faults */
+   comp_t    ac_swaps;     /* Number of swaps (unused) */
+   char      ac_comm[ACCT_COMM]; /* Command name */
+};
+
+
+==================================================
+
+
+
+******************** 28.2 The Clone System Call ********************
+
+This is used to implement threading. It is pretty similar to fork() anf vfork(). clone() creates a new processthat runs a function, then returns a status code.
+
+
+=====================================
+
+#define _GNU_SOURCE
+#include <sched.h>
+
+int clone(int (*func) (void *), void *child_stack, int flags, void *func_arg, ...
+
+	/* pid_t *ptid, struct user_desc *tls, pid_t *ctid */);
+
+
+	Returns process ID of child on success, or -1 on error
+
+=====================================
+
+Unline fork(), it does not continue from the point where clone() is called. It executes the function in the "func" param.
+
+You have to pass it a stack that "func" uses. Unfortunately you also have to pass it as the pointer to the LAST address in the stack because the stack grows downwards on most hardware. This is a design flaw in clone().
+
+"flags" is a bitmask of many different things, the first byte is the signal that is sent to the main process when the thread exit()s, see the table.
+
+
+Flag 						Effect if present
+==========================================================================================
+
+CLONE_CHILD_CLEARTID 		Clear ctid when child calls exec() or _exit() (2.6 onward)
+
+CLONE_CHILD_SETTID 			Write thread ID of child into ctid (2.6 onward)
+
+CLONE_FILES 				  Parent and child share table of open file descriptors.
+                           This means even after the thread starts. They can see e/o FDs.
+                           If not set, then the FDs are simply duplicated one time.
+
+CLONE_FS 					 Parent and child share attributes related to file system.
+      							This means umask(), chdir(), chroot().
+      							Changes in one will mean changes in the other.
+      							If not set, it will get a copy of this info instead.
+
+CLONE_IO 					Child shares parent’s I/O context (2.6.25 onward)
+
+CLONE_NEWIPC 				Child gets new System V IPC namespace (2.6.19 onward)
+
+CLONE_NEWNET 				Child gets new network namespace (2.6.24 onward)
+
+CLONE_NEWNS 				Child gets copy of parent’s mount namespace (2.4.19 onward)
+
+CLONE_NEWPID 				Child gets new process-ID namespace (2.6.19 onward)
+
+CLONE_NEWUSER 				Child gets new user-ID namespace (2.6.23 onward)
+
+CLONE_NEWUTS 				Child gets new UTS (uname()) namespace (2.6.19 onward)
+
+CLONE_PARENT 				Make child’s parent same as caller’s parent (2.4 onward)
+
+CLONE_PARENT_SETTID 		Write thread ID of child into ptid (2.6 onward)
+
+CLONE_PID 					Obsolete flag used only by system boot process (up to 2.4)
+
+CLONE_PTRACE 				If parent is being traced, then trace child also
+
+CLONE_SETTLS 				"tls" describes thread-local storage for child (2.6 onward)
+
+CLONE_SIGHAND 				Parent and child share signal dispositions.
+      							Change in one means change in the other.
+      							Must be specified with CLONE_VM.
+      							If not set, thread gets a copy of signal dispositions.
+
+CLONE_SYSVSEM  				Parent and child share semaphore undo values (2.6 onward)
+
+CLONE_THREAD 				Place child in same thread group as parent (2.4 onward)
+                        POSIX threads requirement of all threads sharing the same process ID.
+                        This means they are all in the same thread group/
+                        A thread group is a group of KSEs that share the same
+                        "thread group identifier" (TGID).
+                        Calling getpid() returns the TGID in the calling thread.
+
+
+CLONE_UNTRACED 				Can’t force CLONE_PTRACE on child (2.6 onward)
+
+CLONE_VFORK 				Parent is suspended until child calls exec() or _exit()
+
+CLONE_VM 					Parent and child share virtual memory.
+   							They share virtual memory pages.
+   							This is one of the defining features of threads vs fork().
+   							If not set, the thread gets a copy of the parent's virtual memory.
+
+==========================================================================================
+
+
+See example program.
+
+
+A Kernel Scheduling Entity (KSE) is an object that is dealt with by the kernel scheduler. This includes a process and a thread. A thread is mostly a KSE with more control over the sharing attributes between processes/threads (I think). It seems a lot like a fork() with extra options.
+
+unshare() can be used to undo the clone() "flags" argument.
+
+
+
+-------------------------------------------------------
+               PROCESS WITH PID 2001
+-------------------------------------------------------
+Thread A       Thread B       Thread C       Thread D
+PPID=1900      PPID=1900      PPID=1900      PPID=1900
+TGID=2001      TGID=2001      TGID=2001      TGID=2001
+TID=2001       TID=2002       TID=2003       TID=2004
+-------------------------------------------------------
+^
+|---- THREAD GROUP LEADER (all threads PPID are the PPID of the group leader)
+
+
+
+Fun thread/clone() facts:
+
+   1. Each thread has a unique TID (thread identifier). Use gettid() (same value returned by clone()
+   2. TIDs are represented by the same datatype as PIDs (pid_t)
+   3. TIDs are unique system wide.
+   4. The first thread in a thread group has the same TID as its TGID
+   5. These TIDs are NOT pthread_t data types. These are internal userspace datatypes (implementation details of POSIX threads).
+   6. Only after all of the threads have terminated is a SIGCHLD signal sent to the parent.
+   7. When a CLONE_THREAD process exits, no signal is sent to it by the thread that created it using clone().
+   8. Also it is not possible to wait for a CLONE_THREAD thread... A POSIX thread is not the same as a process therefore wait() does not work. Instead it must be joined using pthread_join().
+   9. To detect the termination of a thread using CLONE_THREAD, you must use a special synchronizing primitive called a "futex".
+   10. If any thread uses exec() then all threads EXCEPT the thread group leader are terminated, and the new program is execed in the thread group leader. Durning the exec() the termination signal that it should send to the TGL is SIGCHLD.
+   11. If one of the threads in a thread group creates a child with fork() or vfork(), any thread in the group can monitor it with wait().
+   12. That was fun
+
+
+Threading library support: CLONE_PARENT_SETTID, CLONE_CHILD_SETTID, and CLONE_CHILD_CLEARTID
+=============================================================================================
+
+CLONE_PARENT_SETTID, CLONE_CHILD_SETTID, and CLONE_CHILD_CLEARTID were created to implement POSIX threads.
+
+They affect how clone uses the ptid and ctid arguments.
+
+CLONE_PARENT_SETTID: If this flag is set, then the kernel writes the thread ID of the child thread into the location pointed to by ptid. The thread id is copied before the process memory is duplicated for the new thread. This means that even if CLONE_VM is not specified, both the child and the parent can see the thread id.
+
+This avoids a complicated race condition where:
+
+tid = clone(...);
+
+potentially the child clone creates exits before the thread ID can be assigned to "tid", therefore the handler for its exit cannot use the thread id...
+
+
+CLONE_CHILD_SETTID: writes the thread ID of the child into "ctid". This is done only in the child's memory, but this will affect rhe parent if CLONE_VM is set (because they share virtual memory pages).
+
+
+CLONE_CHILD_CLEARTID: if this is set, it zeroes out "ctid" when the child exits.
+
+"ctid" is needed to determine the exit status of a thread, and is therefore used in the implementation of pthread_join().
+
+This is kinda crazy but NPTL threading implementation uses these values as a futex. Using CLONE_CHILD_CLEARTID, when "ctid" becomes zeroed out, the implementation knows that the thread has exited.
+
+
+CLONE_SETTLS: Sets thread local storage, looks like a black hole, come back later.
+
+CLONE_SYSVSEM: Parent and child share a single list of System V semaphore undo values. Come back later.
+
+CLONE_NEWNS: This gives the child a separate mount namespace. Changes in one do not affect the other. This can be used to create things sort of like chroot() jails, but are more secure and flexible. Mount namespaces are also useful for setting up virtual server environments. Calling CLONE_NEWNS with CLONE_FS is not permitted because it doesnt make sense.
+
+CLONE_PARENT: Parent.PPID == Child.PPID
+
+CLONE_PID (obsolete): The child has the same PID as parent. This flag can only be used by PID 0 (init system). This is usually not for appication use. Now it has been removed and replaced with CLONE_IDLETASK. This is reserved for internal kernel use only, and makes sure the child form a clone() call will have PID 0.
+
+CLONE_PTRACE and CLONE_UNTRACED: If the parent process is being ptraced and CLONE_PTRACE is set, then the child is also traced. CLONE_UNTRACED means that tracing cannot be forec on the child process.
+
+CLONE_VFORK: the parent is suspended until the child calls exec(), _exit(), exit(), etc. (when virtual memory is released).
+
+
+
+==================== NEW clone() FLAGS TO SUPPORT CONTAINERS ====================
+
+CLONE_IO , CLONE_NEWIPC , CLONE_NEWNET , CLONE_NEWPID , CLONE_NEWUSER , and CLONE_NEWUTS
+
+A container is a form of lightweight virtualization,
+whereby groups of processes running on the same kernel can be isolated from one
+another in environments that appear to be separate machines.
+
+Containers can be nested too. Containers differ from full virtualization where each virtualized environment is running a distinct kernel.
+
+fork() is roughly equivalent to clone() with SIGCHLD flag
+vfork() is roughly equivalent to clone() with CLONE_VM | CLONE_VFORK | SIGCHLD
+
+LinuxThreads uses just the first 4 arguments of clone(), with these flags:
+
+CLONE_VM, CLONE_FILES, CLONE_FS, CLONE_SIGHAND
+
+
+NPTL uses clone() with all seven arguments with flags:
+
+CLONE_VM | CLONE_FILES | CLONE_FS | CLONE_SIGHAND | CLONE_THREAD |
+CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_SYSVSEM
+
+
+EXTENSIONS TO waitpid() for cloned children:
+
+You need these flags for wait()ing on children created via clone():
+
+__WCLONE: wait for clone() children only.
+
+__WALL: wait for all children (clone() or fork())
+
+__WNOTHREAD: limit to children of the calling process, and not children's children etc.
+
+
+
+******************** 28.3 Speed of Process Creation ********************
+
+TLDR:
+
+vfork() is much faster than fork() because it doesnt have to copy virtual memory pages (it shares them with the parent).
+
+clone() is slightly faster than vfork (assuming the correct flags):
+
+   CLONE_VM | CLONE_VFORK | CLONE_FS | CLONE_SIGHAND | CLONE_FILES
+
+   where it "clones" the parents virtual memory (shares a copy of the pages), and
+
+   because it doesn't have to make a copy of file system related attributes like file descriptors
+
+
+
+******************** 28.4 Effect of exec() and fork() on Process Attributes ********************
+
+Huge table on page 612, good reference.

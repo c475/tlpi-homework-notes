@@ -1,0 +1,33 @@
+******************** 29.1 Overview ********************
+
+Threads share:
+
+-process ID and parent process ID;
+-process group ID and session ID;
+-controlling terminal;
+-process credentials (user and group IDs);
+-open file descriptors;
+-record locks created using fcntl();
+-signal dispositions;
+-file system–related information: umask, current working directory, and root directory
+-interval timers (setitimer()) and POSIX timers (timer_create());
+-System V semaphore undo (semadj) values (Section 47.8);
+-resource limits;
+-CPU time consumed (as returned by times());
+-resources consumed (as returned by getrusage()); and
+-nice value (set by setpriority() and nice()).
+
+
+Per thread attributes:
+
+-thread ID (Section 29.5);
+-signal mask;
+-thread-specific data (Section 31.3);
+-alternate signal stack (sigaltstack());
+-the errno variable;
+-floating-point environment (see fenv(3));
+-realtime scheduling policy and priority (Sections 35.2 and 35.3);
+-CPU affinity (Linux-specific, described in Section 35.4);
+-capabilities (Linux-specific, described in Chapter 39); and
+-stack (local variables and function call linkage information).
+
