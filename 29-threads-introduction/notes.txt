@@ -31,3 +31,255 @@ Per thread attributes:
 -capabilities (Linux-specific, described in Chapter 39); and
 -stack (local variables and function call linkage information).
 
+
+If you look at the diagram on page 618 you can see that the thread stacks
+are all contiguous. This means that it is technicaly possible for threads
+to access each other's stacks. This sounds pretty dangerous though.
+
+
+
+******************** 29.2 Background Details of the Pthreads API ********************
+
+Phteads data types:
+
+===================================================================
+Date type 				Description
+===================================================================
+pthread_t				Thread identifier
+pthread_mutex_t 		Mutex
+pthread_mutexattr_t 	Mutex attributes object
+pthread_cond_t			Condition variable
+pthread_condattr_t 		Condition variable attributes object
+pthread_key_t			Key for thread specific data
+pthread_once_t			One-time initialization control context
+pthread_attr_t 			Thread attributes object
+===================================================================
+
+These are opaque data structures, SUSv3 does not give any explicit implementation details on them.
+
+Do not compare these using == operator.
+
+Thread Facts:
+
+	1. Each thread has its own errno value because errno is a function call macro
+	2. All pthread functions return 0 on success, positive number on error (used with ename)
+	3. NEED TO COMPILE PROGRAMS WITH THE "-pthread" flag (_REENTRANT is definesd, lined to pthread lib)
+
+
+******************** 29.3 Thread Creation ********************
+
+========================================
+
+#include <pthread.h>
+
+int pthread_create(pthread_t *thread, const pthread attr_t *attr, void *(*start)(void *), void *arg);
+
+	Returns 0 on success, positive error number on error
+
+	(Error number used with ename array in the tlpi lib) 
+
+========================================
+
+Thread commences with calling the "start" function with the "arg" pointer. The parent thread/process proceeds as normal with the next statement after the call to pthread_create().
+
+Typically "arg" is a heap or global variable, but it can also be NULL.
+
+The return value of "start" is likewise (void *), and can be utilized much like "void *arg". 
+This is described with "pthread_join()".
+
+Avoid returning an integer cast to (void *) from "start" because this technique is used by
+PTHREAD_CANCELED. pthread_join() may wrongly assume that the thread was canceled when it actually returned. 
+If you do this, you have to make sure it is not the same value as PTREAD_CANCELED.
+
+The thread argument is a buffer where the thread's unique identifier is placed
+before the thread returns (NOT NECESSARILY BEFORE IT STARTS EXECUTION). It is used to refer to the thread in later pthread library calls.
+
+"attr" is a pointer to a pthread_attr_t object that specifies various attributes of the thread.
+This is often NULL for defaults.
+
+There is no guarantee which thread will execute first after pthread_create(). On multuprocessor systems, they may execute simultaneously on different cpus.
+
+If you need to enforce a particular synchronization of tread execution, go to chapter 30.
+
+
+******************** 29.4 Thread Termination ********************
+
+How a thread can exit:
+
+	1. "start" function returns
+	2. Thread itself calls pthread_exit()
+	3. Thread is canceled by pthread_cancel()
+	4. Any of the threads call exit(), or the main() function returns or calls exit()
+
+
+========================================
+
+#include <pthread.h>
+
+void pthread_exit(void *retval);
+
+========================================
+
+Calling pthread_exit() is equivalent to returning from the start function. 
+The difference is that pthread_exit() can be called in any function that originates from the "start" function.
+
+"retval" should not be allocated on the thread's stack since it will cease to exist when the thread terminates.
+
+Who knows where it's supposed to put it, maybe in a global/static variable. Maybe the heap.
+
+If the main thread calls pthread_exit() instead of exit() or performing a return, then the other threads continue to execute.
+
+
+
+******************** 29.5 Thread IDs ********************
+
+========================================
+
+#include <pthread.h>
+
+pthread_t pthread_self(void):
+
+	returns the thread id of the calling thread
+
+========================================
+
+Useful because pthread functions act on thread ids (pthread_kill, pthread_cancel, pthread_join, pthread_detach).
+
+It can be useful to "tag" a struct with the thread ID for identification purposes.
+
+
+
+========================================
+
+#include <pthread.h>
+
+int pthread_equal(pthread_t t1, pthread_t t2);
+
+	Returns nonzero value if t1 and t2 are equal, otherwise 0
+
+========================================
+
+Needed because pthread_t is an opaque data structure.
+
+On linux it happens to be an (unsigned long), but on other implementations it can be a pointer or struct.
+
+Since it can potentially be a struct, this is not correct:
+
+printf("Thread id is: %ld\n", (long)tid);
+
+
+POSIX thread ids ARE NOT THE SAME as gettid(). POSIX thread ids are implementation defined. Real thread IDs are part of the linux kernel.
+
+
+******************** 29.6 Joining with a terminated thread ********************
+
+========================================
+
+#include <pthread.h>
+
+int pthread_join(pthread thread, void **retval);
+
+	Returns 0 on success, or positive error number on error
+
+========================================
+
+Waits on the thread to exit. If the thread has already exited, it returns immediately.
+
+If retval is non-NULL, it gets the thread's return value.
+
+Calling pthread_join() on a thread that has been previously joined is unpredictable.
+It can pttentially join with a thread whose id has been reused.
+
+If a thread has not been detached, it must be joined. If this is not done, you get a "zombie thread", which wastes system resources and can prevent you from creating more threads if there are too many zombies.
+
+So, pthread_join() is like waitpid() for threads, except:
+
+	1. Threads are peers, any thread can join with any other thread.
+	2. There is no way to say "join with any thread", like you can wait for any child process.
+		There is also no way to do a non-blocking pthread_join().
+		There are techniques that give a similar result though.
+
+Part of the reason there is no "join with any thread" functionality is that a lof of libraries will create threads internally, which you do not want to interfere with.
+
+
+******************** 29.7 Detaching a Thread ********************
+
+========================================
+
+#include <pthread.h>
+
+int pthread_detach(pthread_t thread);
+
+	Returns 0 on success, positive error number on error
+
+========================================
+
+By default a thread is "joinable" and you have to call pthread_join() to get a return value, and for cleanup.
+
+If you do not care about the return value and want cleanup to happen automatically, you can detach the thread.
+
+A thread can detach itself like this:
+
+pthread_detach(pthread_self());
+
+This does not make a thread immune to an exit() in another thread, or a return from main().
+
+
+
+******************** 29.8 Thread Attributes ********************
+
+General notes about the "attr" argument (pthread_attr_t):
+
+	1. control the size and location of the thread stack
+	2. scheduling priority
+	3. joinable or detached
+	4. a lot of other things not explicitly mentioned in the book, look at references.
+
+CREATING A DETACHED THREAD BY DEFAULT:
+
+================================================================================
+
+pthread_t thr;
+pthread_attr_t attr;
+int s;
+
+// default values
+s = pthread_attr_init(&attr);
+if (s != 0) {
+	errExitEN(s, "pthread_attr_init");
+}
+
+s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+if (s != 0) {
+	errExitEN(s, "pthread_attr_setdetachstate");
+}
+
+s = pthread_create(&thr, &attr, threadFunc, (void *)1);
+if (s != 0) {
+	errExitEN(s, "pthread_create");
+}
+
+================================================================================
+
+
+
+
+******************** 29.9 Threads Versus Processes ********************
+
+Advantages to threads vs fork():
+
+	1. Data sharing is easy
+	2. Thread creation is faster than fork()
+
+Disadvantages:
+
+	1. Need to ensure all function calls are thread safe/reentrant (can be difficult)
+	2. A bug in one thread can lead to cascading failure (since they all share virtual memory space)
+	3. Virtual memory space can become scarce (with very large thread stacks, or a ton of threads)
+
+Considerations:
+
+	1. Signals + threads is a bad time, it is often desirable to not deal with signals in multithreaded applications.
+	2. All threads must be running the same program (can't exec() in just one thread)
+	3. They share file descriptors and other attributes, may be an advantage or disadvantage. Point is you have to carefully design multithreaded programs.
+
