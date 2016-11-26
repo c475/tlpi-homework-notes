@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	for (j = 0; j < 10; j++) {
 		printf("%d\n", j);
 		// loop slowly
+		// sleep gets interrupted by sigint, immediately jumps to top of loop and prints number
 		sleep(3);
 	}
 

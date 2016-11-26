@@ -198,6 +198,10 @@
 
 #include "print_wait_status.h"
 
+#include "strerror_nosafe.h"
+
+#include "strerror_safe.h"
+
 
 typedef enum { FALSE, TRUE } Boolean;
 

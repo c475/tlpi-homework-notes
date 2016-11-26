@@ -195,7 +195,7 @@ if (s != 0) {
 
 
 
-******************** 30.2 Signal9ing changes of state: Condition Variables ********************
+******************** 30.2 Signaling changes of state: Condition Variables ********************
 
 They are always used in conjunction with a mutex.
 
@@ -301,4 +301,3 @@ int pthread_cond_destroy(pthread_cond_t *cond);
 This is for if a condition variable is automatically or dynamically allocatedm or if you want to set attributes on it.
 
 Apparently "struct pthread_condattr_t" just has a dummy field a lot of the time. Almost the same situation as pthread_mutexattr_t except that one has at least the "type" field.
-

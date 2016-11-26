@@ -1,0 +1,112 @@
+******************** 31.1 Thread Safety (and Reentrancy Revisited) ********************
+
+A function is thread-safe if it can be invoked by multiple threads at the same time.
+
+The eaisiest way to do this is make it "reentrant".
+
+"reentrant" means it can be called with no side effects to the global namespace. That is, it typically uses only automatic variables, and no global or static variables (or properly protects globals and statics with a mutex).
+
+The number of functions that are not required to be thread-safe is surprisingly small, look at page 657.
+
+
+******************** 31.2 One-Time Initialization ********************
+
+
+========================================
+
+#include <pthread.h>
+
+int pthread_once(pthread_once_t *once_control, void (*init)(void));
+
+	Returns 0 on success, or a positive error number on error;
+
+========================================
+
+calls the init() function JUST ONCE. The "once_control" variable makes this possible.
+
+It's basically a flag that is set the first time it is called. If it is tried again with the same control variable, it will not call init().
+
+
+
+******************** 31.3 Thread-Specific Data ********************
+
+Another way of making a function thread-safe is Thread Specific Storage. It is an easy way to make a non-reentrant function reentrant (instead of putting it in a wrapper function that regulates access with a mutex).
+
+What is needed:
+
+	1. The function has to allocate a block of memory that is continually used for that one function.
+	2. The function needs a way to get the address of this block on subsequent calls.
+	3. Different functions need different blocks, so each block needs an identifying "key".
+	4. There needs to be a way to free these blocks when the thread terminates.
+
+Here are the steps:
+
+	1. The function creates a key with pthread_key_create() (pthread_once() is used for this).
+	2. pthread_key_create() is passed the destructor function that frees the block of memory.
+	3. The function allocates a thread-specific memory block for each thread that calls it.
+	4. To save the ppinter in step 1/2, pthread_setspecific() is called.
+		This associates a key and memory to a function, on a per thread basis.
+
+		pthread_getspecific() performs the inverse, retrieving the memory by the key, per thread.
+
+		If there is no key/memory, pthread_getspecific() returns NULL.
+
+========================================
+
+#include <pthread.h>
+
+int pthread_key_create(pthread_key *key, void (*destructor)(void *));
+
+	Returns 0 on success, positive error number on error
+
+========================================
+
+
+void destructor(void *)
+{
+	// free (void *) here
+}
+
+BECAUSE THE RETURNED KEY IS USED BY ALL THREADS IN A PROCESS, IT SHOULD BE A GLOBAL VARIABLE.
+
+When the thread terminates, the destructorv is called so the memory can be freed.
+
+The desctuctor can be specified as NULL if it is not needed.
+
+If a thread has multiple thread-specific blocks, the order the destructors are called is undefined. Don't rely on ordering.
+
+IMPLEMENTATION:
+
+pthread_key is usually just an index into a global array that points to an "in use" flag, and a pointer to the desctuctor for that key. A separate array is used to hold an array of data blocks for each thread.
+
+
+========================================
+
+#include <pthread.h>
+
+int pthread_set_specific(pthread_key_t key, const void *value);
+
+	Returns 0 on success, or a positive error number on error
+
+
+void *pthread_getspecific(pthread_key_t key);
+
+	Returns pointer, or NULL if no thread-specific data associated with "key"
+
+========================================
+
+The "value" doesnt have to be heap allocated memory, it can also be any scalar value, in which case the "destructor" argument to pthread_key_create() will have been NULL since it's not needed to free the memory.
+
+Just look at the source code, it makes a lot more sense (lib/strerror_unsafe.c VS lib/strerror_safe.c)
+
+
+******************** 31.4 Thread locak storage ********************
+
+This is a much easier way to make things thread safe but is non-standard. All you have to do is use the __thread specifier.
+
+like this:
+
+
+static __thread char buf[MAX_ERROR_LEN];
+
+each thread will magically have its own copy of this buffer.
