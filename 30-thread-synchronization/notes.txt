@@ -205,7 +205,7 @@ SATICALLY ALLOCATED:
 
 ==================================================================
 
-pthread_cond_t cont = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 ==================================================================
 
@@ -219,7 +219,7 @@ SIGNALLING AND WAITING ON CONDITION VARIABLES:
 
 int pthread_cond_signal(pthread_cond_t *cond);
 int pthread_cond_broadcast(pthread_cond_t *cond);
-int pthread_cond_wait(pthread_cond_t *cont, pthread_mutex_t *mutex);
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
 
 	Returns 0 on success, positive error number on error;
 

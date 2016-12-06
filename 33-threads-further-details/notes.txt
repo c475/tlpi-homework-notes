@@ -1,0 +1,249 @@
+This chapter is about pthreads relation to signals and control primitives (fork(), exec(), and _exit()).
+
+
+******************** 33.1 Thread Stacks ********************
+
+Default thread stack size is 2MB (pretty big). Main thread has a much bigger stack.
+
+
+SETTING STACK SIZE/LOCATION:
+
+pthread_attr_setstacksize() (uses thread attributes)
+
+pthread_attr_setstack() (size AND location, location setting decreases performance)
+
+sysconf(_SC_THREAD_STACK_MIN): get the minimum thread stack size.
+
+
+******************** 33.2 Threads and Signals ********************
+
+They don't go well together. Signals predate threads by a long time (and are meant for processes, not threads) so there are conflicts between the two.
+
+
+How signals interact with a threaded program:
+
+	1. If a signal's default action is to terminate a process and is unhandled (or cant be handled), all threads terminate.
+
+	2. Signal dispositions are process-wide (all threads)
+
+	3. A signal can be directed at the whole process, or a particular thread. A signal is thread-directed IF:
+
+		-- hardware fault i.e. SIGBUS, SIGSEGV, SIGILL, inside thread
+
+		-- SIGPIPE signal (writing to a broken pipe) inside thread
+
+		-- pthread_kill(), pthread_sigqueue()
+
+		-- ALL OTHER SIGNALS ARE PROCESS DIRECTED
+
+	4. When a signal is delivered to a process that has a handler for that signal, the kernel arbitrarily picks a thread to handle the signal.
+
+	5. The signal mask is per-thread. A thread can modify its mask with pthread_sigmask().
+
+	6. The kernel maintains a record for signals pending for a process, as well as its threads. Calling sigpending() returns a union of pending process signals, and signals pending for the calling thread.
+
+	7. pthread_mutex_lock() is always restarted. pthread_cond_wait() returns 0 indicating a spurrious wakeup, or is restarted (on Linux).
+
+	8. The alternate signal stack is per-thread.
+
+
+========================================
+
+#include <signal.h>
+
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset);
+
+	Returns 0 on success, positive error number on error
+
+========================================
+
+Modifies a thread's signal mask. Usage is identical to sigprocmask().
+
+
+
+========================================
+
+// THIS IS SIGNAL HEADER, NOT PTHREAD HEADER
+#include <signal.h>
+
+int pthread_kill(pthread_t thread, int sig);
+
+	Returns 0 on success, positive error number on error
+
+========================================
+
+Can only send a signal to a thread in the same process (sicne thread ids are unique only to a process).
+
+
+========================================
+
+#include _GNU_SOURCE
+#include <signal.h>
+
+int pthread_sigqueue(pthread_t thread, int sig, const union sigval value);
+
+	Returns 0 on success, positive error number on error
+
+========================================
+
+Used in the same manner as sigqueue().
+
+
+
+%%%%%%%%%% 33.2.4 Dealing with Asynchronous Signals Sanely %%%%%%%%%%
+
+None of the pthread APIs are async-signal safe. 
+
+There's basically no hope for threads properly handling a signal so what you should do is:
+
+1. BLOCK ALL ASYNC SIGNALS IN ALL THREADS.
+2. CREATE ONE DEDICATED THREAD TO HANDLE ALL SIGNALS.
+3. WAIT FOR SIGNALS SYNCRONOUSLY IN THIS THREAD.
+
+sigwaitinfo(), sigtimedwait(), or sigwait() can be used. Also sigwait() can be used.
+
+
+========================================
+
+#include <signal.h>
+
+int sigwait(const sigset_t *set, int *sig);
+
+	Returns 0 on success, positive error number on error
+
+========================================
+
+The signal is returned in the *sig argument. Works the same as sigwaitinfo().
+
+
+
+******************** 33.3 Threads and Process Control ********************
+
+Threads and exec():
+
+	The program is completely replaced. Not much to worry about here. The thread ID of the remaining thread is unspecified.
+
+Threads and fork():
+
+	Only the calling thread is replicated in the child, as well as all pthread objects (mutexes etc).
+
+	Destructors/cleanup are not called.
+
+	This can lead to some problems, bc if another thread has a lock on the mutex, the new child process cannot aquire the lock, or unlock it. And the global data structure that the child thread may want to access is likely in an inconsistent state because the other thread was in the middle of updating it.
+
+	Since thread-specific-data and cleanup handlers are not called, there can be memory leaks in the child process.
+
+	So, if you call fork() in a thread, the child process should immediately call exec().
+
+	OTHERWISE, there are "fork handlers" in the pthreads api.
+
+	pthread_atfork(prepare_func, parent_func, child_func);
+
+	prepare func is a list of functions that will be called before a fork() is done, and parent_func and child_func are called in the parent and child processes (respectively) right before fork() returns.
+
+	This can be useful if you are using a library that uses threads, and your application must make use of fork().
+
+Threads and exit():
+
+	If any thread calls exit(), or equivalently, the main thread does a return, all threads vanish after higher-level cleanups have been performed (C++ destructors, or atexit() callbacks i'm assuming).
+
+
+
+******************** 33.4 Thread Implementation Models ********************
+
+
+Many-to-one (M:1):
+
+	Use space threads. These are fast because no context switches to kernel mode are needed on locking/creating a thread/etc. This can be a bad thing though because if a thread makes a system call that can block, all threads are subsequently blocked until the system call returns.
+
+	This is the case because threads are not mapped to a Kernel Scheduling Entity (KSE).
+
+	Also, you can't take advantage of multipl CPU cores, because the kernel can't map them to a core, and a process itself has no way of doing this. This also means that the kernel cannot meaningfully prioritize the scheduling of different threads, because it is not aware of any threads in a process.
+
+
+One-to-One (1:1) kernel level threads:
+
+	Each thread is directly mapped to a kernel scheduling entity. This means there are context switches involved in locking/etc but it also means that a blocking system call in one thread will not block the rest of the threads.
+
+	But since a KSE is needed for each thread, they can be a bit resource intensive on the kernel scheduler.
+
+	Both of the threading inplementations on Linux are 1:1
+
+
+Many-to-many (M:N) Two level model:
+
+	It's like a one-to-one model, except multiple threads can map onto the same KSE to relieve scaling problems that a 1:1 model theoretically has. The downside is complexity in implementing this model.
+
+
+******************** 33.5 Linux Implementations of POSIX Threads ********************
+
+Linux has two threading implementations:
+
+	LinuxThreads: deplrecated
+
+	NPTL (Native POSIX Threads Library): default with Linux 2.6
+
+
+For a long time LinuxThreads was the main threading implementation. It bouiled down to a clone call with these flags:
+
+	1.
+
+		CLONE_VM | CLONE_FILES | CLONE_FS | CLONE_SIGHAND
+
+		This means threads shared virtual memory, file descriptors, file-system related info (umask, root directory, CWD), and signal dispositions. But threads did not share process IDS and parent process IDS (so they were technically separate processes).
+
+	2.
+
+		In addition to the threads created by the application, LinuxThreads creates an additional thread that handles thread creation and termination. This means that getppid() all return the same thing in all threads (because the manager thread created all of them).
+
+	3.
+
+		The implementation uses signals for its internal operation (SIGUSR1, SIGUSR2), so applications cannot use these signals.
+
+
+	LinuxThreads deviations from specified behavior:
+
+		A LOT, GO TO PAGE 690
+
+
+
+############### 33.5.2 NPTL ###############
+
+A good amount of changes had to happen to the kernel to support NPTL but these are the interesting ones:
+
+	1. _exit() and exit() are aliases to exit_group(), which terminates all threads in a process. pthread_exit() actually calls true _exit() which kills the calling thread only.
+
+Essentials of NPTL implementation are this:
+
+	1. CLONE_VM | CLONE_FILES | CLONE_FS | CLONE_SIGHAND | CLONE_THREAD | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_SYSVSEM
+
+	2. Makes use of the first two realtime signals. Applications can't use these signals.
+
+		-- One is used to implement thread cancellation.
+
+		-- The other is to make sire all threads of a process have the same user and group IDS.
+			This is required because at the kernel level, threads all have different user and group creds.
+			So, NPTL does some work in the wrapper for each system call that changes UIDs / GIDs that causes all threads of a process to update their credentials (interesting).
+
+	3. NPTL doesn't use manager threads.
+
+
+The only remaining nonconformance to POSIX threads is:
+
+	1. Treads do not share a nice value.
+
+
+IF YOU NEED TO USE LINUX THREADS: there is a special environment variable that is understood by the dynamic linker, LD_ASSUME_KERNEL
+
+$ export LD_ASSUME_KERNEL=2.2.5
+
+
+
+******************** 33.5 Advanced Features of the Pthreads API ********************
+
+1. Realtime scheduling
+
+2. Process shated mutexes and condition variables.... interprocess locking basically (pretty cool)
+
+3. Advanced thread-synchronization primitives: barriers, read-write locks, and spin locks.
+

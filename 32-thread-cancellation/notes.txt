@@ -1,0 +1,195 @@
+******************** 32.1 Canceling a Thread ********************
+
+========================================
+
+#include <pthread.h>
+
+int pthread_cancel(pthread_t thread);
+
+	Returns 0 on success, or a positive error number on error
+
+========================================
+
+Examples of potential use:
+	1. you have "Cancel" button in a GUI app that cancels some work being performed in a thread
+	2. browser "Stop" button
+
+
+pthread_cancel() returns immediately after sending the termination request. It does not wait for the thread to terminate.
+
+What happens to a thread when it is terminated depends on the termination state and type
+
+
+******************** 32.2 Cancellation State and Type ********************
+
+========================================
+
+#include <pthread.h>
+
+int pthread_setcancelstate(int state, int *oldstate);
+
+int pthread_setcanceltype(int type, int *oldtype);
+
+	Returns 0 on success, positive error number on error.
+
+========================================
+
+"oldtype" SHOULD NEVER BE NULL (FOR PORTABILITY)
+
+
+STATE:
+
+	PTHREAD_CANCEL_DISABLE
+
+		Thread cannot be cancelled. Cancellation request remains pending until set to PTHREAD_CANCEL_ENABLE
+
+	PTHREAD_CANCEL_ENABLE
+
+		Thread can be cancelled. This is default.
+
+TYPE:
+
+	PTHREAD_CANCEL_ASYNCRONOUS
+
+		May be cancelled at any time (immediately, or some time in the future. Rarely useful)
+
+	PTHREAD_CANCEL_DEFERRED
+
+		This is the default.
+
+		Cancellation remains pending until a cancellation point is hit (a function that is designated by SUSv3 as a cancellation point...).
+
+
+******************** 32.3 Cancellation Points ********************
+
+Only relevant when PTHREAD_CANCEL_DEFERRED is used.
+
+
+CANCELATION POINTS:
+
+	accept()
+	aio_suspend()
+	clock_nanosleep()
+	close()
+	connect()
+	creat()
+	fcntl(F_SETLKW)
+	fsync()
+	fdatasync()
+	getmsg()
+	getpmsg()
+	lockf(F_LOCK)
+	mq_receive()
+	mq_send()
+	mq_timedreceive()
+	mq_timedsend()
+	msgrcv()
+	msgsnd()
+	msync()
+	nanosleep()
+	open()
+	pause()
+	poll()
+	pread()
+	pselect()
+	pthread_cond_timedwait()
+	pthread_cond_wait()
+	pthread_join()
+	pthread_testcancel()
+	putmsg()
+	putpmsg()
+	pwrite()
+	read()
+	readv()
+	recv()
+	recvfrom()
+	recvmsg()
+	select()
+	sem_timedwait()
+	sem_wait()
+	send()
+	sendmsg()
+	sendto()
+	sigpause()
+	sigsuspend()
+	sigtimedwait()
+	sigwait()
+	sigwaitinfo()
+	sleep()
+	system()
+	tcdrain()
+	usleep()
+	wait()
+	waitid()
+	waitpid()
+	write()
+	writev()
+
+	There are other possibilities such as the dlopen API, the syslog API, nftw(), popen(), semop(), unlink(), and various functions that retrieve info from system files.
+
+	If it blocks, it is likely a cancellation point.
+
+Canceled threads must be joined if it is not a detached thread. When pthread_join() is called on the canceled thread, PTHREAD_CANCELED is returned.
+
+See example program.
+
+
+
+******************** 32.4 Testing for Thread Cancellation ********************
+
+========================================
+
+#include <pthread.h>
+
+void pthread_testcancel(void);
+
+========================================
+
+PURELY A CANCELLATION POINT, just in case the thread doesn't make use of any cancellation points, or does not call one in a timely fashion (in a long loop)
+
+
+
+
+******************** 32.5 Cleanup Handlers ********************
+
+Threads can have cleanup handlers in the event of cancellation. This is needed because if a thread has a lock on a mutex, and is canceled, then all other threads trying to get a lock on it will be deadlocked. Can be used for anything else though.
+
+
+========================================
+
+#include <pthread.h>
+
+void pthread_cleanup_push(void (*routine)(void *), void *arg);
+void pthread_cleanup_pop(int execute);
+
+========================================
+
+These handlers are pushed onto a stack. The most recently established handler is called first and popped off the stack.
+
+Usually only needed for a particular block of code, and the handler should be destroyed with pthread_cleanup_pop(), which pops the handler at the top of the stack. If 1 is passed, it also executes the handler. If 0 is passed, it does not.
+
+These can also be implemented as macros where pthread_cleanup_push() starts with a "{" and pthread_cleanup_pop() ends with a "}". This means that pthread_cleanup_push() MUST be followed by a pthread_cleanup_pop(), and they MUST be within the same lexical block. For example:
+
+// THIS IS BAD
+
+pthread_cleanup_push(func, arg);
+
+if (something) {
+	pthread_cleanup_pop(0);
+}
+
+because the brackets will be mismatched and you get a syntax error on compilaton.
+
+
+See example program.
+
+
+
+******************** 32.6 Asynchronous Cancelability ********************
+
+when type is set to PTHREAD_CANCEL_ASYNCRONOUS, a thread can be canceled at any time (any machine language instruction).
+
+The problem is that there are no guarantees as to the state at the thread, it's completely unpredictable. So cleanup handlers may prove ineffective. As in the code example, the thread may be cancelled before malloc() is called, at which point the cleanup handler would attempt to free a NULL pointer.
+
+Another problem is that a thread may be cancelled in THE MIDDLE of a call such as malloc, which can be extremely destructve (deadlock on subsequent malloc() calls due to mutex not being unlocked, or leaving the heap linked list in an inconsistent state)
+
