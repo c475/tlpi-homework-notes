@@ -1,2 +1,172 @@
 ******************** 34.1 Overview ********************
 
+PROCESS GROUP:
+
+	A process group is a collection of one or more processes that share the same PGID (datatype pid_t).
+
+	A process group has a "process group leader", which is the first process to join the group. The PGID becomes this process' PID. Other processes that join the group acquire the same PGID.
+
+	Process group lifetime: first process joins -> last process terminates
+
+
+SESSION:
+
+	A session is a collection of process groups. A process' session membership is determined by its session identifier (SID) (pid_t).
+
+	A new process inherits its parent's session id.
+
+	All processes in a session share a single "controlling terminal". A controlling terminal is established when the session leader first opens a terminal device. A terminal may be the controlling terminal of at most ONE session.
+
+	At any point only one process group is the "foreground process group". The others are "background process groups". Only the foreground process group can read input from the terminal.
+
+	When a signal-generating terminal character is typed, the signal is sent to all processes in the process group. These are SIGINT (Control-C, SIGQUIT (Control-\), and SIGSTP (COntrol-Z) which is the suspend signal.
+
+
+Example of this stuff:
+
+	For interactive login, the login terminal is the controllingg terminal. The login shell becomes the session leader and controlling process for the terminal, and is the sole member of its process group.
+
+	Each command or pipeline of commands started from this shell results in the creation of one or more processes, and the shell places all of these in the same process group (these processes are usually the sole members of their process groups, though any child processes created by the parent will be added to the group). The command or pipeline is set as a background process is it is terminated with an ampersand (&). Otherwise it becomes the foreground process group. All processes created durning the login session are part of the same session.
+
+
+See figure on page 701, it helps a lot.
+
+
+******************** 34.2 Process Groups ********************
+
+========================================
+
+#include <unistd.h>
+
+pid_t getpgrp(void);
+
+	Always returns process group ID of calling process
+
+========================================
+
+If the value returned by getpgrp() is the same as getpid(), then he process is the leader of its process group.
+
+
+========================================
+
+#include <unistd.h>
+
+int setpgid(pid_t pid, pid_t pgid);
+
+	Returns 0 on success, or -1 on error
+
+========================================
+
+Changes the process group of the process specified by "pid" to the value specified in "pgid".
+
+If "pid" is 0, the calling process' "pgid" is changed.
+
+If "pgid" is 0, the calling process' the process' pgid specified by "pid" becomes the same as "pid" (becomes process group leader of a NEW? process group).
+
+Typical callers of setpgid() are the shell and the "login" program. Also, setsid() is used in one of the steps to becoming a daemon process.
+
+
+RESTRICTIONS:
+	1. the "pid" argument can onlt be the calling process, or one of its children.
+	2. when moving a process between groups, the calling process and the process specified by "pid" must be in the same session (SID). Otherwise you get errno = EPERM;
+	3. "pid" cannot be a session leader. EPERM
+	4. A parent process cant change the PGID of its child after it has already fork()/exec().
+
+The parent (a shell) has to place a command or a pipeline of commands all into the same process group.
+How it does this is calls fork(), then the child AND the parent both use setpgid() to set the PGID.
+THEN the child does exec().
+The reason both have to call setpgid() is because the scheduling between parent and child after a fork() is indeterminate. Either one can call it first.
+
+pid_t childPid;
+pid_t pipelinePgid; // PGID that processes in a pipeline are to be assigned
+
+// Other code
+
+childPid = fork();
+switch (childPid) {
+
+	case -1: // fork() failed
+		// handle error
+		errExit("fork()");
+
+	case 0: // child
+		if (setpgid(0, pipelinePgid) == -1) {
+			// handle error
+		}
+
+		exec(program);
+
+	default: // parent (shell)
+		if (setpgid(childPid, pipelinePgid) == -1 && errno != EACCES) {
+			// handle error
+		}
+
+		// parent carries on
+}
+
+
+******************** 34.3 Sessions ********************
+
+========================================
+
+#define _XOPEN_SOURCE 500
+#include <unistd.h>
+
+pid_t getsid(pid_t pid);
+
+	Returns session ID of specified process, or -1 on error
+
+========================================
+
+
+If pid is 0, return the session id of the calling process.
+
+
+========================================
+
+#include <unistd.h>
+
+pid_t setsid(void);
+
+	Returns session ID of new session
+
+========================================
+
+This is like "forking" a new session. 
+
+1. The calling process becomes the leader of a new session, and is the leader of a new process group within that session. The process group ID and the session ID become the same as its PID.
+
+2. The calling process has no controlling terminal. Any existing connection to a controlling terminal is broken.
+
+3. Process cannot be the process group leader. If it is, it has to fork() a child, exit, and the child should call setsid(). Fails with errno = EPERM.
+
+See example program.
+
+
+
+******************** 34.4 Controlling Terminals and Controlling Processes ********************
+
+Processes in a session may have one controlling terminal.
+
+When a session is established it has no controlling terminal, and must open one.
+
+When a session leader opens a controlling terminal, it becomes the controloing process of the terminal.
+
+If a session leader uses ioctl(fd, TIOCNOTTY) to remove its association with the termina;, then:
+
+	1. All processes in the session lose association with the terminal.
+	2. Controlling terminal loses association with session, can be required.
+	3. kernel sends SIGHUP and SIGCONT to all members of foreground process group.
+
+
+========================================
+
+#include <stdio.h>
+
+char *ctermid(char *ttyname);
+
+	Gets pathname of the controlling terminal (usually /dev/tty)
+	Returns static buffer and places name in ttyname
+
+========================================
+

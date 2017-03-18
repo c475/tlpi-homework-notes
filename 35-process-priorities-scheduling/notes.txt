@@ -1,0 +1,267 @@
+Nice values:
+
+-20 (highest) |---------------------| 19 (lowest)
+
+
+=================================================
+
+#include <sys/schedule.h>
+
+int getpriority(int which, id_t who);
+
+	Returns (possibly negative) nice value of specified process, or -1 on error.
+
+
+int setpriority(int which, id_t who, int prio);
+
+	Returns 0 on success, -1 on error.
+
+=================================================
+
+"which":
+
+	PRIO_PROCESS
+
+		Operate on the process whose proess ID equals who.
+		If who is 0, use the caller's PID.
+
+	PRIO_PGRP
+
+		Operate on all members of the process group whose PGID equals "who"
+		If who is 0, operate on the caller's process group.
+
+	PRIO_USER
+
+		Operate on all processes whose real user ID equals who.
+		If who is 0, use the caller's real user ID.
+
+
+*************************** REALTIME SCHEDULING ***************************
+
+Policies:
+
+	SCHED_RR
+
+		Round robin scheduling queue for each priority level (1-99)
+
+	SCHED_FIFO
+
+		Process keeps control of the CPU until:
+
+			+ it voluntarily relinquishes the CPU (in the same manner as described for the
+			+ SCHED_RR policy above);
+			+ it terminates; or
+			+ it is preempted by a higher-priority process (in the same circumstances as
+				described for the SCHED_RR policy above).
+
+	SCHED_OTHER
+
+		Standard round robin scheduling queue
+
+	SCHED_BATCH
+
+		Similar to SCHED_OTHER. Takes into account nice value.
+		Meant for batch processing jobs.
+
+	SCHED_IDLE
+
+		Meant for very low priority processes (much lower than +19 nice value)
+
+
+API:
+
+
+=======================================================================
+
+#include <sched.h>
+
+int sched_get_priority_min(int policy);
+int sched_get_priority_max(int policy);
+
+	Both return nonnegative integer priority on success, or -1 on error
+
+=======================================================================
+
+These take either SCHED_FIFO, or SCHED_RR, and I assume the other policies available.
+
+They return the minumum and maximum priotiry values for the specified policy.
+
+On linux, these return 1-99.
+
+These vary over unix implementations, so these should be used in a relative fashion, like:
+
+	sched_get_priority_min(SCHED_RR) + 1;
+
+
+=======================================================================
+
+#include <sched.h>
+
+int sched_setscheduler(pid_t pid, int policy, const struct sched_param *param);
+
+	Returns 0 on success, or -1 on error
+
+=======================================================================
+
+struct sched_param {
+	int sched_priority; // scheduling priority
+};
+
+For SCHED_RR and SCHED_FIFO, it must be in the range between the function return values above.
+For all other policies, this must be 0.
+
+
+If pid is 0, then the calling process is adjusted.
+
+Scheduling policy and priority are inherited by fork(), and preserved across exec().
+
+
+Policy Description
+=======================================================================
+SCHED_FIFO 		Realtime first-in first-out
+
+SCHED_RR 		Realtime round-robin
+
+SCHED_OTHER 	Standard round-robin time-sharing
+
+SCHED_BATCH 	Similar to SCHED_OTHER, but intended for batch execution (since Linux 2.6.16)
+
+SCHED_IDLE 		Similar to SCHED_OTHER, but with priority even lower than nice value +19 (since Linux 2.6.23)
+
+SCHED_RESET_ON_FORK		OR with one of the other flags to reset scheduler policy for the child on fork()
+=======================================================================
+
+
+
+=======================================================================
+
+#include <sched.h>
+
+int sched_setparam(pid_t pid, const struct sched_param *param);
+
+	Returns 0 on success, or -1 on error
+
+=======================================================================
+
+This changes the priority without changing the policy.
+
+
+=======================================================================
+
+#include <sched.h>
+
+int sched_getscheduler(pid_t pid);
+
+	Returns scheduling policy, or -1 on error
+
+int sched_getparam(pid_t pid, struct sched_param *param);
+
+	Returns 0 on success, or -1 on error
+
+=======================================================================
+
+Don't need to be privileged to get info about any process.
+
+If pid is 0, get info about the calling process.
+
+
+=======================================================================
+
+#include <sched.h>
+
+int sched_yield(void);
+
+	Returns 0 on success, -1 on error
+
+=======================================================================
+
+If there is another process that is queued up in the same priority level, this call
+causes the program to relinquish the CPU.
+
+
+
+=======================================================================
+
+#include <sched.h>
+
+int sched_rr_get_interval(pid_t pid, struct timespec *tp);
+
+	Returns 0 on success, -1 on error
+
+=======================================================================
+
+Gets the amound of time a process with the policy SCHED_RR is allotted for CPU.
+
+struct timespec {
+	time_t tv_sec; // seconds
+	long tv_sec; // nanoseconds
+};
+
+
+
+*************************** CPU AFFINITY ***************************
+
+Make a process run on one particular CPU. The kernel tries to do this to avoid cache invalidation/misses but it doesnt always work out.
+
+
+=======================================================================
+
+#define _GNU_SOURCE
+#include <sched.h>
+
+int sched_setaffinity(pid_t pid, size_t len, cpu_set_t *set);
+
+	Returns 0 on success, or -1 on error
+
+=======================================================================
+
+len = sizeof(struct cpu_set_t);
+
+The cpu_set_t data structure should be treated as an opaque structure with these functions:
+
+
+=======================================================================
+
+#define _GNU_SOURCE
+#include <sched.h>
+
+void CPU_ZERO(cpu_set_t *set);
+void CPU_SET(int cpu, cpu_set_t *set);
+void CPU_CLR(int cpu, cpu_set_t *set);
+
+int CPU_ISSET(int cpu, cpu_set_t *set);
+	
+	Returns 0 on success, or -1 on error
+
+=======================================================================
+
+CPU_ZERO: initializes set to be empty
+CPU_SET: adds the cpu "cpu" to "set"
+CPU_CLR: removes the "cpu" from "set"
+CPU_ISSET: checks if "cpu" is a member of "set"
+
+
+EXAMPLE:
+
+cpu_set_t set;
+CPU_ZERO(&set);
+CPU_SET(1, &set);
+CPU_SET(2, &set);
+CPU_SET(3, &set);
+sched_setaffinity(pid, sizeof(cpu_set_t), &set);
+
+
+GETTING THE CPU AFFINITY MASK OF A PROCESS:
+
+=======================================================================
+
+#define _GNU_SOURCE
+#include <sched.h>
+
+int sched_getaffinity(pid_t pid, size_t len, cpu_set_t *set);
+
+	Returns 0 on success, or -1 on error
+
+=======================================================================
+
+The mask is returned in "set". There are no permission checks, it is open to any process to use.
