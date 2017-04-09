@@ -1,0 +1,246 @@
+******************** 37.1 Overview ********************
+
+A long lived program with no controlling terminal. Examples:
+
+sshd
+httpd
+crond
+
+
+Some daemons are implemented as kernel threads (part of the kernel itself). Others are not (run in user space).
+They usually run at system startup, and stop when the system is shut down.
+
+
+******************** 37.2 Creating a Daemon ********************
+
+1. fork() and the parent exits, orphaning the child process to the "init" process.
+	-- If started from the command line, it causes the shell to go back to the prompt
+	-- The child process is not a process group leader, because its PID != Inherited PGID
+
+2. setsid() to start a new session and free the daemon from any controlling terminal.
+
+3. fork() again and have the parent exit, so that the daemon is not a ession leader, hence cannot ever reaquire a controlling terminal. OR, you can use O_NOCTTY for every single open() call that may open a terminal device.
+
+4. clear the process umask() so when the daemon creates files and directories, they have the requested permissions.
+
+5. chdir("/"), or not. You can not unmount a drive where the daemon has its CWD.
+
+6. Close all open file descriptors. Redirect fds 1, 2, 3 to /dev/null since a daemon has no controlling terminal to "print" to. Also, you cannot unmount a drive that the daemon holds a file descriptor in.
+
+7. Again, redirect 1, 2, 3 to /dev/null because:
+	-- Ensures if the daemon in any way calls stdio.h functions, they don't fail for some reason.
+
+
+======================================
+
+#include <syslog.h>
+
+int becomeDaemon(int flags);
+
+	Returns 0 on success, or -1 on error
+
+======================================
+
+
+
+******************** 37.3 Guidelines for Writing Daemons ********************
+
+Many daemons are shut down with scripts that run at shutdown.
+
+Otherwise the init process will send SIGTERM to all processes.
+
+You can catch SIGTERM and clean up.
+
+In case a process takes too long cleaning up, the init process sends SIGKILL when it's really time to power off.
+
+Have to be careful of memory leaks and not closing file descriptors in long running processes like daemons.
+
+Many daemons have to make sure that only one daemon of its kind is running at the same time. See section 55.6.
+
+
+
+******************** 37.4 SIGHUP to reinitialize a daemon ********************
+
+Usually daemons have an associated configuration file.
+
+Receiving SIGHUP should reread the config file. SIGHUP is used because daemons do not have controlling terminals.
+
+"logrotate(8)" can be used to manage rotating log files.
+
+
+
+******************** 37.5 SIGHUP to reinitialize a daemon ********************
+
+Syslog is a centralized logging facility. Like journald etc.
+
+There are plenty of options in the config file instructing syslogd what to do with certain logs.
+
+It's a lot like logstash in that way.
+
+API:
+
+
+======================================
+
+#include <syslog.h>
+
+void openlog(const char *ident, int log_options, int facility);
+
+======================================
+
+"ident" is a string that is included with each message to syslog. The content of the pointer is used with every message, not just copied once, so careful with the contents.
+
+"log_options" is a bitmask:
+
+	LOG_CONS:
+		If there is an error sending to the system logger, then write the message to the system console (/dev/console)
+
+	LOG_NDELAY:
+		Open the connection to the UNIX domain socket immediately (/dev/log).
+		Otherwise it will only open the connection on the first syslog() call.
+		Handy if you're going to chroot(), you may not have a way to access /dev/log/ from the jail.
+
+	LOG_NOWAIT:
+		Dont wait() for any child process that may have been created in order to log the message.
+		That sounds kind of weird, idk.
+		On Linux, LOG_NOWAIT has no effect, since no child processes are created when logging a message.
+
+	LOG_0DELAY:
+		Wait until the first syslog() call to connect to the /dev/log domain socket.
+		This is default and not needed.
+
+	LOG_PERROR:
+		Write messages to stderr as well as syslog.
+		Usually daemons redirect stderr to /dev/null so this is generally not useful.
+
+	LOG_PID:
+		Log calling process' PID with each message. This is useful in a forking server.
+
+====================================================================
+FACILITY
+====================================================================
+LOG_AUTH 		Security and authorization messages (e.g., su)
+LOG_AUTHPRIV 	Private security and authorization messages
+LOG_CRON 		Messages from the cron and at daemons
+LOG_DAEMON 		Messages from other system daemons
+LOG_FTP 		Messages from the ftp daemon (ftpd)
+LOG_KERN 		Kernel messages (can’t be generated from a user process)
+LOG_LOCAL0 		Reserved for local use (also LOG_LOCAL1 to LOG_LOCAL7 )
+LOG_LPR 		Messages from the line printer system (lpr, lpd, lpc)
+LOG_MAIL 		Messages from the mail system
+LOG_NEWS 		Messages related to Usenet network news
+LOG_SYSLOG 		Internal messages from the syslogd daemon
+LOG_USER 		Messages generated by user processes (default)
+LOG_UUCP 		Messages from the UUCP system
+====================================================================
+
+
+======================================
+
+#include <syslog.h>
+
+void syslog(int priority, const char *format, ...);
+
+======================================
+
+"priority" is made by ORing a "facility" and a "level" value.
+
+Otherwise works like printf() except you don't need a newline character.
+
+Also, don't pass a user supplied string directly as "format" due to format string attacks.
+
+Do this:
+
+syslog(level, "%s", argv[1]);
+
+etc.
+
+
+====================================================================
+LEVEL
+====================================================================
+LOG_EMERG 		Emergency or panic condition (system is unusable)
+LOG_ALERT 		Condition requiring immediate action (e.g., corrupt system database)
+LOG_CRIT 		Critical condition (e.g., error on disk device)
+LOG_ERR 		General error condition
+LOG_WARNING 	Warning message
+LOG_NOTICE 		Normal condition that may require special handling
+LOG_INFO 		Informational message
+LOG_DEBUG 		Debugging message
+====================================================================
+
+
+USAGE EXAMPLE:
+
+openlog(argv[0], LOG_PID | LOG_CONS | LOG_NOWAIT, LOG_LOCALO);
+syslog(LOG_ERR, "Bad argument: %s", argv[1]);
+syslog(LOG_USER | LOG_INFO, "Exiting");
+
+
+
+======================================
+
+#include <syslog.h>
+
+void closelog(void);
+
+======================================
+
+A daemon typically keeps the syslog connetion open so this isnt called very often.
+
+If it is called, it closes the connection to the domain socket.
+
+
+FILTERING LOG MESSAGES:
+
+======================================
+
+#include <syslog.h>
+
+int setlogmask(int mask_priority);
+
+	Returns previous log priority mask
+
+======================================
+
+Any message whose level is not in the "mask_priority" is discarded.
+
+The macro LOG_MASK() converts the "levels" to bit values suitable for use by setlogmask().
+
+
+Exclude all messages except LOG_ERR and above:
+
+setlogmask(LOG_MASK(LOG_EMERG) | LOG_MASK(LOG_ALERT) | LOG_MASK(LOG_CRIT) | LOG_MASK(LOG_ERR));
+
+there is also LOG_UPTO() on Linux only, you can replace the above call with:
+
+setlogmask(LOG_UPTO(LOG_ERR));
+
+
+****************** 37.5.3 The /etc/syslog.conf File ********************
+
+the structure:
+
+facility.level        action
+
+FOR EXAMPLE:
+
+*.err                          /dev/tty10
+auth.notice                    root
+*.debug;mail.none;news.none    -/var/log/messages
+
+
+1. logs all facilities with LOG_ERR or higher will be forwarded to /dev/tty10 console device.
+2. auth facility with LOG_NOTICE or higher will be forwarded to all users logged in as "root"
+3. 
+	-- all facilities with LOG_DEBUG or higher
+	-- excluding mail facility
+	-- and excluding news facility
+
+	Will be forwarded to /var/log/messages
+	the hyphen means dont sync immediately to disk, which means writes are faster but you might
+	lose logs buffered in the kernel if the system crashes.
+
+When you change the syslog config file you must reloaded like so:
+
+$ killall -HUP syslogd

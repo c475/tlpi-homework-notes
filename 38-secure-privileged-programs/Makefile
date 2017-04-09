@@ -1,6 +1,6 @@
 CC=cc
 
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -pthread -lcrypt
 
 OUTPUT="bin/$(OUT)"
 DIRECT=$(D)

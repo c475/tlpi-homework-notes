@@ -1,0 +1,138 @@
+Notes will be light for this chapter, best to just read the chapter again if needed, instead of looking at notes.
+
+************************* 38.1 Is a Set-User-ID or Set-Group-ID Program Required? *************************
+
+Avoid writing them if at all possible.
+
+Sometimes you need them just for one think like binding to a privileged port.
+
+DROP THE PRIVILEGES WHEN THEY ARE NO LONGER NEEDED.
+
+DROP THE PRIVILEGES AS SOON AS THE PROGRAM STARTS, THEN REGAIN THEM ONLY MOMENTARILY WHEN YOU NEED THEM, THEN DROP ASAP. You can still work around this if you have a vulnerability though. Just good practice anyway.
+
+Try to take advantage of one-off groups and ownership by that group for a program to do work that may otherwise require root.
+
+
+************************* 38.2 Operate with Least Privilege *************************
+
+Operate with the least privilege possible.
+
+
+===================================================================
+
+uid_t orig_euid;
+
+orig_euid = geteuid();
+if (seteuid(getuid()) == -1) { // DROP
+	errExit("seteuid");
+}
+
+// DO UNPRIVILEGED WORK
+
+if (seteuid(orig_euid) == -1) { // REACQUIRE
+	errExit("seteuid");
+}
+
+// DO PRIVILEGED WORK
+
+===================================================================
+
+
+Remember when dropping permissions permanently, you must first regain privilege to even be able to drop it.
+
+
+************************* 38.3 Be Careful When Executing a Program *************************
+
+Drop privileges before exec().
+
+
+
+************************* 38.4 Avoid Exposing Sensitive Information *************************
+
+Dont allow core dumps.
+
+mlock() sensitive memory so it can't get swapped (resource exhaustion attack), and zero it or fill it with random data when done.
+
+Linux doesnt permit set-uid programs to dump core from a signal. But not all unix implementations have this security feature.
+
+you can do setrlimit() with RLIMIT_CORE and set it to 0.
+
+
+************************* 38.5 Confine the Process *************************
+
+USE CAPABILITIES EVEN IF (ESPECIALLY IF) RUNNING AS ROOT. Disable everything that isnt needed so the damage that can be done in the event of a compromise is severely limited.
+
+Maybe try using a chroot jail. Be careful of opened file descriptors outside of the jail so a fchdir(fd) isnt possible. Consider using a virtual server like User-Mode Linux, Xen, KVM, etc.
+
+
+
+************************* 38.6 Beware of Signals and Race Conditions *************************
+
+Don't make assumptions about previously validated attributes of your runtime environment, especially if you do not block certain signals that pause a process.
+
+
+************************* 38.7 Pitfalls When Performing File Operations and File I/O *************************
+
+Make sure there is never a moment where a file that is created or opened by a program is vulnerable to manipulation.
+
+Steps:
+
+1. the process umask should be set to a value that neever lets a file be publically writable.
+2. file ownership is determined by the effective user ID. May need to judiciously use seteuid() or setreuid() to make sure files do not have the wrong owner.
+3. File attributes should be cheked only on an open file descriptor, not checked by pathname then opened.
+4. If a program has to ensure it is the creator of the file, then O_EXCL should be used with open().
+5. Avoid creating fiels in publically writable directories, because an attacker can create a file with a name that is expected by the program.
+
+
+
+************************* 38.8 Don’t Trust Inputs or the Environment *************************
+
+Don't trust the environment list because it can be tampered with. An attacker can change PATH for instance. Though generally you should be using absolute pathnames when doing an exec() so this can't happen unless the binary is replaced.
+
+Sometimes it may be wise to clear the environment list entirely, and possibly restoring it with safe defaults.
+
+BEWARE OF USER INPUT:
+
+1. user created files
+2. command line arguments
+3. interactive inputs
+4. CGI inputs
+5. email messages
+6. environment variables
+7. IPC channels (FIFOs, shared memory, etc)
+8. network packets
+
+
+************************* 38.9 Beware of Buffer Overruns *************************
+
+Always bounds check, use the good functions (strncat()) instead of the bad ones (strcat()).
+
+In order to make stack crashing more difficult—in particular, to make such attacks much more time-consuming when conducted remotely against network servers—from kernel 2.6.12 onward, Linux implements address-space randomization. 
+
+This technique randomly varies the location of the stack over an 8 MB range at the top of virtual memory. In addition, the locations of memory mappings may also be randomized, 
+
+if the soft RLIMIT_STACK limit is not infinite and the Linux-specific /proc/sys/vm/legacy_va_layout file contains the value 0.
+
+More recent x86-32 architectures provide hardware support for marking page tables as NX (“no execute”). This feature is used to prevent execution of program code on the stack, thus making stack crashing more difficult.
+
+
+
+************************* 38.10 Beware of Denial-of-Service Attacks *************************
+
+Good luck
+
+Measures that can be taken:
+
+1. load throttling, dropping requests if the load exceeds some limit.
+2. employ timeouts for clients that may not respond (slowloris attack)
+3. log if under heavy load (but throttle logging too lol so it doesnt fill your disk)
+4. don't allow buffer overflows (duh)
+5. avoid algorithmic complexity attacks (hard)
+
+
+
+************************* 38.11 Check Return Statuses and Fail Safely *************************
+
+Chrck return codes.
+
+Set errno to 0 if a system call can change it and you need to check errno.

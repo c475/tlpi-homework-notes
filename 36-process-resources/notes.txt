@@ -1,0 +1,116 @@
+********************** 36.1 Process Resource Usage **********************
+
+
+===================================================
+
+#include <sys/resource.h>
+
+int getrusage(int who, struct rusage *res_usage);
+
+	Returns 0 on success, or -1 on error;
+
+===================================================
+
+"who" specifies the process(es) for which resource information is to be retrieved:
+
+	RUSAGE_SELF
+
+		Calling process
+
+	RUSAGE_CHILDREN
+
+		Return information about all children that have terminated and have been wai()ed for.
+
+	RUSAGE_THREAD (linux only)
+
+		Return information about the calling thread.
+
+
+struct rusage {
+   struct timeval ru_utime; /* user CPU time used */
+   struct timeval ru_stime; /* system CPU time used */
+   long   ru_maxrss;        /* maximum resident set size */
+   long   ru_ixrss;         /* integral shared memory size */ [UNUSED]
+   long   ru_idrss;         /* integral unshared data size */ [UNUSED]
+   long   ru_isrss;         /* integral unshared stack size */ [UNUSED]
+   long   ru_minflt;        /* page reclaims (soft page faults) */
+   long   ru_majflt;        /* page faults (hard page faults) */
+   long   ru_nswap;         /* swaps */ [UNUSED]
+   long   ru_inblock;       /* block input operations */
+   long   ru_oublock;       /* block output operations */
+   long   ru_msgsnd;        /* IPC messages sent */ [UNUSED]
+   long   ru_msgrcv;        /* IPC messages received */ [UNUSED]
+   long   ru_nsignals;      /* signals received */ [UNUSED]
+   long   ru_nvcsw;         /* voluntary context switches */
+   long   ru_nivcsw;        /* involuntary context switches */
+};
+
+
+
+********************** 36.1 Process Resource Limits **********************
+
+Sometimes if you are unsure about running a program because of resource concerns, set resource limits with the "ulimit" command.
+
+Also, there are functions for getting and setting resource limits:
+
+
+===================================================
+
+#include <sys/resource.h>
+
+int getrlimit(int resource, struct rlimit *rlim);
+
+int setrlimit(int resource, const struct rlimit *rlim);
+
+	Both return 0 on success, or -1 on error
+
+===================================================
+
+
+struct rlimit {
+	rlim_t rlim_cur; // soft limit (actual limit)
+	rlim_t rlim_max; // hard limit (ceiling for rlim_cur)
+};
+
+rlim_t is an integer type.
+
+Resource limits are preserved across exec() and fork().
+
+When printing an rlim_t value, they should be cast to (long long) to hangle the largest possible integer type.
+
+=====================================================================
+Resource 			Limit On
+=====================================================================
+RLIMIT_AS 			Process virtual memory size (bytes)
+
+RLIMIT_CORE			Core file size (bytes)
+
+RLIMIT_CPU 			CPU time (seconds)
+
+RLIMIT_DATA 		Process data segment (bytes)
+
+RLIMIT_FSIZE 		File size (bytes)
+
+RLIMIT_MEMLOCK 	Locked memory (bytes)
+
+RLIMIT_MSGQUEUE 	Bytes allocated for POSIX message queues for real user ID
+
+RLIMIT_NICE 		Nice value (since Linux 2.6.12)
+
+RLIMIT_NOFILE 		Maximum file descriptor number plus one
+
+RLIMIT_NPROC 		Number of processes for real user ID
+
+RLIMIT_RSS 			Resident set size (bytes; not implemented)
+
+RLIMIT_RTPRIO 		Realtime scheduling priority (since Linux 2.6.12)
+
+RLIMIT_RTTIME 		Realtime CPU time (microseconds; since Linux 2.6.25)
+
+RLIMIT_SIGPENDING 	Number of queued signals for real user ID (since
+
+RLIMIT_STACK 		Size of stack segment (bytes)
+=====================================================================
+
+
+

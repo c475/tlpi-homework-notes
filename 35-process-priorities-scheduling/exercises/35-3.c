@@ -8,6 +8,7 @@ void consume(int length)
 {
 	struct tms timebuffer;
 	clock_t ticksPerSecond;
+	double cpuTime;
 	int numQuarterSec;
 	int numSec;
 
@@ -18,16 +19,14 @@ void consume(int length)
 	for (;;) {
 		times(&timebuffer);
 
-		if ((double)timebuffer.tms_utime / (double)ticksPerSecond >= numQuarterSec * 0.25) {
-			printf("[%ld] %lf\n",
-				(long)getpid(),
-				(double)timebuffer.tms_utime / (double)ticksPerSecond
-			);
+		cpuTime = (double)timebuffer.tms_utime / (double)ticksPerSecond;
 
+		if (cpuTime >= numQuarterSec * 0.25) {
+			printf("[%ld] %lf\n", (long)getpid(), cpuTime);
 			numQuarterSec++;
 		}
 
-		if (timebuffer.tms_utime / ticksPerSecond >= numSec) {
+		if (cpuTime >= numSec) {
 			printf("[%ld] Yielding\n", (long)getpid());
 			numSec++;
 			sched_yield();
@@ -40,7 +39,15 @@ void consume(int length)
 	}
 }
 
+/*
+	This broke my system because I didnt set a resource limit.
+	It seems an important system process got starved, resulting in some file system inconsistency
+	which lead to the system partition being remounted as read-only, preventing it from booting, something like that.
+	Fixable but chose to reinstall after fschk failed to address the issue.
+	Maybe the system set the /boot/ partition as read only in /etc/fstab/?
 
+	Program works nicely besides that though.
+*/
 int main(int argc, char *argv[])
 {
 	int maxPriority;
