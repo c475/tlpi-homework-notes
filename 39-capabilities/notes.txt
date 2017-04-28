@@ -331,3 +331,68 @@ The file capabilities ate stored in a "security" extended attribute named "secur
    CAP_WAKE_ALARM (since Linux 3.0)
           Trigger something that will wake up the system (set
           CLOCK_REALTIME_ALARM and CLOCK_BOOTTIME_ALARM timers).
+
+
+DETAILS OF INHERITENCE VIA exec():
+
+Program has CAP_SYS_TIME | CAP_WAKE_ALARM | CAP_SYSLOG in "inheritable"
+
+File has CAP_SYS_TIME | CAP_WAKE_ALARM in "inheritable"
+
+Program does exec() on file.
+
+New program has (CAP_SYS_TIME | CAP_WAKE_ALARM | CAP_SYSLOG) & (CAP_SYS_TIME | CAP_WAKE_ALARM)
+
+Which means CAP_SYS_TIME | CAP_WAKE_ALARM
+
+
+
+******************** 39.4 The Modern Capabilities Implementation ********************
+
+Requirements:
+
+1. For a privileged action, the kernel must check the capabilities, rather than checking for a UID 0.
+2. Kernel must provide system calls for setting/getting capabilities.
+3. Kernel must support the notion of attaching capabilities to an executable (for exec() purposes).
+
+
+******************** 39.6 Effect on Process Capabilities of Changing User IDs ********************
+
+CHANGING UIDS and its effects on capabilities:
+
+1. If it switches from UID 0 to ALL UID non-zero (real, eff, saved), all capabilities are cleared.
+2. If EUID is 0 and switches to non-zero, effective capabilities are dropped.
+3. If EUID is nonzero and is changed to 0, "permitted" caps are copied to "effective" caps.
+4. If file system UID is changed from 0 to nonzero, the following file-related capabilities are cleared from the effective capability set: CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER, CAP_FSETID, CAP_LINUX_IMMUTABLE (since Linux 2.6.30), CAP_MAC_OVERRIDE, and CAP_MKNOD. If it is changed from nonzero to zero, then 
+
+
+
+******************** 39.7 Changing Process Capabilities Programmatically ********************
+
+1. If the process doesn’t have the CAP_SETPCAP capability in its effective set, then the
+new inheritable set must be a subset of the combination (union) of the existing
+inheritable and permitted sets.
+2. The new inheritable set must be a subset of the combination (union) of the
+existing inheritable set and the capability bounding set.
+3. The new permitted set must be a subset of the existing permitted set. In other
+words, a process can’t grant itself permitted capabilities that it doesn’t have.
+Put another way, a capability dropped from the permitted set can’t be reacquired.
+4. The new effective set is allowed to contain only capabilities that are also in the
+new permitted set.
+
+
+
+******************** 39.8 Creating Capabilities-Only Environments ********************
+
+if (prctl(PR_SET_SECUREBITS,
+  /* SECBIT_KEEP_CAPS off */
+  SECBIT_NO_SETUID_FIXUP | SECBIT_NO_SETUID_FIXUP_LOCKED |
+  SECBIT_NOROOT | SECBIT_NOROOT_LOCKED)
+  == -1) {
+    errExit("prctl");
+}
+
+
+******************** 39.9 Discovering the Capabilities Required by a Program ********************
+
+1. strace(1), looking for EPERM errors.

@@ -1,0 +1,236 @@
+******************** 40.1 Overview of the utmp and wtmp Files ********************
+
+=== utmp: file showing who is currently logged in (as used by the "who" command).
+	_PATH_UTMP in <paths.h> and <utmpx.h>
+	Usually in /var/run/utmp
+
+=== wtmp: audit trail for all logins and logouts
+	_PATH_WTMP in <paths.h> and <utmpx.h>
+	Usually in /var/log/wtmp
+
+
+******************** 40.3 The utmpx Structure ********************
+
+
+================================================================================================
+
+#define _GNU_SOURCE // without _GNU_SOURCE the two field names below are prepended by "__"
+
+struct exit_status {
+    short e_termination; // process termination status (signal)
+    short e_exit; // process exit status
+};
+
+#define __UT_LINESIZE 32
+#define __UT_NAMESIZE 32
+#define __UT_HOTSIZE 256
+
+struct utmpx {
+    short ut_type;                  // type of record
+    pid_t ut_pid;                   // PID of login process
+    char ut_line[__UT_LINESIZE];    // terminal device name
+    char it_id[4];                  // suffix from terminal name, or ID field from inittab(5)
+
+    char ut_user[__UT_NAMESIZE];    // username
+    char ut_host[__UT_HOSTSIZE];    // hostname for remote login, or kernel version for run-level packages
+
+    struct exit_status ut_exit;     // exit status of process marked as DEAD_PROCESS 
+                                    // (not filled in by init(8) on Linux)
+
+    long ut_session;                // session ID
+    struct timeval ut_tv;           // Time when entry was made
+    int32_t ut_addr_v6[4];          // IP address of remote host (IPv4 only uses ut_addr_v6[0])
+
+    char __unused[20];              // reserved for future use
+};
+
+/*
+
+ut_type is an integer that can be any of these:
+
+    EMPTY (0)
+        This record doesn’t contain valid accounting information.
+
+    RUN_LVL (1)
+        This record indicates a change in the system’s run-level during system star-
+        tup or shutdown. (Information about run-levels can be found in the init(8)
+        manual page.) The _GNU_SOURCE feature test macro must be defined in order
+        to obtain the definition of this constant from <utmpx.h>.
+
+    BOOT_TIME (2)
+        This record contains the time of system boot in the ut_tv field. The usual
+        author of RUN_LVL and BOOT_TIME records is init. These records are written to
+        both the utmp file and the wtmp file.
+
+    NEW_TIME (3)
+        This record contains the new time after a system clock change, recorded in
+        the ut_tv field.
+
+    OLD_TIME (4)
+        This record contains the old time before a system clock change, recorded
+        in the ut_tv field. Records of type OLD_TIME and NEW_TIME are written to the
+        utmp and wtmp files by the NTP (or a similar) daemon when it makes changes
+        to the system clock.
+
+    INIT_PROCESS (5)
+        This is a record for a process spawned by init, such as a getty process. Refer
+        to the inittab(5) manual page for details.
+
+    LOGIN_PROCESS (6)
+        This is a record for a session leader process for a user login, such as a
+        login(1) process.
+
+    USER_PROCESS (7)
+        This is a record for a user process, usually a login session, with the user-
+        name appearing in the ut_user field. The login session may have been
+        started by login(1) or by some application offering a remote login facility,
+        such as ftp or ssh.
+
+    DEAD_PROCESS (8)
+        This record identifies a process that has exited.
+
+*/
+
+================================================================================================
+
+
+Each of the string fields in the utmpx structure is null-terminated unless it com-
+pletely fills the corresponding array.
+
+
+
+******************** 40.4 Retrieving information from the utmp and wtmp files ********************
+
+
+==============================================
+
+#include <utmpx.h>
+
+void setutxent(void);
+
+    Rewinds the utmp file to the beginning
+
+==============================================
+
+It is recommended that you run this function before using any of the other utmpx API calls because some third party libraries might make use of them.
+
+
+==============================================
+
+#include <utmpx.h>
+
+void endutxent(void);
+
+    Closes the utmp record
+
+==============================================
+
+
+==============================================
+
+#include <utmpx.h>
+
+struct utmpx *getutxent(void);
+struct utmpx *getutxid(const struct utmpx *ut);
+struct utmpx *getutxline(const struct utmpx *ut);
+
+    Return a pointer to a statically allocated utmpx struct,
+        or NULL if no matching record or EOF was encountered.
+
+==============================================
+
+None of these are reentrant because of the static buffer.
+
+getutxent(): 
+    1. returns the next sequential record from the utmp file.
+
+getutxid():
+    1. search based on the current file position, and passed in utmp struct
+    2. searches based on ut_type and ut_id
+    3. if ut_type is one of these (INIT_PROCESS, LOGIN_PROCESS, USER_PROCESS, or DEAD_PROCESS), then they are ALL searched for.
+
+getutxline():
+    1. search based on the current file position, and passed in utmp struct
+    2. searches for LOGIN_PROCESS or USER_PROCESS, and whose ut_line field matches. This is useful for tracking user logins.
+
+
+Because the static buffer used for struct utmpx can be used as a sort of "cache" on some implementations, the struct must be zeroed out if the lookup is being performed in a loop to avoid returning the same record over and over.
+
+
+These functions use the standard utmp file. If you want to specify another file:
+
+
+==============================================
+
+#define _GNU_SOURCE
+#include <utmpx.h>
+
+int utmpxname(const char *file);
+
+    Returns 0 on success, -1 on error.
+
+==============================================
+
+This function merely makes a copy of the string passed to it. Therefore it will not throw an error until you try to use one of the utmpx API calls if passed an invalid path.
+
+This also closes any previously opened utmp file.
+
+
+
+******************** 40.5 Retrieving the Login Name: getlogin() ********************
+
+==============================================
+
+#include <unistd.h>
+
+char *getlogin(void);
+
+    Retuns pointer to statically allocated username string, or NULL on error
+
+==============================================
+
+Uses the utmp file for lookup.
+
+
+
+******************** 40.6 Updating the utmp and wtmp files for a login session ********************
+
+If you're writing a program that deals with logins, you should update the utmp file.
+
+On login:
+
+    1. Needed fields: ut_type, ut_user, ut_tv, ut_pid, ut_id, ut_line
+
+On logout:
+
+    1. The previously written record should be replaced with a new one with ut_type == DEAD_PROCESS.
+    2. ut_id and ut_line are the same, but ut_user is zeroed out.
+    3. A copy of the same record is written to wtmp file.
+
+utmp and wtmp should be protected files. Also, don't rely on getlogin() for any kind of permission checking in the event that the utmp file can be written to by arbitrary users.
+
+
+==============================================
+
+#include <utmpx.h>
+
+struct utmpx *pututxline(const struct utmpx *ut);
+
+    Returns pointer to copy of successfully updated record on success, or NULL on error.
+
+==============================================
+
+Before writing the record, pututxline() uses getutxid() for find a record that can be overwritten.
+If it's not found, then a new record is appended to the utmp file.
+
+
+
+==============================================
+
+#define _GNU_SOURCE
+#include <utmpx.h>
+
+void updwtmpx(const char *wtmpx_file, const struct utmpx *ut);
+
+==============================================
+
