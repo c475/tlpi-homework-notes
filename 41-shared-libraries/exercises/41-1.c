@@ -1,0 +1,2 @@
+- the program statically linked with the C library is huge.
+- libpthread is actually really small

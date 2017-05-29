@@ -27,7 +27,7 @@ struct exit_status {
 
 struct utmpx {
     short ut_type;                  // type of record
-    pid_t ut_pid;                   // PID of login process
+    pid_t ut_pid;                   // PID of login process / process creating the record
     char ut_line[__UT_LINESIZE];    // terminal device name
     char it_id[4];                  // suffix from terminal name, or ID field from inittab(5)
 
@@ -233,4 +233,23 @@ If it's not found, then a new record is appended to the utmp file.
 void updwtmpx(const char *wtmpx_file, const struct utmpx *ut);
 
 ==============================================
+
+
+
+******************** 40.7 The lastlog file ********************
+
+Another file you have to update when providing a login service... Tells the user the last time they logged in.
+
+Use _PATH_LASTLOG defined in <paths.h>, which is /var/log/lastlog on Linux.
+
+The lastlog struct is defined in <lastlog.h>
+
+#define UT_NAMESIZE 32
+#define UT_HOSTSIZE 256
+
+struct lastlog {
+    time_t ll_time; // time of last login
+    char ll_line[UT_NAMESIZE]; // terminal for remote login
+    char ll_host[UT_HOST]; // hostname for remote
+};
 

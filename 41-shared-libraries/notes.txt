@@ -1,0 +1,217 @@
+******************** 41.1 Object Libraries ********************
+
+This is like normal one-off compilation.
+
+$ cc -g -c prog.c mod1.c mod2.c mod3.c
+$ cc -g -o prog_nolib prog.o mod1.o mod2.o mod3.o
+
+You compile C source files into objects, then link them into an executable
+
+You can do it in 1 command of course
+
+$ cc -g -c prog.c mod1.c mod2.c mod3.c -o prog_nolib
+
+
+******************** 41.2 Object Libraries ********************
+
+Also known as archives.
+
+Step 1, compile object files:
+
+$ cc -g -c mod1.c mod2.c mod3.c
+
+Step 2, build an archive with the "ar" command:
+
+$ ar r libdemo.a mod1.o mod2.o mod3.o
+
+Step 3, get rid of unneeded object files:
+
+$ rm mod1.o mod2.o mod3.o
+
+
+
+TO USE IT, specify the archive or move the archive to a standard location:
+
+$ cc -g -c prog.c
+$ cc -g -o prog prog.o libdemo.a
+
+Standard location:
+
+$ cc -g -o prog prog.o -ldemo
+
+The name is prefixed by an "l"
+
+
+You can tell the linker to look in a non standard directory for libraries:
+
+$ cc -g -o prog prog.o -Lmylibdir -ldemo
+
+
+
+******************** 41.4 Creating and Using Shared Libraries—A First Pass ********************
+
+$ gcc -g -c -fPIC -Wall mod1.c mod2.c mod3.c
+$ gcc -g -shared -o libfoo.so mod1.o mod2.o mod3.o
+
+Must use "Position independent code". This means that the places in virtual memory that the functions/variables live must be determined at run-time. The linker has no way of knowing, when a program is compiled against a shared library, because a shared libbary is simply an ELF header and not the code itself (like when compiling vs static or object library).
+
+In order to determine if an object file has been compiled with -fPIC, you can do either of these:
+
+$ nm mod1.o | grep _GLOBAL_OFFSET_TABLE_
+$ readelf -s mod1.o | grep _GLOBAL_OFFSET_TABLE_
+
+Conversely if any of these give output, there was at least one object file not compiled with –fPIC:
+
+$ objdump --all-headers libfoo.so | grep TEXTREL
+$ readelf -d libfoo.so | grep TEXTREL
+
+
+LD_LIBRARY_PATH: an environment variable that can be used if the shared library resides in a non-standard path.
+
+$ LD_LIBRARY_PATH=. ./prog
+
+
+soname, SONAMES:
+
+$ gcc -g -c -fPIC -Wall mod1.c mod2.c mod3.c
+$ gcc -g -shared -Wl,-soname,libbar.so -o libfoo.so mod1.o mod2.o mod3.o
+
+If we want to determine the soname of an existing shared library, we can use
+either of the following commands:
+
+$ objdump -p libfoo.so | grep SONAME
+SONAME    libbar.so
+
+$ readelf -d libfoo.so | grep SONAME
+0x0000000e (SONAME)    Library soname: [libbar.so]
+
+
+******************** 41.5 Useful Tools for Working with Shared Libraries ********************
+
+$ ldd prog
+        libdemo.so.1 => /usr/lib/libdemo.so.1 (0x40019000)
+        libc.so.6 => /lib/tls/libc.so.6 (0x4017b000)
+        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+
+(lists dynamic dependencies)
+library-name => resolves-to-path
+
+
+The nm command lists the set of symbols defined within an object library or executable program.
+
+Want to find the shared library that defines the "crypt()" function?
+
+$ nm -A /usr/lib/lib*.so 2> /dev/null | grep ' crypt$'
+/usr/lib/libcrypt.so:00007080 W crypt
+
+
+
+******************** 41.5 Useful Tools for Working with Shared Libraries ********************
+
+=======================================================================================================================
+Name            Format                  Description
+=======================================================================================================================
+real name       libname.so.maj.min      The file holding the library code
+=======================================================================================================================
+soname          libname.so.maj          One instance per major version. Used at runtime to find the lib via symlink
+=======================================================================================================================
+linker name     libname.so              A symlink to the soname, allows version-independent linking commands
+=======================================================================================================================
+
+
+CREATING A SHARED LIB STEP BY STEP:
+
+// make the objects
+$ gcc -g -c -fPIC -Wall mod1.c mod2.c mod3.c
+
+// create the library with the objects, specifying a soname as well
+$ gcc -g -shared -Wl,-soname,libdemo.so.1 -o libdemo.so.1.0.1 mod1.o mod2.o mod3.o
+
+// create symlinks for the soname and linker name
+$ ln -s libdemo.so.1.0.1 libdemo.so.1
+$ ln -s libdemo.so.1 libdemo.so
+
+// verify setup
+$ ls -l libdemo.so* | awk '{print $1, $9, $10, $11}'
+lrwxrwxrwx libdemo.so -> libdemo.so.1
+lrwxrwxrwx libdemo.so.1 -> libdemo.so.1.0.1
+-rwxr-xr-x libdemo.so.1.0.1
+
+// Then we can build our executable using the linker name 
+// (note that the link command makes no mention of version numbers)
+// and run the program as usual:
+$ gcc -g -Wall -o prog prog.c -L. -ldemo
+$ LD_LIBRARY_PATH=. ./prog
+Called mod1-x1
+Called mod2-x2
+
+
+******************** 41.7 Installing Shared Libraries ********************
+
+Directories where libs are typically installed:
+
+1. /usr/lib: standard libs
+2. /lib/: libs required during system startup since /usr/ may not be mounted yet
+3. /usr/local/lib: experimental libs, useful if /usr/lib/ is a network mount as well
+4. a directory listed in /etc/ld.so.conf (shared library cache)
+
+
+INSTALLING MANUALLY:
+
+$ su
+Password:
+# mv libdemo.so.1.0.1 /usr/lib
+# cd /usr/lib
+# ln -s libdemo.so.1.0.1 libdemo.so.1
+# ln -s libdemo.so.1 libdemo.so
+
+
+
+"ldconfig" is a good tool for managing shared libraries since it will automatically update linker and sonames.
+Whemever you install a library be sure to run $ sudo ldconfig
+
+
+******************** 41.8 Compatible Versus Incompatible Libraries ********************
+
+A library is compatable with the old version if:
+
+1. You don't have to change your code to use the new version.
+
+
+******************** 41.9 Upgrading Shared Libraries ********************
+
+1. Create the new library (PIC objects + realname + embed soname)
+2. Put it in the right directory
+3. run ldconfig (or manually make the soname and linker name)
+
+$ su
+Password:
+# gcc -g -c -fPIC -Wall mod1.c mod2.c mod3.c
+# gcc -g -shared -Wl,-soname,libdemo.so.1 -o libdemo.so.1.0.2 mod1.o mod2.o mod3.o
+# mv libdemo.so.1.0.2 /usr/lib
+# ldconfig -v | grep libdemo
+    libdemo.so.1 -> libdemo.so.1.0.2 (changed)
+
+Here is what you would do to create a new major version of the library
+The difference being that you have to update the lnker name to point to the new soname:
+
+# gcc -g -c -fPIC -Wall mod1.c mod2.c mod3.c
+# gcc -g -shared -Wl,-soname,libdemo.so.2 -o libdemo.so.2.0.0 mod1.o mod2.o mod3.o
+# mv libdemo.so.2.0.0 /usr/lib
+# ldconfig -v | grep libdemo
+    libdemo.so.1 -> libdemo.so.1.0.2
+    libdemo.so.2 -> libdemo.so.2.0.0 (changed)
+# cd /usr/lib
+# ln -sf libdemo.so.2 libdemo.so
+
+
+******************** 41.10 Specifying Library Search Directories in an Object File ********************
+
+Besides the LD_LIBRARY_PATH environment variable and standard locations, there is another way to specify the library path: embedding it in the object files themselves with the -rpath option:
+
+$ gcc -g -Wall -Wl,-rpath,/home/mtk/pdir -o prog prog.c libdemo.so
+
+You can specify multiple paths with -rpath, they will be searched in the order they are given.
+
+LD_RUN_PATH environment variable is automatically embedded as the "rpath" if "-rpath" is not specified.
+

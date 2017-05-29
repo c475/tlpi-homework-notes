@@ -1,0 +1,213 @@
+******************** 42.1 Dynamically Loaded Libraries ********************
+
+This is about the "dlopen" api. This lets you, in your program, to load and utilize shared libraries.
+
+1. The dlopen() function opens a shared library, returning a handle used by subsequent calls.
+2. The dlsym() function searches a library for a symbol (a string containing the name of a function or variable) and returns its address.
+3. The dlclose() function closes a library previously opened by dlopen().
+4. The dlerror() function returns an error-message string, and is used after a failure return from one of the preceding functions.
+
+
+=========================================================
+
+#include <dlfcn.h>
+
+void *dlopen(const char *libfilename, int flags);
+
+    Returns library handle on success, or NULL on error
+
+=========================================================
+
+Returns a handle to a library object, which can be used in subsequent calls to the "dlopen" API.
+
+If there are any slashes in "libfilename", then it is interpreted as an absolute or relative path.
+
+Otherwise, normal rules apply (standard directories and the ldconfig cache).
+
+If a library that is opened depends on another library, it is also opened. This will happen recursively if it has to. The set of libraries is the "dependency tree".
+
+You can call dlopen() on the same lib multiple times: it is only loaded into memory once. Hiowever, each dlopen() call "increments" that librarie's count, and the library is not removed from memory until it goes to 0 by calling dlclose() enough times.
+
+FLAGS:
+
+    RTLD_LAZY:
+
+        Resolve undefined symbols when code is run.
+
+
+    RTLD_NOW:
+
+        Resolve all undefined symbols now.
+
+    RTLD_GLOBAL:
+
+        Symbols in this library are available to other libraries loaded with dlopen().
+
+    RTLD_LOCAL:
+
+        Symbols in this library are NOT available to other libraries loaded with dlopen() (this is the default).
+
+
+    ====== SPECIAL LINUX FLAGS ======
+
+    RTLD_NODELETE:
+
+        When the library reference count drops to 0 via dlclose(), do not unload the library.
+        This means all static variables in the library will not be reset.
+
+    RTLD_NOLOAD:
+
+        Do not load the library.
+        You can use this to "promote" the flags on an already open library.
+
+    RTLD_DEEPBIND:
+
+        When resolving a symbol, search for definitions in the library first, then look outwards to other libraries,
+        then look to the main program.
+
+
+=========================================================
+
+#include <dlfcn.h>
+
+const char *dlerror(void);
+
+    Returns error string on error, or NULL on no error.
+    dlerror() "consumes" the error.
+
+=========================================================
+
+
+=========================================================
+
+#include <dlfcn.h>
+
+void *dlsym(void *handle, char *symbol);
+
+    Returns address of symbol, or NULL if symbol is not found.
+
+=========================================================
+
+
+dlvsym(handle, symbol, version) for "symbol versioned" libraries.
+
+A Symbol may be "NULL" which is indistinguishable from an error, so you must clear dlerror() before caling dlsym(), then check if dlerror() returns an error when dlsym() returns NULL...
+
+For non-function symbols, this is easy to use:
+
+=====================================
+
+char *err;
+int *p;
+
+(void)dlerror();
+p = (int *)dlsym(handle, "some_symbol");
+if (p == NULL) {
+    err = dlerror();
+    if (err != NULL) {
+        errExit("dlsym");
+    }
+}
+
+=====================================
+
+
+However when dealing with functions it gets complicated with the casting:
+
+=====================================
+
+*(void **)(&funcp) = dlsym(handle, "some_function");
+
+res = (*funcp)(some_arg);
+
+=====================================
+
+
+>>>>>>>>>>>>>>>>>>>>> PSEUDOHANDLERS <<<<<<<<<<<<<<<<<<<
+
+RTLD_DEFAULT:
+
+    Start search for symbol in the main program, then work through all libraries loaded, in order, including those opened with dlopen().
+
+RTLD_NEXT:
+
+    Search for symbol in shared libraries loaded after the one invoking dlsym(). (used to implement wrapper functions / hooking stdlib functions).
+
+
+
+CLOSING A LIBRARY HANDLE:
+
+=====================================
+
+#include <dlfcn.h>
+
+int dlclose(void *handle);
+
+    Returns 0 on success, -1 on error
+
+=====================================
+
+
+GETTING INFO ABOUT LOADED SYMBOLS: dladdr()
+
+=====================================
+
+#define _GNU_SOURCE
+#include <dlfcn.h>
+
+int dladdr(const void *addr, Dl_info *info);
+
+    Returns non-zero value if addr is found in a shared library, otherwise 0
+
+=====================================
+
+"info" is caller allocated:
+
+typedef struct {
+    
+    const char *dli_fname; // pathname of shared library containing "addr"
+
+    void *dli_fbase; // base address at which the shared library is loaded
+
+    const char *dli_sname; // name of symbol whose definition overlaps "addr"
+
+    void *dli_saddr; // actual value of the symbol returned in "dli_sname"
+
+} Dl_info;
+
+
+
+
+IF YOU WANT SHARED LIBRARIES TO HAVE ACCESS TO THE MAIN PROGRAM:
+
+$ gcc -Wl,--export-dynamic main.c
+
+OR:
+
+$ gcc -export-dynamic main.c
+
+Using either of these options allows a dynamically loaded library to access global symbols in the main program.
+
+The gcc –rdynamic option and the gcc –Wl,–E option are further synonyms for –Wl,––export–dynamic.
+
+
+******************** 42.2 Controlling Symbol Visibility ********************
+
+1. Use the static keyword to make sure function definitions are only visible inside the file.
+
+2. use some GNU magic:
+
+    void __attribute__ ((visibility("hidden"))) func(void)
+    {
+        // code
+    }
+
+    This makes the function visible across all source code modules in a shared library, but not outside it.
+
+3. Use version scripts
+
+4. RTLD_GLOBAL if you want symbols to be visible everywhere.
+
+
+******************** 42.3 Linker version scripts ********************
+

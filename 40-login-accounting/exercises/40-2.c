@@ -7,8 +7,11 @@
 
 int main(int argc, char *argv[])
 {
+    int fd;
     struct utmpx ut;
+    struct lastlog llog;
     char *devName;
+    uid_t uid;
 
     if (argc < 2 || strcmp(argv[1], "--help") == 0) {
         usageErr("%s username [sleep-time]\n", argv[0]);
@@ -74,6 +77,27 @@ int main(int argc, char *argv[])
     updwtmpx(_PATH_WTMP, &ut); // append logout to wtmp
 
     endutxent();
+
+    // write to lastlog
+    uid = userIdFromName(argv[1]);
+    if (uid == -1) {
+        errExit("userIdFromName");
+    }
+
+    fd = open(_PATH_LASTLOG, O_WRONLY);
+    if (fd == -1) {
+        errExit("open");
+    }
+
+    if (lseek(fd, uid * sizeof(struct lastlog), SEEK_SET) == -1) {
+        errExit("lseek");
+    }
+
+    if (write(fd, &llog, sizeof(struct lastlog)) == -1) {
+        errExit("write");
+    }
+
+    close(fd);
 
     exit(EXIT_SUCCESS);
 }
