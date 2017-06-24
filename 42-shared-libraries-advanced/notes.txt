@@ -211,3 +211,65 @@ The gcc –rdynamic option and the gcc –Wl,–E option are further synonyms fo
 
 ******************** 42.3 Linker version scripts ********************
 
+Don't really care, here's some command line usage though:
+
+$ cat sv_lib_v1.c
+#include <stdio.h>
+void xyz(void) { printf("v1 xyz\n"); }
+$ cat sv_v1.map
+VER_1 {
+    global: xyz;
+    local: *; # Hide all other symbols
+};
+$ gcc -g -c -fPIC -Wall sv_lib_v1.c
+$ gcc -g -shared -o libsv.so sv_lib_v1.o -Wl,--version-script,sv_v1.map
+
+
+$ cat sv_prog.c
+#include <stdlib.h>
+int
+main(int argc, char *argv[])
+{
+    void xyz(void);
+    xyz();
+    exit(EXIT_SUCCESS);
+}
+
+$ gcc -g -o p1 sv_prog.c libsv.so
+
+$ LD_LIBRARY_PATH=. ./p1
+v1 xyz
+
+
+******************** 42.4 Initialization and Finalization Functions ********************
+
+This is code that can be run when a library is loaded, and.or unloaded (pretty cool).
+
+This is run whether or not the library is auto-loaded by the dynamic linker, or the dlopen() API.
+
+CONSTRUCTOR:
+
+
+void __attribute__ ((constructor)) some_name_load(void)
+{
+    /* Initialization code */
+}
+
+
+DESTRUCTOR:
+
+
+void __attribute__ ((destructor)) some_name_unload(void)
+{
+    /* Finalization code */
+}
+
+
+THE OLD WAY:
+
+You used to define a constructor (_init()) and destructor (_fini()) as part of the library.
+
+You must specify the gcc -nostartfiles option to prevent the linker from exporting the default version of these functions.
+
+These are now considered obsolete, in favor of the GNU attributes.
+

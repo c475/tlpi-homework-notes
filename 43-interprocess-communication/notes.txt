@@ -1,0 +1,214 @@
+******************** 43.1 A Taxonomy of IPC Facilities ********************
+
+There are three types of IPC:
+
+    1. Communication: exchanging data between processes.
+
+    2. Synchronization: Synchronizing actions of processes or threads.
+
+    3. Signals: They can be used for either of the above (realtime signals can exchange data).
+
+
+******************** 43.2 Communication Facilities ********************
+
+Communication facilities between processes can be broken into two groups:
+
+    1. Data-transfer facilities: Reading and Writing. One process writes to an IPC facility, and the other reads from it.
+        This requires two transfers of data between kernel memory and user memory.
+        Write: transfer data from user memory to kernel memory.
+        Read: transfer from kernel memory to user memory.
+
+    2. Shared memory: Exchange data by placing it in a region of shared memory.
+        This is done by the kernel making page-table entries in each process (virtual memory) that point to the same 
+        location in RAM (physical memory).
+        Because communicaion does not require system calls or interfacing with the kernel, this can be very fast.
+
+
+You can break the Data Transfer faciities into the following subcategories:
+
+    1. Byte stream: pipes, FIFOs, stream sockets. Read operations read an arbitrary amount of bytes.
+
+    2. Message: System V message queues, POSIX message queues, datagram sockets (UDP).
+        Each read operation reads an entire message, as written by the writer process.
+        You cannot read just part of a message, leaving the rest on the IPC facility.
+        Nor is it possible to read multiple messages in a single read operation.
+
+    3. Pseudoterminals: Communication facility intended for use in specialized situations.
+        (see chapter 64)
+
+Data Transfer facilities have a few other differences from shared memory:
+
+    1. READS ARE DESTRUCTIVE. It consumes the data. However, with stream sockets, you can use the MSG_PEEK flag
+        to perform a non-destructive read from a socket.
+        UDP sockets allow a single message to be broadcast or multicast to multiple recipients.
+
+    2. Synchronization between the reader and writer process is automatic. A read operation will block until data is available (by default). Non-blocking operations are possible though.
+
+Shared memory types:
+
+    1. System V shared memory, POSIX shared memory, and memory mappings.
+
+    2. Although memory mapping is fast, it is offset by the need for synchronization when writes to the mapping are taken into account. One process should not read from a region of shared memory that is being updated by another process.
+
+    3. Data places in shared memory is visible to all of the processes that share that memory.
+
+
+******************** 43.3 Synchronization Facilities ********************
+
+1. Semaphores:
+
+    - Kernel maintained integer that can never fall below 0.
+
+    - A process can increase or decrease the value of the semaphore.
+
+    - If an attempt to reduce it below 0 is made, it is blocked until the value of the semaphore is raised to 1,
+        which lets the process decrement it to 0. This can also be non-blocking, in which case
+        the operation will return immediately with an error saying you cannot decrease the value below 0.
+
+    - The meaning of a semaphore is determined by an application.
+
+    - A process decrements a semaphore from 1 to 0 to reserve exclusive access to some resource,
+        then increments it to free its hold on the resource.
+
+    - The use of a binary semaphore is common (1 or 0), however if there are multiple instances of a shared resource
+        then the max value of the semaphore would equal the number of resources.
+
+2. File locks:
+
+    - Read (shared) locks, and write (exclusive) locks. Only one process/thread can hold the write lock, where multiple can hold a read lock.
+
+    - flock() and fcntl(). flock() locks an entire file. fcntl() can lock regions of a file.
+
+
+========================================
+
+#include <sys/file.h>
+
+int flock(int fd, int operation);
+
+    Returns 0 on success, -1 on error
+
+
+    "operation":
+
+       LOCK_SH  Place a shared lock.  More than one  process  may  hold  a
+                shared lock for a given file at a given time.
+
+       LOCK_EX  Place  an  exclusive  lock.   Only one process may hold an
+                exclusive lock for a given file at a given time.
+
+       LOCK_UN  Remove an existing lock held by this process.
+
+========================================
+
+
+3. Mutexes and condition variables:
+
+    - Usually used with POSIX threads.
+
+
+Data communication facilities can also be used for synchronization, since a read() will block by default if no data is available.
+
+Since kernel 2.6.22, Linux provides an additional, nonstandard synchroniza-
+tion mechanism via the eventfd() system call. This system call creates an eventfd
+object that has an associated 8-byte unsigned integer maintained by the kernel.
+The system call returns a file descriptor that refers to the object. Writing an
+integer to this file descriptor adds that integer to the object’s value. A read()
+from the file descriptor blocks if the object’s value is 0. If the object has a non-
+zero value, a read() returns that value and resets it to 0. In addition, poll(),
+select(), or epoll can be used to test if the object has a nonzero value; if it does,
+the file descriptor indicates as being readable. An application that wishes to
+use an eventfd object for synchronization must first create the object using
+eventfd(), and then call fork() to create related processes that inherit file descriptors
+referring to the object. For further details, see the eventfd(2) manual page.
+
+
+
+******************** 43.4 Comparing IPC Facilities ********************
+
+Check table 43-1 for a good overview of IPC facilities.
+
+Some various important notes about this stuff that may seem obvious:
+
+    1. Flow control on a stream socket (or anything that blocks on read()) is useful for many applications.
+
+    2. Some applications are more suited for shared memory (when multiple programs need access to the same data structure).
+
+    3. Some are stream oriented, some are message oriented. However, you may implement a type of messaging system
+        on top of a stream facility (by deliminating a byte stream, or sending a header with info about the contents of the stream).
+
+    4. An interesting thing about System V and POSIX message queues is that a message can be given a type or numeric identity, so it's really a priority queue.
+
+    5. Pipes, FIFOs, and sockets are implemented with file descriptors, and support the use of systrm calls that operate on file descriptors.
+        They also support a wide range of alternative I/O methods such as multiplexing (select(), poll(), epoll(), signal-driven I/O)
+
+    6. POSIX message queues are implemented as file descriptors on Linux (but not most other UNIX implemetations).
+
+    7. POSIX message queues provide a notification facility that can send a signal to a process, or
+        instantiate a new thread, when a message arrives on a previously empty queue.
+
+    8. UNIX domain sockets provide a feature that allows a file descriptor to be passed from one process to another.
+        This allows one process to open a file and send it to anpother process, a process that may not be able
+        to open that file itself.
+
+    9. Record locks with fcntl() have built-in deadlock detection in the kernel (and are considered owned by a process). The kernel will deny one of the processes
+        the right to aquire the lock, and return an error to it.
+
+    10. Record locks using fcntl() are automatically released when the process that owns the locks terminates.
+        System V semaphores have a similar "undo" feature. But it is not reliable all the time.
+        POSIX message queues do not provide an analog for this.
+
+NETWORK COMMUNICATION:
+
+    Of all of these, only sockets have the ability to communicate over a network.
+
+    UNIX domain sockets can only communicate on the same host.
+
+    Internet domain sockets can communicate on a network over a TCP/IP stack.
+
+System V notes:
+
+    1. System V IPC is more portable than POSIX IPC for some reason.
+
+    2. System V IPC facilities are "connectionless", i.e. the kernel does not keep track of "handles" to the IPC facilities.
+
+    3. System V IPC is complex (they use integer key values and IPC identifiers instead of pathnames and file descriptors).
+
+
+Accessability:
+
+    1. For some IPC facilities (FIFOs and sockets), object names live in the file system.
+        Access to them is governed by the classic permissions system umask.
+        System V IPC objects dont reside in the file system, but they have similar access controls.
+
+    2. A few IPC objects (pipes, anonymous memory mappings) are marked as being accessible only by related processes.
+        Related means a child or parent process via fork(). One process has to poen the Pipe, then fork(), so they share a reference to the Pipe.
+
+    3. The accessibllity of a POSIX unnamed semaphore is determined by the accessibility of the shared memory region it resides.
+
+    4. There are no restrictions on accessing an internet domain socket (connecting to or sending a datagram to).
+        Access controls must be built in the application if necessary (or via kernel firewalling, or external network firewall).
+
+Persistence (lifetime of an IPC object):
+
+    1. Process persistence: remains in existence as long as one process holds the facility open.
+        (Pipes, FIFOs, sockets)
+
+    2. Kernel persistence: Exists until it is explicitly deleted, or at system shutdown. This means
+        that a process can open this facility, write to it, and terminate. Then at a later time another process
+        can access it and read the data from it. Examples are POSIX and System V IPC.
+        This property can be exploited.
+
+    3. File system persistence: Exists until it is deleted from the file system (or otherwise explicitly deleted via some API).
+
+Performance:
+
+    In some circumstances different IPC facilities can offer better performance.
+    However in later chapters, performance differences won't be compared often for the following reasons:
+
+    1. The performance of an IPC facility may not be a significant factor in the performance of an application in general.
+
+    2. Relative performance of IPC facilities varies across UNIX implementations.
+
+    3. Performance of an IPC facility depends on the precise nature of its use, and environment.
+        Factprs such as size of the data, amound of unread data on the facility, whether or not a process context switch is required for each bit of data exchanged, and other load on the system.

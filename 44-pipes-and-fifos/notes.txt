@@ -1,0 +1,191 @@
+******************** 44.1 Overview ********************
+
+
+===================================
+
+#include <unistd.h>
+
+int pipe(int filedes[2]);
+
+    Returns 0 on success, -1 on error
+
+Example usage:
+
+===================================
+
+
+A pipe is unidirectional and a simple IPC method. Only "related" processes can exchange data on a pipe (related means originated via fork())
+
+Writes to a pipe are guaranteed to be atmic up until PIPE_BUF bytes.
+
+Pipes have a limited capacity. When it is full, write() will hang until enough data is read() out of the pipe, at which point it will proceed to write data to the pipe again.
+
+Shell pipelines are implemented this way:
+
+$ ls | wc -l
+
+The shell will spawn 2 processes, and connect their stdout and stdin respectively to the read end and write end of the pipe.
+
+YOU MUST CLOSE THE UNUSED PARTS OF THE PIPE.
+
+Reader process: you want to close the write end so when the real writer process closes their end of the pipe, the reader will receive EOF. Otherwise the kernel will see a write end of the pipe is still open and the read() will hang indefinitely.
+
+Writer process: you want to close the read end because when all read ends are closed and the writer attemts to write to the pipe, it is sent SIGPIPE to let the process know the pipe is broken. By default this kills the process. However you may block or catch this signal which can be helpful. write() will set errno = EPIPE (broken pipe). So if the write() process doesn't close it's read() counterpart, it will continue to write to the pipe until it is full, at which point the write() will block indefinitely.
+
+See example program...
+
+
+******************** 44.3 Pipes as a Method of Process Synchronization ********************
+
+Probably better than using signals for the same purpose (when dealing with parent/child process scenarios).
+
+The general idea is that you wait for EOF on read() in the parent process, which signals that the children have all closed their write() ends of the pipe (signaling that they are done processing something).
+
+See example program.
+
+
+******************** 44.4 Using pipes to connect filters ********************
+
+For example:
+
+$ ls | wc -l
+
+Connecting the stdout of "ls" to the stdin of "wc".
+
+Basically, just use dup2() to ensure that the STDIN_FILENO and STDOUT_FILENO are bound to the correct ends of the pipe.
+This covers various unusual scenarios regarding the 0, 1, 2 descriptors (being closed) including race conditions maybe.
+
+if (pfd[1] != STDOUT_FILENO) {
+    dup2(pfd[1], STDOUT_FILENO); // make write end of pipe == stdout
+    close(pfd[1]); // close unneeded write end of pipe
+}
+
+if (pfd[0] != STDIN_FILENO) {
+    dup2(pfd[0], STDIN_FILENO); // make read end of pipe == stdin
+    close(pfd[0]); // close unneeded read end of pipe
+}
+
+
+******************** 44.5 Using pipes to connect filters ********************
+
+==================================
+
+#include <stdio.h>
+
+FILE *popen(const char *command, const char *mode);
+
+    Returns file stream, or NULL
+
+int pclose(FILE *stream);
+
+    Returns termination status of child process, or -1 on error
+
+==================================
+
+A common use of pipes is talking to a shell. The parent fork()/exec()s a shell, the shell fork()/exec()s the command given to it, the command either takes input from the pipe from the parent process, or the parent process reads from the pipe which is the commands output.
+
+Basically, popen() returns a pipe that can be used to communicate with the new program that the shell fork()s.
+
+the pclose() function closes the pipe and waitpid()s for the child shell, returning the exit status via the waitpid() call. Don't use the fclose() function on the FILE stream because it does not do a waitpid().
+
+Like system(), SUSv3 demands that pclose() restarts the waitpid() call if interrupted by a signal.
+
+Also like system(), don't use popen() from privileged programs.
+
+THE MAIN DIFFERENCES BETWEEN popen() AND system():
+
+    1. system() is encapulated in one function call. It runs the shell command, wait()s, then returns to the calling process
+        popen() will generate the pipe() and fork the shell, then return the pipe() as a FILE stream.
+        This means that the command supplied to popen() runs in parallel with the calling process.
+
+    2. Because the command supplied to popen() runs in parallel with the calling process, it DOES NOT ignore SIGINT and SIGQUIT.
+
+    3. Since the calling process may create more child processes after the popen() call, SUSv3 states that popen()
+        should NOT clock SIGCHLD.
+        This has the side effect that the calling process is able to wait() on the shell that popen() creates.
+        pclose() would return -1 and set errno = ECHILD in this case.
+
+
+******************** 44.6 Pipes and stdio Buffering ********************
+
+Since popen() returns a FILE stream from the standard I/O library, buffering rules are applied to fwrite() calls.
+
+That means you have to disable buffering of the stream via setbuf(fp, NULL), or make periodic calls to fflush(fp).
+This technique can be used on pipe() streams created by fdopen().
+
+If you are reading from the pipe, it's more difficult. If the child process does not include calls to fflush() or setbuf() then there is nothing you can do but modify the source code (if you want to receive data immediately).
+
+Another option is to use a pseudoterminal for IPC which is in chapter 64.
+
+
+******************** 44.6 FIFOs ********************
+
+FIFO: first in, first out. Also, "named pipe".
+
+The main difference between a FIFO and a pipe is the FIFO lives in the file system. You open the FIFO like you would a file. You use the dame read() write() and close() calls as a pipe and a regular file.
+
+A FIFO has a read end and a write end just like a pipe.
+
+When all descriptors referring to a FIFO have been closed, any outstanding data inside is discarded. Yet, the FIFO remains on the file system until it is removed.
+
+You can make one from the command line:
+
+# "mode" is the permissions on the FIFO
+$ mkfifo [ -m mode ] pathname
+
+When applied to a FIFO (or pipe), fstat() and stat() return a file type of S_IFIFO
+in the st_mode field of the stat structure (Section 15.1). When listed with ls –l, a FIFO
+is shown with the type p in the first column, and ls –F appends a pipe symbol ( | ) to
+the FIFO pathname.
+
+
+=============================================
+
+#include <sys/stat.h>
+
+int mkfifo(const char *pathname, mode_t mode);
+
+    Returns 0 on success, or -1 on error
+
+=============================================
+
+"mode" is created by ORing the open() constants like these:
+
+S_IRUSR | S_IWUSR | S_IXUSR
+
+FIFOs used to be made using mknod(pathname, S_IFIFO, 0);
+
+A FIFO is still unidirectional. The unique thing about open()ing a FIFO is that it will block until its counterpart is opened by another process. An example: a process wants to open a FIFO doing open("/path/to/fifo", O_RDONLY); This will block until another process does open("/path/to/fifo", O_WRONLY); You can bypass this blocking by doing open("/path/to/fifo", O_RDWR); since in that case both a read and write descriptor is held for it. This is unspecified behavior in SUSv3 though so it is not advised. The correct way to open a FIFO without blocking is open("/path/to/fifo", O_RDONLY | O_NONBLOCK);
+
+Using tee(1), you can make a dual pipeline, since tee splits output to a separate file, you can make that file a FIFO, then another process can read from it.
+
+$ mkfifo myfifo
+$ wc -l < myfifo &
+$ ls -l | tee myfifo | sort -k5n
+
+
+ls ---> [=====] ---> tee ---> [=====] ---> sort
+                      |
+                      |
+                    [FIFO] ---> wc
+
+
+******************** 44.8 A Client-Server Application Using FIFOs ********************
+
+well known address: an address that is common for a certain type of server
+    you can program a name-server type application that can help with servive/server discovery
+
+if making a FIFO server, you can have one main server socket that listens for requests, then establishes another FIFO channel to serve as the main line of communication between the client and the server.
+
+you can't do this all over 1 FIFO since all the clients will be racing to read the message and the client will likely never receive their message.
+
+the client and server have to agree on some messaging conventions. There are multiple ways to do this but here's three:
+
+    1. Terminate each message with a delimeter.
+
+    2. Include a fixed size header, with a variable data section after it. The server/client reads just the heaeder, learns about the data that follows, then reads that.
+
+    3. Fixed length messages. Break up longer messages into multiple packets, or pad messages that are smaller than the fixed length.
+
+    the example program uses the fixed-length approach.
+
