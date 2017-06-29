@@ -189,3 +189,45 @@ the client and server have to agree on some messaging conventions. There are mul
 
     the example program uses the fixed-length approach.
 
+FOR EACH OF THESE TECHNIQUES, THE PACKET SIZE MUST NOT EXCEED "PIPE_BUF" BYTES BECAUSE IT WILL BE BROKEN UP AND INTERLEAVED WITH OTHER CLIENT REQUESTS.
+
+
+******************** 44.9 Non-blocking I/O ********************
+
+Opening a FIFO fo reading and not wanting it to block is fine:
+
+fd = open("/path/to/fifo", O_RDONLY | O_NONBLOCK);
+if (fd == -1) {
+    errExit("open");
+}
+
+It succeeds immediately. However trying to open a FIFO for writing when there is nothing reading from it, will result in an error. open() will return -1 and errno is set to ENXIO.
+
+Nonblocking open()s of read-only FIFOs can prevent deadlocks in some situations:
+
+Process X                               Process Y
+==================================================================================
+1. Open FIFO A for reading (blocks)     1. Open FIFO B for reading (blocks)
+2. Open FIFO B for writing              2. Open FIFO A for writing
+
+If they both specified O_NONBLOCK then they would not deadlock. Another way around this is to reverse the steps in one of the processes (open the write FIFO first) but it may complicate the design of the application.
+
+
+Take note that sometimes you might want to remove non-blocking or add it to a descriptor:
+
+ADDING IT:
+
+    int flags;
+    flags = fcntl(fd, F_GETFL); // get the open file status flags
+    flags |= O_NONBLOCK;        // enable O_NONBLOCK bit
+    fcntl(fd, F_SETFL, flags);  // update the flags
+
+DISABLING IT:
+
+    flags = fcntl(fd, F_GETFL); // get the flags
+    flags &= ~O_NONBLOCK;       // turn the non-block flag to 0
+    fcntl(fd, F_SETFL, flags);  // set the flags
+
+
+******************** 44.10 Semantics of read() and write() on Pipes and FIFOs ********************
+

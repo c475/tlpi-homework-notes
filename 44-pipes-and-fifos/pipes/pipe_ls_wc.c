@@ -1,4 +1,3 @@
-#include <sys/wait.h>
 #include "../../lib/tlpi_hdr.h"
 
 
