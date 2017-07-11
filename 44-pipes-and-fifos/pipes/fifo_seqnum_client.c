@@ -12,6 +12,7 @@ static void removeFifo(void)
 
 int main(int argc, char *argv[])
 {
+    int flags;
     int serverFd;
     int clientFd;
     struct request req;
@@ -34,6 +35,17 @@ int main(int argc, char *argv[])
         errExit("atexit");
     }
 
+    // open client fifo (non-blocking), read and display response
+    clientFd = open(clientFifo, O_RDONLY | O_NONBLOCK);
+    if (clientFd == -1) {
+        errExit("open %s", clientFifo);
+    }
+
+    // remove the non-bocking flag now that the FIFO is open
+    flags = fcntl(clientFd, F_GETFL); // get the flags
+    flags &= ~O_NONBLOCK; // turn the non-block flag to 0
+    fcntl(clientFd, F_SETFL, flags); // set the flags
+
     // construct request message, open server FIFO, and send request
 
     req.pid = getpid();
@@ -46,12 +58,6 @@ int main(int argc, char *argv[])
 
     if (write(serverFd, &req, sizeof(struct request)) != sizeof(struct request)) {
         fatal("can't write to server");
-    }
-
-    // open client fifo, read and display response
-    clientFd = open(clientFifo, O_RDONLY);
-    if (clientFd == -1) {
-        errExit("open %s", clientFifo);
     }
 
     if (read(clientFd, &resp, sizeof(struct response)) != sizeof(struct response)) {

@@ -1,0 +1,33 @@
+******************** 46.1 Creating or Opening a Message Queue ********************
+
+Message queues are different from pipes and FIFOs in three major ways:
+
+    1. Information is message oriented, not a byte stream. You can only receive 1 message at a time. Not part of a message. Not multiple messages. Just 1 message.
+
+    2. Handlers for message queues are not file descriptors.
+
+    3. Each message also comes with a "type", making it easy to implement priority queues. You can get a message of "type" 1 before "type" 2 for instance.
+
+=================================================
+
+#include <sys/types.h> // for portability
+#include <sys/msg.h>
+
+int msgget(key_t key, int msgflg);
+
+    Returns message queue identifier on success, or -1 on error
+
+=================================================
+
+"key" comes from IPC_PRIVATE (for use in related processes), or from ftok().
+
+"msgflg" are permissions to be set on creation, or checked on retrieval. There are two special flags besides the standard permissions flags (like S_IRUSR, etc):
+
+    IPC_CREAT
+
+        If no message queue going by "key" exists, create it
+
+    IPC_EXCL
+
+        If IPC_CREAT is specified and the message queue exists, fail with EEXIST, otherwise create it.
+

@@ -172,6 +172,7 @@ FILE *popen2(const char *command, const char *type)
                 }
             }
 
+            // because SUSv3 says so
             np = POPEN_STREAMS.base;
             while (np != NULL) {
                 fclose(np->stream);
