@@ -31,3 +31,316 @@ int msgget(key_t key, int msgflg);
 
         If IPC_CREAT is specified and the message queue exists, fail with EEXIST, otherwise create it.
 
+
+******************** 46.2 Exchanging Messages ********************
+
+"msgsnd()" and "msgrcv()" are the calls that you use on a queue ID to send and receive messages.
+
+The first argument is the ID, the second argument is a programmer-defined struct meant to hold the message to be send, or received. The structure has the general form:
+
+struct my_msg {
+	long mtype; // message type (very required)
+	char mtext[]; // message body (may vary)
+};
+
+
+======================================================
+
+#include <sys/types.h>
+#include <sys.msg.h>
+
+int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
+
+	Returns 0 on success, -1 on error
+
+======================================================
+
+"msqid": the ID of the message queue obtained by msgget()
+
+"msgp": the struct with the "long" ID, then whatever you want
+
+"msgsz": the size OF THE DATA THAT COMES AFTER THE "ID" FIELD IN THE STRUCT "msgp"
+
+"msgflg": either 0 or IPC_NOWAIT.
+
+IPC_NOWAIT:
+
+	Sometimes msgsnd() will block if the queue is full. Use this flag to bypass this and return EAGAIN if it is full.
+
+See example program.
+
+
+======================================================
+
+#include <sys/types.h>
+#include <sys.msg.h>
+
+ssize_t msgrcv(int msqid, void *msgp, size_t maxmsgsz, long msgtyp, int msgflg);
+
+	Returns number of bytes copied into mtext field, or -1 on error
+
+======================================================
+
+"msqid": the ID of the message queue obtained by msgget()
+
+"msgp": a struct with the "long" ID, then whatever you want
+
+"maxmsgsz": maximum size of "mtext" field in the above struct
+    
+    If the body of the message exceeds this value, msgrcv() fails setting errno to E2BIG
+
+    This can be changed using MSG_NOERROR flag in "msgflg"
+
+"msgtyp": filter by message type (the "long" arg in the above struct)
+
+    * If msgtyp is 0, the first message from the queue is removed and returned.
+
+    * If msgtyp is greater than 0, the first message in the queue where "mtype" == msgtyp.
+        This is useful because separate processes can read from the message queue and not race to read messages.
+        A useful technique can be for a process to read messages where "mtype" == the process' PID.
+
+    * If msgtyp is less than 0, treat waiting messages as a priority queue.
+        The first message of the lowest type less than or equal to the absolute value of "msgtyp" is returned.
+
+        Say you do this:
+
+            msgrcv(id, &msg, maxmsgsz, -10, 0);
+
+        It would retrieve messages of type 1, then 2, then 3,... up to type 10.
+        Then it would block until there is an available message fitting the type criteria.
+
+"msgflg": A bitmask of these flags
+
+    IPC_NOWAIT:
+
+        Usually msgrcv() blocks until a message is available, but not with this flag.
+        If no message is available, msgrcv() fails with ENOMSG.
+
+    MSG_EXCEPT:
+
+        The first message NOT of type "msgtyp" is retrieved.
+
+        Linux specific, defined in <sys/msg.h> if _GNU_SOURCE is defined.
+
+    MSG_NOERROR:
+
+        Usually if the "mtext" segment is larger than "maxmsgsz", an error is returned.
+        If this flag is defined, the "mtext" segment is truncated to "maxmsgsz" and the truncated data is lost.
+
+    http://iccup.com/en/starcraft/gamingprofile/BizarreDE.html https://iccup.com/en/starcraft/gamingprofile/mirkgogoyo.html
+
+Anyway, msgrcv() returns the number of bytes of the "mtext" field of the received message.
+
+
+******************** 46.3 Message Queue Control Operations ********************
+
+This call performs control operations on the msqid:
+
+==============================================
+
+#include <sys/types.h> // portability
+#include <sys/msg.h>
+
+int msgctl(int msqid, int cmd, struct msqid_ds *buf);
+
+    Returns 0 on success, -1 on error
+
+==============================================
+
+"cmd": one of these flags
+
+    IPC_RMID
+
+        Immediately remove the message queue. All messages pending are lost.
+        All blocked readers are awakened with errno = EIDRM.
+        "buf" is ignored
+
+    IPC_STAT
+
+        Place the data structure representing the message queue in "buf"
+
+    IPC_SET
+
+        Update the data structure representing the message queue with the argument in "buf"
+
+
+******************** 46.4 Message Queue Associated Data Structure ********************
+
+Each message queue has an associated msqid_ds data structure of the following form:
+
+struct msqid_ds {
+    struct ipc_perm    msg_perm;     // ownership and permissions
+                                     // "uid", "gid", and "mode" fields can be updated via IPC_SET
+
+    time_t             msg_stime;    // time of last msgsnd()
+                                     // is initialized to 0, then updated with current time when appropriate
+
+    time_t             msg_rtime;    // time of last msgrcv()
+                                     // is initialized to 0, then updated with current time when appropriate
+
+    time_t             msg_ctime;    // time of last change
+                                     // set to current time on creation, updated whenever IPC_SET is used
+
+    unsigned long      __msg_cbytes; // number of bytes in queue
+                                     // set to 0 on init, then updated with msgsnd() and msgrcv()
+
+    msgqnum_t          msg_qnum;     // number of messages in queue
+                                     // 0 on init, +1 when successful msgsnd(), -1 when successful msgrcv()
+
+    msglen_t           msg_qbytes;   // maximum bytes in queue
+                                     // initialized to MSGMNB
+                                     // if CAP_SYS_RESOURCE, can go up to INT_MAX
+                                     // if unprivileged, can be adjusted from 0 to MSGMNB
+                                     // /proc/sys/kernel/msgmnb can be used to adjust the limit
+
+    pid_t              msg_lspid;    // PID of last msgsnd()
+                                     // set to 0 on ini
+
+    pid_t              msg_lrpid;    // pid of last msgrcv()
+                                     // set to 0 on ini
+};
+
+
+
+******************** 46.5 Message Queue Limits ********************
+
+MSGMNI
+
+    Limit on the number of message queues.
+
+    msgget() will return ENOSPC
+
+MSGMAX
+
+    The largest "mtext" value allowed in a message
+
+    msgsnd() will return EINVAL
+
+
+MSGMNB
+
+    The maximum number of "mtext" bytes that can be held in a message queue at once.
+
+    System wide.
+
+
+// SOME UNIX IMPLEMENTATIONS
+
+MSGTQL
+
+    System wide limit on the number of messages that can be placed on all message queues on the system.
+
+
+MSGPOOL
+
+    System wide limit on the combined "mtext" size on all message queues.
+
+
+WHERE THE LIMITS ARE STORED ON BOOT:
+
+$ cd /proc/sys/kernel
+$ cat msgmni
+748
+$ cat msgmax
+8192
+$ cat msgmnb
+16384
+
+
+The Linux-specific msgctl() IPC_INFO operation retrieves a structure of type msginfo, which contains the values of the various message queue limits:
+
+==================================================
+
+struct msginfo buf;
+
+msgctl(0, IPC_INFO, (struct msqid_ds *) &buf);
+
+==================================================
+
+Doesn't look like it is commonly used.
+
+
+******************** 46.6 Displaying All Message Queues on the System ********************
+
+Linux has a specific IPC operation with msgctl(), semctl(), and shmctl().
+
+
+1. MSG_INFO, SEM_INFO, SHM_INFO:
+
+    Returns (in the argument) a struct detailing resources consumed by all message queues on the system.
+
+    The function result (return value) returns the index of the maximum item in the "entries" array that the kernel keeps. This is useful for iterating over all message queues on the system (that the process has read permission on).
+
+2. MSG_STAT, SEM_STAT, SHM_STAT
+
+    These are similar to the IPC_STAT operator, except they expect an index into the "entries" array instead of an identifier.
+
+What this is getting at is that you can iterate over all mesage queues on the system. See example program.
+
+
+******************** 46.6 Client-Server Programming with Message Queues ********************
+
+You have two main choices:
+
+    1. Use a single message queue for request and response. This isn't so great because message queues can become overloaded and end up in a deadlock situation.
+
+    2. 1 main server FIFO for requests, and a second message queue specifically for the client to receive responses.
+
+
+In the case of #1, the way a client gets its messages is it selects mtype == getpid().
+
+In the case of #2, mtype is unused since the client creates its own message queue, usually with IPC_PRIVATE. You send the server the mqid in your initial request so it knows how to find the client message queue.
+
+A side note is that IPC_PRIVATE should really be called IPC_NEW, but it's not. There is nothing "private" about a message queue created with IPC_PRIVATE.
+
+
+******************** 46.7 A File-Server Application Using Message Queues ********************
+
+Steps:
+
+    1. Client creates IPC_PRIVATE queue
+
+    2. Client sends request for file to the server MQ (containing the client's MQ ID and pathname of the file)
+
+    3. Server reads requests.
+
+    4. Server fork()s child to handle client request.
+
+    5. Server's child process sends response containing file data (broken into separate packets if necessary)
+
+    6. Client reads response on its IPC_PRIVATE MQ.
+
+
+Some important notes about the server:
+
+    1. It is a concurrent (forking) server.
+
+    2. The child produced by fork() inherits the client's request message.
+
+    3. The child terminates after handling the request.
+
+    4. In order to avoid the creation of zombie processes, the server establishes a handler for SIGCHLD and calls waitpid() within the handler.
+
+    5. msgrcv() in the server can block and be interrupted by SIGCHLD. Thus, it is in a while loop.
+
+    6. The child calls serveRequest() which can send 3 different tyoes of responses. RESP_MT_FAILURE (couldnt open file), RESP_MT_DATA (packet containing file data), and RESP_MT_END (end of file data).
+
+
+******************** 46.9 Disadvantages of System V Message Queues ********************
+
+Disadvantages:
+
+    1. System V message queues don't use file descriptors, so it can complicate an application that also performs I/O on file descriptors.
+
+    2. The use of "keys" is also more complex than a string/pathname. This necessitates the use of ipcs/ipcrm instead of ls/rm. ftok() can for the most part generate unique keys but it is not guaranteed. IPC_PRIVATE is guaranteed to create a unique message queue but then it is up to the application to notify other processes of the identifier somehow.
+
+    3. Message queues are connectionless and the kernel doesnt keep track of how many processes are currently using a message queue. It can be difficult to answer the following questions about a message queue:
+
+        -- When is it safe to delete the message queue?
+
+        -- How can an application ensure that an unused queue is deleted?
+
+    4. Limits on the total message queues, total size of bytes a message queue can hold, and the size of messages.
+        These limits can be configured but it is extra work changing them to values an application can live with when being installed if they are excessively low.
+
+In summary, System V message queues are often best avoided. lol

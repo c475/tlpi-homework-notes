@@ -27,7 +27,7 @@ static void *threadFunc(void *arg)
 		}
 	}
 
-	reutrn NULL;
+	return NULL;
 }
 
 
