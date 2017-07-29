@@ -69,7 +69,7 @@ Receiving SIGHUP should reread the config file. SIGHUP is used because daemons d
 
 
 
-******************** 37.5 SIGHUP to reinitialize a daemon ********************
+******************** 37.5 Syslog ********************
 
 Syslog is a centralized logging facility. Like journald etc.
 
