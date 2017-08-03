@@ -17,8 +17,9 @@
 #define RESP_OK 1
 #define RESP_ERR 2
 #define RESP_CHAT 3 // chat message
-#define REQ_NAME 4 // sent to server when registering a name
-#define REQ_CHAT 5 // sent to server when the client sends a message
+#define RESP_STATUS 4 // notifications for users leaving and joining the server
+#define REQ_NAME 5 // sent to server when registering a name
+#define REQ_CHAT 6 // sent to server when the client sends a message
 
 // "well-known" server key
 #define SERVER_KEY 0xABCDEF
@@ -60,5 +61,19 @@ struct nameRequest {
     long mtype;
     struct nameRequestData data;
 };
+
+
+#define USER_LEFT 0
+#define USER_JOINED 1
+struct serverStatusData {
+    char name[MAX_NAME];
+    int type; // USER_LEFT || USER_JOINED || RESP_OK || RESP_ERR
+};
+
+struct serverStatus {
+    long mtype;
+    struct serverStatusData data;
+};
+
 
 #endif

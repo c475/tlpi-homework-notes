@@ -13,6 +13,9 @@ void timeoutHandler(int sig)
 
 void cleanup(void)
 {
+    struct 
+    if (msgsnd(serverId, ))
+
     if (msgctl(clientId, IPC_RMID, NULL) == -1) {
         errExit("msgctl");
     }

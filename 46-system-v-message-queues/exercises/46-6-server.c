@@ -11,19 +11,13 @@ struct client {
     struct client *next;
 };
 
-struct clientList {
+struct ClientList {
     unsigned int len;
     struct client *base;
 };
 
 
-static struct clientList *CLIENTS = NULL;
-
-
-void timeoutHandler(int sig)
-{
-    // do nothing
-}
+static struct ClientList *CLIENTS = NULL;
 
 
 void cleanup(void)
@@ -128,7 +122,7 @@ void distributeMessage(struct chatRequest *request)
     c = CLIENTS->base;
     while (c != NULL) {
         startTimeout();
-        res = msgsnd(c->clientId, &response, RESP_SIZE_CHAT, 0);
+        res = msgsnd(c->clientId, &response, MESSAGE_SIZE, 0);
         endTimeout();
 
         if (res == -1) {
@@ -139,25 +133,94 @@ void distributeMessage(struct chatRequest *request)
 }
 
 
-
-
-
-void ini_client_list(void)
+int handleJoin(struct message *request)
 {
-    if (CLIENTS == NULL) {
-        CLIENTS = calloc(1, sizeof(struct clientsList));
+    struct nameRequest *nr;
+    struct serverStatus status;
+    struct client *c;
+
+    nr = (struct nameRequest *)request;
+    status = { 0 };
+
+    // send an error back to the client letting them know their name selection is bad
+    if (addClient(nr->clientId, nr->data->name) == -1) {
+        status.mtype = RESP_ERR;
+        msgsnd(nr->clientId, &status, MESSAGE_SIZE, 0);
+        return -1;
     }
+
+    status.mtype = RESP_STATUS;
+    status.data.type = USER_JOINED;
+    strncpy(status.data.name, nr->data->name, NAME_MAX);
+    status.data.name[NAME_MAX = 1] = '\0';
+
+    // broadcast that a user has joined the server
+    c = CLIENTS.base;
+    while (c != NULL) {
+        if (c->clientId != nr->clientId) {
+            startTimeout();
+            msgsnd(c->clientId, &status, MESSAGE_SIZE, 0);
+            endTimeout();
+        }
+    }
+
+    return 0;
 }
 
 
-// went the iterative + fork() to handle a request route.
-// wanted to thread it but found it too complicated to deal 
-// with SIGALRM for timeouts in a multithreaded server...
+void handleLeave(struct message *request)
+{
+    struct nameRequest *nr;
+    struct serverStatus status;
+    struct client *c;
+
+    nr = (struct nameRequest *)request;
+    status = { 0 };
+
+    // send an error back to the client letting them know their name selection is bad
+    if (addClient(nr->clientId, nr->data->name) == -1) {
+        status.mtype = RESP_ERR;
+        msgsnd(nr->clientId, &status, MESSAGE_SIZE, 0);
+        return -1;
+    }
+
+    status.mtype = RESP_STATUS;
+    status.data.type = USER_JOINED;
+    strncpy(status.data.name, nr->data->name, NAME_MAX);
+    status.data.name[NAME_MAX = 1] = '\0';
+
+    // broadcast that a user has joined the server
+    c = CLIENTS.base;
+    while (c != NULL) {
+        if (c->clientId != nr->clientId) {
+            startTimeout();
+            msgsnd(c->clientId, &status, MESSAGE_SIZE, 0);
+            endTimeout();
+        }
+    }
+
+    return 0;
+}
+
+
+void handleChat(struct message *request)
+{
+
+}
+
+
+// went the iterative route until I get to the server design chapter
+// too many tricky things to worry about with a threaded server
 int main(int argc, char *argv[])
 {
     int res;
     pid_t childPid;
     struct message m;
+
+    CLIENTS = calloc(1, sizeof(struct clientsList));
+    if (CLIENTS == NULL) {
+        errExit("calloc");
+    }
 
     if (atexit(cleanup) != 0) {
         errExit("atexit");
@@ -195,6 +258,7 @@ int main(int argc, char *argv[])
                     break;
             }
         }
-
     }
+
+    exit(EXIT_SUCCESS);
 }
