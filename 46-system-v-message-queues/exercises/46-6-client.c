@@ -1,8 +1,8 @@
 #include "chat_server_header.h"
 
 
-static int clientId;
-static int serverId;
+static int clientId = -1;
+static int serverId = -1;
 
 
 void timeoutHandler(int sig)
@@ -11,10 +11,28 @@ void timeoutHandler(int sig)
 }
 
 
+void startTimeout(void)
+{
+
+}
+
+
+void endTimeout(void)
+{
+
+}
+
+
 void cleanup(void)
 {
-    struct 
-    if (msgsnd(serverId, ))
+    struct Message message;
+    message.mtype = CLIENT_JOIN_OR_LEAVE;
+    message.data.meta = META_LEAVE;
+    memset(message.data.text, 0, TEXT_SIZE);
+
+    if (serverId != -1 && msgsnd(serverId, &message, MESSAGE_SIZE, 0) == -1) {
+        errExit("msgsnd");
+    }
 
     if (msgctl(clientId, IPC_RMID, NULL) == -1) {
         errExit("msgctl");
@@ -22,245 +40,114 @@ void cleanup(void)
 }
 
 
-void startTimeout(void)
+// child process that displays when users join or leave
+void handleRoomStatus(void)
 {
-    struct sigaction sa;
-
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sa.sa_handler = timeoutHandler;
-    sigaction(SIGALRM, &sa, NULL);
-    alarm(DEFAULT_TIMEOUT);
-}
-
-
-void endTimeout(void)
-{
-    alarm(0);
-    signal(SIGALRM, SIG_DFL);
-}
-
-
-int receiveChat(struct chatResponse *response)
-{
-    int ret;
-
-    startTimeout();
-
-    ret = msgrcv(clientId, response, REQ_SIZE_CHAT, RESP_CHAT, 0);
-
-    endTimeout();
-
-    return ret;
-}
-
-
-int receiveStatus(struct status *s)
-{
-    int ret;
-
-    startTimeout();
-
-    ret = msgrcv(clientId, s, RESP_SIZE_STATUS, 0, 0);
-
-    endTimeout();
-
-    return ret;
-}
-
-
-int receiveNotification(struct notificationResponse *notification)
-{
-    int ret;
-
-    startTimeout();
-
-    ret = msgrcv(clientId, notification, RESP_SIZE_NOTIFICATION, RESP_NOTIFICATION, 0);
-
-    endTimeout();
-
-    return ret;
-}
-
-
-int sendChat(const char *message)
-{
-    int ret;
-    struct chatRequest request;
-
-    request.mtype = REQ_CHAT;
-    request.data.clientId = clientId;
-    strncpy(request.data.text, message, MAX_MESSAGE);
-    request.data.text[MAX_MESSAGE-1] = '\0';
-
-    startTimeout();
-
-    ret = msgsnd(serverId, &request, REQ_SIZE_CHAT, 0);
-
-    endTimeout();
-
-    return ret;
-}
-
-
-int sendName(const char *name)
-{
-    int ret;
-
-    struct nameRequest request;
-
-    request.mtype = REQ_NAME;
-    request.data.clientId = clientId;
-    strncpy(request.data.name, name, MAX_NAME);
-    request.data.name[MAX_NAME - 1] = '\0';
-
-    startTimeout();
-
-    ret = msgsnd(serverId, &request, REQ_SIZE_NAME, 0);
-
-    endTimeout();
-
-    return ret;
-}
-
-
-
-// child process calls to handle incoming messages
-void messageHandler(void)
-{
-    int res;
-    struct chatResponse chat;
+    struct Message message;
 
     for (;;) {
-        res = receiveChat(&chat);
-        if (res == -1) {
-            if (errno == EINTR) {
-                printf("SERVER TIMEOUT\n");
-            }
+        if (msgrcv(clientId, &message, MESSAGE_SIZE, SERVER_JOIN_OR_LEAVE, 0) == -1) {
+            fprintf(stderr, "handleRoomStatus fucked up\n");
             break;
         }
 
-        printf("%s: %s", chat.data.name, chat.data.text);
+        printf("%s\n", message.data.text);
     }
+
+    exit(EXIT_FAILURE);
 }
 
 
-// handle notifications from the server
-// right now just users leaving and joining
-void notificationHandler(void)
+// child process that displays chat messages from users
+void handleChats(void)
 {
-    int res;
-    struct notificationResponse notification;
+    struct Message message;
 
     for (;;) {
-        res = receiveNotification(&notification);
-        if (res == -1) {
-            if (errno == EINTR) {
-                printf("SERVER TIMEOUT\n");
-            }
+        if (msgrcv(clientId, &message, MESSAGE_SIZE, SERVER_CHAT, 0) == -1) {
+            fprintf(stderr, "handleChats fucked up\n");
             break;
         }
 
-        if (notification.data.type == USER_JOINED) {
-            printf("%s has joined the chat.\n", notification.data.text);
-        } else if (notification.data.type == USER_LEFT) {
-            printf("%s has left the chat.\n", notification.data.text);
-        }
+        printf("%s\n", message.data.text);
     }
+
+    exit(EXIT_FAILURE);
 }
 
 
 int main(int argc, char *argv[])
 {
+    size_t len;
+    char name[MAX_NAME];
     pid_t childPid;
-    int serverId;
-    char nameBuf[MAX_NAME];
-    char messageBuf[MAX_MESSAGE];
-    struct status s;
+    struct Message message;
+
+    memset(name, 0, MAX_NAME);
 
     if (atexit(cleanup) != 0) {
         errExit("atexit");
     }
 
+    clientId = msgget(IPC_PRIVATE, S_IRUSR | S_IWUSR);
+    if (clientId == -1) {
+        errExit("client msgget");
+    }
+
     serverId = msgget(SERVER_KEY, S_IWUSR);
     if (serverId == -1) {
-        errExit("msgget");
+        errExit("server msgget");
     }
 
-    // loop until a valid name is chosen
-    for (;;) {
-
-        memset(nameBuf, 0, MAX_NAME);
-
-        if (fgets(nameBuf, MAX_NAME, stdin) == NULL) {
-            errExit("fgets");
-        }
-
-        nameBuf[MAX_NAME - 1] = '\0';
-        nameBuf[MAX_NAME - 2] = '\0';
-
-        if (sendName(nameBuf) == -1) {
-            errExit("sendName");
-        }
-
-        if (receiveStatus(&s) == -1) {
-            errExit("receiveStatus");
-        }
-
-        if (s.mtype == RESP_OK) {
-            printf("Name accepted\n");
-            break;
-        } else {
-            printf("Invalid name or name is take, choose another\n");
-        }
+    if (fgets(name, MAX_NAME, stdin) == NULL) {
+        errExit("fgets");
     }
 
-    // fork a handler for server notifications
-    switch (childPid = fork()) {
+    len = strlen(name);
+    name[len - 1] = '\0';
 
-        case -1:
-            errExit("fork");
+    message.mtype = CLIENT_JOIN_OR_LEAVE;
+    message.data.meta = META_JOIN;
+    message.data.mqid = clientId;
+    memset(message.data.text, 0, TEXT_SIZE);
+    strncpy(message.data.text, name, len);
 
-        // child
-        case 0:
-            notificationHandler();
-            _exit(EXIT_FAILURE);
-
-        // parent falls through to create message handler
-        default:
-            break;
+    // request to join the chat server
+    if (msgsnd(serverId, &message, MESSAGE_SIZE, 0) == -1) {
+        errExit("msgsnd");
     }
 
-    switch (childPid = fork()) {
-
-        case -1:
-            errExit("fork");
-
-        // child
-        case 0:
-            messageHandler();
-            _exit(EXIT_FAILURE);
-
-        // parent falls through to enter message loop
-        default:
-            break;
+    // see if the server agrees
+    if (msgrcv(clientId, &message, MESSAGE_SIZE, SERVER_JOIN_OR_LEAVE, 0) == -1) {
+        errExit("msgsnd");
     }
 
-    // loop for sending messages now
-    for (;;) {
+    if (message.data.meta == META_ERR) {
+        fprintf(stderr, "Failed to join the server\n");
+        exit(EXIT_FAILURE);
+    } 
 
-        memset(messageBuf, 0, MAX_MESSAGE);
+    // joining went ok, start up client handlers and enter message loop
 
-        printf("> ");
+    childPid = fork();
+    if (childPid == 0) {
+        handleChats();
+    }
 
-        fflush(stdout);
+    childPid = fork();
+    if (childPid == 0) {
+        handleRoomStatus();
+    }
 
-        if (fgets(messageBuf, MAX_MESSAGE, stdin) == NULL) {
-            errExit("fgets");
-        }
+    message.mtype = CLIENT_CHAT;
+    message.data.meta = 0;
+    message.data.mqid = clientId;
+    while ((fgets(message.data.text, TEXT_SIZE, stdin)) != NULL) {
+        len = strlen(message.data.text);
+        message.data.text[len - 1] = '\0';
 
-        if (sendChat(messageBuf) == -1) {
-            errExit("sendChat");
+        if (msgsnd(serverId, &message, MESSAGE_SIZE, 0) == -1) {
+            errExit("msgsnd");
         }
     }
 
