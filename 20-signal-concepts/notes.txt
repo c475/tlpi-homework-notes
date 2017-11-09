@@ -11,7 +11,7 @@ Chapter covers this:
 
 *************** 20.1 Concepts and Overview ***************
 
-Each signal is defined by a unique integer, starting from 1. The defginitions for these signals are in <signal.h>
+Each signal is defined by a unique integer, starting from 1. The definitions for these signals are in <signal.h>
 
 When you press "Control-C", SIGINT is sent to the process.
 
@@ -267,7 +267,7 @@ Where "pid" specifies a set pf processes (-pid), kill() succeeds if at least one
 
 The kill() system call can serve another purpose, checking for the existence of a process.
 
-You can set "sig" argument to 0, which sends the "null signal". The null signal does nothing, so you can use it to see if you get ESRCH from it. H0wever, you can't know 100% if it is the process you really want since PIDs arte recycled, and it could end up being a "zombie" process that isnt doing anything. A process becomes a zombie when the child process (zombie) dies, but the parent process has not checked its termination status via wait() (Chapter 26)
+You can set "sig" argument to 0, which sends the "null signal". The null signal does nothing, so you can use it to see if you get ESRCH from it. However, you can't know 100% if it is the process you really want since PIDs are recycled, and it could end up being a "zombie" process that isnt doing anything. A process becomes a zombie when the child process (zombie) dies, but the parent process has not checked its termination status via wait() (Chapter 26)
 
 Other techniques:
 
@@ -480,7 +480,7 @@ Here is how to temporarily block as set of signals:
 sigset_t blockSet, prevMask;
 
 sigemptyset(&blockset);
-sigemptyset(&blockset, SIGINT);
+sigaddset(&blockset, SIGINT);
 
 if (sigprocmask(SIG_BLOCK, &blockSet, &prevMask) == -1) {
     errExit("sigprocmask1");
@@ -521,7 +521,7 @@ A way to remove a pending signal is to use signal(sig, SIG_IGN), then the signal
 
 *************** 20.12 Signals Are Not Queued ***************
 
-Signals are not queued. If a signal happens twice while it is masked, it is only delivered. THIS IS ONE DIFFERENCE OF REALTIME AND STANDARD SIGNALS, realtime signals are queued.
+Signals are not queued. If a signal happens twice while it is masked, it is only delivered once. THIS IS ONE DIFFERENCE OF REALTIME AND STANDARD SIGNALS, realtime signals are queued.
 
 example program demonstrating they are not queued:
 
@@ -563,16 +563,16 @@ sa_flags:
     Various options can be ORed together
 
     SA_NOCLDSTOP:
-        If sig is SIGCHLD, dont generate this signal when a child process is stopped ot resumed as a consequence of receiving a signal.
+        If sig is SIGCHLD, dont generate this signal when a child process is stopped or resumed as a consequence of receiving a signal.
 
     SA_NOCLDWAIT
         If sig is SIGCHLD, dont transform children into zombies when they terminate.
 
     SA_NODEFER:
-        When this signal is caught, font automaticall add it to the process signal mask while the handler is executing (SA_NOMASK is a synonym)
+        When this signal is caught, don't automatically add it to the process signal mask while the handler is executing (SA_NOMASK is a synonym)
 
     SA_ONSTACK:
-        Invoke the handler for this signal using an alternate stack installed by signaltstack().
+        Invoke the handler for this signal using an alternate stack installed by sigaltstack().
 
     SA_RESETHAND:
         When this signal is caught, reset the handler to the default (SIG_DFL) before calling the handler. (SA_ONESHOT)

@@ -148,7 +148,7 @@ struct inotify_event {
 
 The application is recommended to keep it's own records of "fd: pathname" records, and the like.
 
-"mask" is a rangr of bits that are registered as "out" in the above table.
+"mask" is a range of bits that are registered as "out" in the above table.
 
 
 

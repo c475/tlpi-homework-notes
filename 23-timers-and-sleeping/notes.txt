@@ -101,7 +101,7 @@ Modern Linux kernals support "high-resolution timers" whos accuracy is instead d
 ******************** 23.3 Setting Timeouts on Blocking Operations ********************
 
 1. Establish handler for SIGALRM (sigaction())
-2. call alarm() or seritimer()
+2. call alarm() or setitimer()
 3. Make blocking system call
 4. After system call returns, call alarm() or setitimer() again to disable timer (if it exists)
 5. Check errno = EINTR to see if the call was interrupted (timeout)
@@ -160,7 +160,7 @@ Due to rounding errors, if a stream of signals comes in fast enough and you cont
 
 
 
-******************** 23.5 POSIX clocks ********************
+******************** 23.5 POSIX clocks (use these for your timing needs) ********************
 
 ==============================
 
@@ -277,7 +277,7 @@ request.tv_sec += 20; // sleep for 20 seconds from now
 s = clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &request, NULL);
 if (s != 0) {
 	if (s == EINTR) {
-		printf("Interrupted bu signal handler\n");
+		printf("Interrupted by signal handler\n");
 	} else {
 		errExitEN(s, "clock_nanosleep");
 	}

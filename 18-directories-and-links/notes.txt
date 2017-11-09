@@ -571,7 +571,7 @@ This system call changes the root directory, so that all absolute pathnames are 
 
 The root directory of any process can be retrieved by a call to readlink() on /proc/PID/root symlink.
 
-A classic example of chroot() usage is the directory that an FTP server reserves for anonymous logins, so an anonymnous user cannot traverse the entire file system (hopefully). This relies on the face that the root directory is its OWN PARENT:
+A classic example of chroot() usage is the directory that an FTP server reserves for anonymous logins, so an anonymnous user cannot traverse the entire file system (hopefully). This relies on the fact that the root directory is its OWN PARENT:
 
 someguy@mycpu:~/Desktop$ cd /
 someguy@mycpu:/$ ls

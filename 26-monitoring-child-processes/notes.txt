@@ -110,7 +110,8 @@ Allows you to distinguish the following events:
 
 
 NORMAL TERMINATION (_exit() or exit())
-
+		
+		(0-225)
 [ ---- EXIT STATUS ----] [ --------- 0 --------- ]
 
 0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
@@ -121,21 +122,21 @@ KILLED BY SIGNAL
                            V===========================CORE DUMPED FLAG
 [ ------- UNUSED -------] [X --- SIG NUMBER --- ]
 
-0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+0  0  0  0  0  0  0  0  |  0  0  0  1  0  1  1  0
 
 
 STOPPED BY SIGNAL
 
 [ ---- STOP SIGNAL ----] [ ------- 0x7F ------- ]
 
-0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+0  1  0  0  1  0  1  1  |  0  1  1  1  1  1  1  1
 
 
 CONTINUED BY SIGNAL
 
 [ ------------------ 0xFFFF -------------------- ]
 
-0  0  0  0  0  0  0  0  |  0  0  0  0  0  0  0  0
+1  1  1  1  1  1  1  1  |  1  1  1  1  1  1  1  1
 
 
 <sys/wait.h> header includes some macros to help dissect a Status value.

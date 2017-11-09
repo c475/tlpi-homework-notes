@@ -1,6 +1,6 @@
 ***************** 14.1 Device Special Files (Devices) *****************
 
-Device driver: a unit of kernal code that implements a det of operations that correspond to input/output on this piece of hardware.
+Device driver: a unit of kernal code that implements a set of operations that correspond to input/output on this piece of hardware.
 
 Universality of I/O: open(), close(), read(), write(), and friends work on all devices, block, character, or otherwise.
 
@@ -10,7 +10,7 @@ Character device: handle data on a character by character basis. Terminals and k
 Block devices: handle data a block at a time. It's usually a multiple 512 bytes, think hard drives, flash storage, CD-ROMS, and stuff.
 
 
-"mknode" allows you to create a device file. "make file system inode"
+"mknod" allows you to create a device file. "make file system inode"
 
 /dev/ is straightforward, you already know this stuff
 
@@ -56,7 +56,7 @@ ext2 source code: http://e2fsprogs.sourceforge.net/ext2.html
 
 ======== FILE SYSTEM STRUCTURE ===========
 
-locigal block: some multiple of contiguous physical blocks (which are usually 512 bytes). Som 512*2, 512*4, 512*8, etc.
+locigal block: some multiple of contiguous physical blocks (which are usually 512 bytes). So 512*2, 512*4, 512*8, etc.
 
 
 A FILE SYSTEM CONTAINS THESE PARTS:

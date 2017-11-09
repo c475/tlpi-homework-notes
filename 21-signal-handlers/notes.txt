@@ -2,7 +2,7 @@
 
 Two common degigns for signal handlers:
 
-	1. If a program is a select() oriented program, then the signal handler can write to a pipe that is included in the select() call to communicate with the program that a signal handler has been invoked.
+	1. If a program is a select() oriented program, then the signal handler can write to a pipe that is included in the select() call to communicate with the main program.
 
 	2. Uses longjmp()...
 
@@ -143,7 +143,7 @@ waitpid()
 write()
 
 
-SUSv3 says that all signals not in this list are to be deemed unsafe for use inside a signal handler.
+SUSv3 says that all system calls not in this list are to be deemed unsafe for use inside a signal handler.
 
 If you choose to use system calls or library functions outside of this list in a signal handler, then you must make sure that you add all signals to the process mask when the handler is executing.
 
@@ -188,7 +188,7 @@ Those last two will be discussed now
 
 ====== setjmp() and longjmp() ======
 
-This provides a way to recover from a hardware exception (like a memory access violation) since it restores the stack and registers to a saved state. For example on SIGINT, the shell performs a longjmp() to restore the terminal to a state that existed before running the program and return control to itself. One problem with this is that rhe signal mask may not be restored after longjmp(). BSD is smart and adds the process signal mask to the "env" argument so you dont have to worry about this. Linux does not do this.
+This provides a way to recover from a hardware exception (like a memory access violation) since it restores the stack and registers to a saved state. For example on SIGINT, the shell performs a longjmp() to restore the terminal to a state that existed before running the program and return control to itself. One problem with this is that the signal mask may not be restored after longjmp(). BSD is smart and adds the process signal mask to the "env" argument so you dont have to worry about this. Linux does not do this.
 
 If _BSD_SOURCE is defined then it follows the BSD semantics for exiting a signal handler with longjmp().
 

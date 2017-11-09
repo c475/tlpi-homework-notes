@@ -100,7 +100,7 @@ The "value" doesnt have to be heap allocated memory, it can also be any scalar v
 Just look at the source code, it makes a lot more sense (lib/strerror_unsafe.c VS lib/strerror_safe.c)
 
 
-******************** 31.4 Thread locak storage ********************
+******************** 31.4 Thread local storage ********************
 
 This is a much easier way to make things thread safe but is non-standard. All you have to do is use the __thread specifier.
 

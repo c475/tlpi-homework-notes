@@ -129,7 +129,7 @@ pid_t vfork(void);
 Two things that make it different from fork():
 
 	1. The child actually shares the parent's memory until a successful exec(), or _exit(), no duplicate page tables then copy-on-write stuff.
-	2. Execution od the parent process is suspended until the child has performed exec() or _exit()
+	2. Execution of the parent process is suspended until the child has performed exec() or _exit()
 
 
 
