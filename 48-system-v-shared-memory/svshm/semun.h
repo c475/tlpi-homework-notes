@@ -1,8 +1,5 @@
 #ifndef SEMUN_H
-#define SEMUN_H // lol...
-
-#include <sys/types.h> // for portability
-#include <sys/sem.h>
+#define SEMUN_H
 
 union semun { // used in calls to semctl()
     int val;

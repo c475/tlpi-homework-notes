@@ -16,7 +16,7 @@ Example usage:
 
 A pipe is unidirectional and a simple IPC method. Only "related" processes can exchange data on a pipe (related means originated via fork())
 
-Writes to a pipe are guaranteed to be atmic up until PIPE_BUF bytes.
+Writes to a pipe are guaranteed to be atomic up until PIPE_BUF bytes.
 
 Pipes have a limited capacity. When it is full, write() will hang until enough data is read() out of the pipe, at which point it will proceed to write data to the pipe again.
 

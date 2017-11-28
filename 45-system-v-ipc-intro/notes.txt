@@ -134,6 +134,7 @@ The precise rules governing the permissions a process is granted on an IPC objec
     2. If the effective user ID of the process matches either the owner or the creator
     user ID of the IPC object, then the process is granted the permissions defined
     for the owner (user) of the object.
+    
 
     3. If the effective group ID or any of the supplementary group IDs of the process
     match either the owner group ID or the creator group ID of the IPC object,

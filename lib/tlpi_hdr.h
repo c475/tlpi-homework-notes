@@ -204,6 +204,9 @@
 
 #include "print_rlimit.h"
 
+#include "event_flags.h"
+
+#include "semun.h"
 
 typedef enum { FALSE, TRUE } Boolean;
 

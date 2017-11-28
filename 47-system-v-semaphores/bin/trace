@@ -1,0 +1,2296 @@
+execve("/usr/bin/valgrind", ["valgrind", "./47-7"], 0x7ffeddde2f18 /* 43 vars */) = 0
+brk(NULL)                               = 0x5557d42c4000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+mmap(NULL, 206658, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f92a062c000
+close(3)                                = 0
+openat(AT_FDCWD, "/usr/lib/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\20\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f92a062a000
+mmap(NULL, 3897552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f92a0083000
+mprotect(0x7f92a0231000, 2097152, PROT_NONE) = 0
+mmap(0x7f92a0431000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ae000) = 0x7f92a0431000
+mmap(0x7f92a0437000, 14544, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f92a0437000
+close(3)                                = 0
+arch_prctl(ARCH_SET_FS, 0x7f92a062b4c0) = 0
+mprotect(0x7f92a0431000, 16384, PROT_READ) = 0
+mprotect(0x5557d34fa000, 4096, PROT_READ) = 0
+mprotect(0x7f92a065f000, 4096, PROT_READ) = 0
+munmap(0x7f92a062c000, 206658)          = 0
+openat(AT_FDCWD, "./47-7", O_RDONLY)    = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\"\0\0\0\0\0\0"..., 4096) = 4096
+close(3)                                = 0
+brk(NULL)                               = 0x5557d42c4000
+brk(0x5557d42e5000)                     = 0x5557d42e5000
+readlink("/proc/self/exe", "/usr/bin/valgrind", 500) = 17
+execve("/usr/lib/valgrind/memcheck-amd64-linux", ["valgrind", "./47-7"], 0x5557d42c4490 /* 44 vars */) = 0
+open("/proc/self/maps", O_RDONLY)       = 3
+read(3, "58000000-58242000 r-xp 00000000 "..., 100000) = 590
+read(3, "", 99410)                      = 0
+close(3)                                = 0
+mmap(0x1002001000, 4194304, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002001000
+getrlimit(RLIMIT_DATA, {rlim_cur=RLIM64_INFINITY, rlim_max=RLIM64_INFINITY}) = 0
+getrlimit(RLIMIT_STACK, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+getcwd("/home/djb/Desktop/tlpi-homework-notes/47-system-v-semaphores/bin", 499) = 65
+open("/home/djb/.valgrindrc", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("./.valgrindrc", O_RDONLY)         = -1 ENOENT (No such file or directory)
+open("./47-7", O_RDONLY)                = 3
+stat("./47-7", {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+getxattr("./47-7", "security.capability", NULL, 0) = -1 ENODATA (No data available)
+geteuid()                               = 1000
+fstat(3, {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\"\0\0\0\0\0\0"..., 4096, 0) = 4096
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\"\0\0\0\0\0\0"..., 64, 0) = 64
+pread64(3, "\6\0\0\0\5\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 504, 64) = 504
+pread64(3, "/lib64/ld-linux-x86-64.so.2\0", 28, 568) = 28
+open("/lib64/ld-linux-x86-64.so.2", O_RDONLY) = 4
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000\17\0\0\0\0\0\0"..., 64, 0) = 64
+pread64(4, "\1\0\0\0\5\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 392, 64) = 392
+mmap(0x108000, 24576, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED, 3, 0) = 0x108000
+fstat(3, {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+readlink("/proc/self/fd/3", "/home/djb/Desktop/tlpi-homework-"..., 4096) = 69
+mmap(0x30d000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED, 3, 0x5000) = 0x30d000
+fstat(3, {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+readlink("/proc/self/fd/3", "/home/djb/Desktop/tlpi-homework-"..., 4096) = 69
+mmap(0x30f000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x30f000
+mmap(0x4000000, 151552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED, 4, 0) = 0x4000000
+fstat(4, {st_mode=S_IFREG|0755, st_size=176672, ...}) = 0
+readlink("/proc/self/fd/4", "/usr/lib/ld-2.26.so", 4096) = 19
+mmap(0x4224000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED, 4, 0x24000) = 0x4224000
+fstat(4, {st_mode=S_IFREG|0755, st_size=176672, ...}) = 0
+readlink("/proc/self/fd/4", "/usr/lib/ld-2.26.so", 4096) = 19
+mmap(0x4226000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x4226000
+close(4)                                = 0
+close(3)                                = 0
+open("./47-7", O_RDONLY)                = 3
+access("/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so", R_OK) = 0
+mmap(0x1ffefff000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1ffefff000
+munmap(0x7ffced789000, 8192)            = 0
+mmap(0x4227000, 4096, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x4227000
+getrlimit(RLIMIT_NOFILE, {rlim_cur=1024, rlim_max=4*1024}) = 0
+setrlimit(RLIMIT_NOFILE, {rlim_cur=1036, rlim_max=4*1024}) = 0
+fcntl(3, F_DUPFD, 1024)                 = 1024
+close(3)                                = 0
+fcntl(1024, F_SETFD, FD_CLOEXEC)        = 0
+getpid()                                = 15738
+getpid()                                = 15738
+getppid()                               = 15736
+open("/tmp/valgrind_proc_15738_cmdline_e87a8851", O_RDWR|O_CREAT|O_EXCL|O_TRUNC, 0600) = 3
+fcntl(3, F_DUPFD, 1024)                 = 1025
+close(3)                                = 0
+fcntl(1025, F_SETFD, FD_CLOEXEC)        = 0
+write(1025, "./47-7", 6)                = 6
+write(1025, "\0", 1)                    = 1
+unlink("/tmp/valgrind_proc_15738_cmdline_e87a8851") = 0
+getpid()                                = 15738
+getpid()                                = 15738
+getppid()                               = 15736
+open("/tmp/valgrind_proc_15738_auxv_e87a8851", O_RDWR|O_CREAT|O_EXCL|O_TRUNC, 0600) = 3
+fcntl(3, F_DUPFD, 1024)                 = 1026
+close(3)                                = 0
+fcntl(1026, F_SETFD, FD_CLOEXEC)        = 0
+write(1026, "\1\0\0\0\0\0\0\0\0\220x\355\374\177\0\0\20\0\0\0\0\0\0\0\377\373\213\27\0\0\0\0"..., 320) = 320
+unlink("/tmp/valgrind_proc_15738_auxv_e87a8851") = 0
+mmap(0x1002401000, 4194304, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002401000
+fcntl(2, F_DUPFD, 1024)                 = 1027
+fcntl(1027, F_SETFD, FD_CLOEXEC)        = 0
+clock_gettime(CLOCK_MONOTONIC, {tv_sec=31805, tv_nsec=970317713}) = 0
+getpid()                                = 15738
+write(1027, "==15738== Memcheck, a memory err"..., 44) = 44
+getpid()                                = 15738
+write(1027, "==15738== Copyright (C) 2002-201"..., 74) = 74
+getpid()                                = 15738
+write(1027, "==15738== Using Valgrind-3.13.0 "..., 77) = 77
+getpid()                                = 15738
+write(1027, "==15738== Command: ./47-7\n", 26) = 26
+getpid()                                = 15738
+write(1027, "==15738== \n", 11)         = 11
+mmap(0x1002801000, 500000, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002801000
+mmap(0x100287c000, 1048576, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x100287c000
+stat("/home/djb/Desktop/tlpi-homework-notes/47-system-v-semaphores/bin/47-7", {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+open("/home/djb/Desktop/tlpi-homework-notes/47-system-v-semaphores/bin/47-7", O_RDONLY|O_LARGEFILE) = 3
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\"\0\0\0\0\0\0"..., 1024, 0) = 1024
+close(3)                                = 0
+stat("/home/djb/Desktop/tlpi-homework-notes/47-system-v-semaphores/bin/47-7", {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+open("/home/djb/Desktop/tlpi-homework-notes/47-system-v-semaphores/bin/47-7", O_RDONLY|O_LARGEFILE) = 3
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\"\0\0\0\0\0\0"..., 1024, 0) = 1024
+close(3)                                = 0
+open("/home/djb/Desktop/tlpi-homework-notes/47-system-v-semaphores/bin/47-7", O_RDONLY) = 3
+fstat(3, {st_mode=S_IFREG|0755, st_size=65808, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\"\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(3, "\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0E\1\0\0\1\0\0\0000\0\0\0\0\0\0\0"..., 272, 65536) = 272
+pread64(3, "\215M\350H\213E\320H\211\316H\211\307\350n\341\377\377H\211E\360\350\245\337\377\377\213\0\205\300t"..., 8192, 16384) = 8192
+pread64(3, "t\0\0\0\2\0\r\0\340#\0\0\0\0\0\0\0\0\0\0\0\0\0\0\200\0\0\0\1\0\22\0"..., 8192, 57344) = 8192
+pread64(3, "\330] \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0v\37\0\0\0\0\0\0"..., 8192, 24576) = 8192
+pread64(3, "\3308\0\0\0\3\10\7t\1\0\0\3\1\10\\\1\0\0\3\2\7\33\2\0\0\3\4\7y\1\0"..., 8192, 40960) = 8192
+pread64(3, "n\0\2\4\n\3xf\3\tJ\0\2\4\1\6\272\0\2\4\3\236\0\2\4\4t\6u\0\2\4"..., 8192, 49152) = 8192
+open("/usr/lib/debug/.build-id/7d/15d3f9aa226201b99895925b9c4ac373bc0e1b.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(3, "d\0\1N3\7\0\0\2\221h\0\6\10=\4\0\0\23`\6\0\0\1E\236\0\0\0\0054\0"..., 8192, 32768) = 8192
+close(3)                                = 0
+mmap(0x100297c000, 65536, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x100297c000
+stat("/usr/lib/ld-2.26.so", {st_mode=S_IFREG|0755, st_size=176672, ...}) = 0
+open("/usr/lib/ld-2.26.so", O_RDONLY|O_LARGEFILE) = 3
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000\17\0\0\0\0\0\0"..., 1024, 0) = 1024
+close(3)                                = 0
+stat("/usr/lib/ld-2.26.so", {st_mode=S_IFREG|0755, st_size=176672, ...}) = 0
+open("/usr/lib/ld-2.26.so", O_RDONLY|O_LARGEFILE) = 3
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000\17\0\0\0\0\0\0"..., 1024, 0) = 1024
+close(3)                                = 0
+open("/usr/lib/ld-2.26.so", O_RDONLY)   = 3
+fstat(3, {st_mode=S_IFREG|0755, st_size=176672, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000\17\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(3, "c_fcntl\0_dl_load_cache_lookup\0__"..., 4640, 172032) = 4640
+pread64(3, "w8\20\v\3w\300\0\20\f\3w\310\0\20\r\3w\320\0\20\16\3w\330\0\20\17\3w\340\0"..., 8192, 147456) = 8192
+pread64(3, "dlopen()ed\0\0\0\0\0\0cannot enable ex"..., 8192, 131072) = 8192
+pread64(3, "\35\0\0\0\0\0\0\0\300\16\0\0\2\0\t\0`\246\1\0\0\0\0\0(\0\0\0\0\0\0\0"..., 8192, 163840) = 8192
+open("/usr/lib/debug/.build-id/43/51c2d4e8f36b2ba0a8965d7a8d1147c887242b.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(3, "\310\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\3\0\2\0\360\1\0\0\0\0\0\0"..., 8192, 155648) = 8192
+pread64(3, "\0A\16\20\206\2C\r\6H\217\3\216\4\215\5\214\6H\203\7\3\253\2\n\f\7\10A\v\0\0"..., 8192, 139264) = 8192
+close(3)                                = 0
+stat("/usr/lib/valgrind/memcheck-amd64-linux", {st_mode=S_IFREG|0755, st_size=2385488, ...}) = 0
+open("/usr/lib/valgrind/memcheck-amd64-linux", O_RDONLY|O_LARGEFILE) = 3
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\2\0>\0\1\0\0\0@\263\4X\0\0\0\0"..., 1024, 0) = 1024
+close(3)                                = 0
+stat("/usr/lib/valgrind/memcheck-amd64-linux", {st_mode=S_IFREG|0755, st_size=2385488, ...}) = 0
+open("/usr/lib/valgrind/memcheck-amd64-linux", O_RDONLY|O_LARGEFILE) = 3
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\2\0>\0\1\0\0\0@\263\4X\0\0\0\0"..., 1024, 0) = 1024
+close(3)                                = 0
+open("/usr/lib/valgrind/memcheck-amd64-linux", O_RDONLY) = 3
+fstat(3, {st_mode=S_IFREG|0755, st_size=2385488, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\2\0>\0\1\0\0\0@\263\4X\0\0\0\0"..., 8192, 0) = 8192
+pread64(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 1616, 2383872) = 1616
+pread64(3, "64): cannot currently handle > 6"..., 8192, 2179072) = 8192
+open("/usr/lib/debug/.build-id/10/e9a92a7a0bc1bbebfff4a5551044fb17f78609.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(3, "\v\0\0\0P\0\0\0\20\6\0\0\264P\337\377\347\0\0\0\0B\16\20\216\2B\16\30\215\3B"..., 8192, 2187264) = 8192
+pread64(3, "\30\216\3E\16 \215\4B\16(\214\5D\0160\206\6A\0168\203\7G\16PN\n\0168A\16"..., 8192, 2195456) = 8192
+pread64(3, "\n\0168G\0160A\16(B\16 B\16\30B\16\20B\16\10E\vR\n\0168G\0160A\16"..., 8192, 2203648) = 8192
+pread64(3, "(B\16 B\16\30B\16\20B\16\10C\v\0D\0\0\0\34f\0\0\210M\342\377\334\1\0\0"..., 8192, 2211840) = 8192
+pread64(3, "0V\16\10P\0\0\0\20\206\0\0\24\305\342\377\231\0\0\0\0A\16\20\206\2A\16\30\203\3O"..., 8192, 2220032) = 8192
+pread64(3, "\2L\n\16\30A\16\20B\16\10P\v\2\302\n\16\30A\16\20B\16\10K\v\2J\n\16\30A"..., 8192, 2228224) = 8192
+pread64(3, "\214\6N\203\7\3P\6\n\f\7\10F\v\0\0H\0\0\0\34\306\0\0X\303\344\377\t\1\0\0"..., 8192, 2236416) = 8192
+pread64(3, "\0D\16\30G\16 B\16(H\0160O\16\10 \0\0\0\34\346\0\0008\200\345\377q\0\0\0"..., 8192, 2244608) = 8192
+pread64(3, "\20A\16\10H\vq\n\16\30A\16\20A\16\10E\v_\n\16\30A\16\20A\16\10G\v\0\0"..., 8192, 2252800) = 8192
+pread64(3, "8\203\7M\16@\2\253\0168A\0160A\16(B\16 B\16\30B\16\20B\16\10\20\0\0\0"..., 8192, 2260992) = 8192
+pread64(3, "\214\2D\16\30\206\3D\16 \203\4\3I\1\n\16\30A\16\20B\16\10S\vA\n\16\30A\16"..., 8192, 2269184) = 8192
+pread64(3, "\16\30A\16\20A\16\10$\0\0\0\24f\1\0@\31\351\377f\0\0\0\0A\16\20\203\2F\16"..., 8192, 2277376) = 8192
+pread64(3, "A\16\20B\16\10A\vu\n\16\30A\16\20B\16\10H\v\2G\n\16\30A\16\20B\16\10F"..., 8192, 2285568) = 8192
+mmap(0x100298c000, 1048576, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x100298c000
+pread64(3, "\0B\16\20\217\2B\16\30\216\3B\16 \215\4B\16(\214\5A\0160\206\6A\0168\203\7D"..., 8192, 2293760) = 8192
+pread64(3, "VP\16\250VH\16\240VQ\16\10`\0\0\0\30\306\1\0\214\27\355\377E\1\0\0\0B\16\20"..., 8192, 2301952) = 8192
+pread64(3, "\16 \206\4A\16(\203\5J\0160\2w\16(A\16 A\16\30B\16\20B\16\10F\303\306\314"..., 8192, 2310144) = 8192
+pread64(3, "\16\10F\vM\n\16\10F\vM\n\16\10F\vM\n\16\10F\vM\n\16\10F\vM\n\16\10"..., 8192, 2318336) = 8192
+pread64(3, "\16\20B\16\10H\v\0d\0\0\0\24&\2\0\20\263\357\377\30\4\0\0\0B\16\20\217\2B\16"..., 8192, 2326528) = 8192
+pread64(3, "A\16(\203\5P\0160\2B\16(G\16 A\16\30B\16\20B\16\10H\0\0\0$F\2\0"..., 8192, 2334720) = 8192
+pread64(3, "\5D\0160\206\6A\0168\203\7I\16\260\1\3$\1\n\0168D\0160A\16(B\16 B\16"..., 8192, 2342912) = 8192
+pread64(3, "I\16\240\2Q\16\230\2E\16\220\2\3[\3\16\230\2S\16\240\2G\16\230\2E\16\220\2\2\247"..., 8192, 2351104) = 8192
+pread64(3, "\10\246\2\0\\\343\365\377/\0\0\0\0\0\0\0\30\0\0\0\34\246\2\0x\343\365\377p\0\0\0"..., 8192, 2359296) = 8192
+close(3)                                = 0
+pipe([3, 4])                            = 0
+fcntl(3, F_DUPFD, 1024)                 = 1028
+close(3)                                = 0
+fcntl(1028, F_SETFD, FD_CLOEXEC)        = 0
+fcntl(4, F_DUPFD, 1024)                 = 1029
+close(4)                                = 0
+fcntl(1029, F_SETFD, FD_CLOEXEC)        = 0
+write(1029, "A", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+mmap(0x1002a8c000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002a8c000
+mmap(0x1002a90000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002a90000
+mmap(0x1002a94000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002a94000
+mmap(0x1002a98000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002a98000
+mmap(0x1002a9c000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002a9c000
+mmap(0x1002aa0000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002aa0000
+mmap(0x1002aa4000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002aa4000
+rt_sigprocmask(SIG_SETMASK, ~[], [], 8) = 0
+rt_sigaction(SIGHUP, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGINT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGQUIT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGILL, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTRAP, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGABRT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGBUS, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGFPE, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGKILL, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGUSR1, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSEGV, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGUSR2, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGPIPE, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGALRM, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTERM, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSTKFLT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGCHLD, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGCONT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSTOP, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTSTP, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTTIN, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTTOU, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGURG, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGXCPU, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGXFSZ, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGVTALRM, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGPROF, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGWINCH, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGIO, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGPWR, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSYS, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRTMIN, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRTMIN, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRTMIN, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_1, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_1, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_1, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_2, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_2, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_2, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_3, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_3, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_3, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_4, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_4, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_4, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_5, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_5, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_5, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_6, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_6, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_6, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_7, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_7, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_7, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_8, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_8, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_8, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_9, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_9, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_9, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_10, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_10, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_10, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_11, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_11, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_11, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_12, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_12, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_12, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_13, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_13, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_13, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_14, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_14, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_14, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_15, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_15, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_15, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_16, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_16, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_16, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_17, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_17, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_17, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_18, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_18, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_18, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_19, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_19, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_19, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_20, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_20, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_20, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_21, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_21, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_21, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_22, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_22, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_22, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_23, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_23, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_23, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_24, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_24, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_24, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_25, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_25, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_25, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_26, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_26, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_26, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_27, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_27, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_27, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_28, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_28, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_28, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_29, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_29, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_29, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_30, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_30, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_30, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_31, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_31, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_31, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGRT_32, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_32, {sa_handler=0x5805e330, sa_mask=~[], sa_flags=SA_SIGINFO}, NULL, 8) = 0
+rt_sigaction(SIGRT_32, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, NULL, 8) = 0
+rt_sigaction(SIGHUP, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGINT, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGQUIT, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGILL, {sa_handler=0x5805e330, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTRAP, {sa_handler=0x5805e330, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGABRT, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGBUS, {sa_handler=0x5805e330, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGFPE, {sa_handler=0x5805e330, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGUSR1, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSEGV, {sa_handler=0x5805e330, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGUSR2, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGPIPE, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGALRM, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTERM, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSTKFLT, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGCHLD, {sa_handler=SIG_DFL, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGCONT, {sa_handler=SIG_DFL, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTSTP, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTTIN, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTTOU, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGURG, {sa_handler=SIG_DFL, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGXCPU, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGXFSZ, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGVTALRM, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGPROF, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGWINCH, {sa_handler=SIG_DFL, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGIO, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGPWR, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSYS, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRTMIN, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_1, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_2, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_3, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_4, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_5, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_6, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_7, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_8, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_9, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_10, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_11, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_12, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_13, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_14, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_15, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_16, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_17, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_18, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_19, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_20, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_21, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_22, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_23, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_24, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_25, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_26, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_27, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_28, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_29, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_30, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_31, {sa_handler=0x5805df10, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGRT_32, {sa_handler=0x5805bfd0, sa_mask=~[KILL STOP], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x5805bdd0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+stat("/usr/lib/valgrind/default.supp", {st_mode=S_IFREG|0644, st_size=30611, ...}) = 0
+open("/usr/lib/valgrind/default.supp", O_RDONLY) = 3
+read(3, "# This is a generated file, comp"..., 256) = 256
+read(3, "/*lib*/ld-2.*so*\n   obj:*/*lib*/"..., 256) = 256
+read(3, "yte reads\n   exp-sgcheck:SorG\n  "..., 256) = 256
+read(3, "d\n#     (optional extra info for"..., 256) = 256
+read(3, "e1 Value2 Value4 Value8 Value16 "..., 256) = 256
+read(3, "--------------##\n\n{\n   X11-Cond-"..., 256) = 256
+read(3, "-Addr4-1\n   Memcheck:Addr4\n   ob"..., 256) = 256
+read(3, "/X11R6/lib/libXt.so.6.0\n}\n\n{\n   "..., 256) = 256
+read(3, "R6/lib/libXt.so.6.0\n   obj:/usr/"..., 256) = 256
+read(3, "   obj:/usr/X11R6/lib/libXmu.so."..., 256) = 256
+read(3, "emcheck:Param\n   write(buf)\n   f"..., 256) = 256
+read(3, "Xpm.so.4.11\n}\n\n{\n   X11-Addr4-8\n"..., 256) = 256
+read(3, "sr/X11R6/lib/libXt.so.6.0\n   obj"..., 256) = 256
+read(3, "r/X11R6/lib/libXt.so.6.0\n   obj:"..., 256) = 256
+read(3, "rrors to suppress by default wit"..., 256) = 256
+read(3, "ession\n#     tool_name:supp_kind"..., 256) = 256
+read(3, "p_kinds are:\n#\n#     Param Value"..., 256) = 256
+read(3, "   *libc_write/libX11.so.6.2/*X1"..., 256) = 256
+read(3, "  obj:/usr/*lib*/libX11.so*\n   o"..., 256) = 256
+read(3, "o.7.0(Cond)\n   Memcheck:Cond\n   "..., 256) = 256
+read(3, "sr/*lib*/libXmu.so*\n}\n\n{\n   libX"..., 256) = 256
+read(3, "bj:/usr/*lib*/libXaw.so*\n   obj:"..., 256) = 256
+read(3, "o.6.2/libX11.so.6.2/libXaw.so.7."..., 256) = 256
+read(3, "usr/*lib*/libX11.so*\n   obj:/usr"..., 256) = 256
+read(3, "o.4.11\n   Memcheck:Cond\n   obj:/"..., 256) = 256
+read(3, "un:_X11TransWritev\n   fun:*\n}\n\n{"..., 256) = 256
+read(3, "ith uninitialized paddings - lib"..., 256) = 256
+read(3, "zed paddings\n   Memcheck:Param\n "..., 256) = 256
+read(3, "\n\n{\n   Xorg 6.8.1 uninit write p"..., 256) = 256
+read(3, "Write\n   fun:IceFlush\n}\n\n{\n   Xo"..., 256) = 256
+read(3, "tor[...])\n   fun:do_writev\n   fu"..., 256) = 256
+read(3, "so*\n}\n{\n   X on SUSE11 writev un"..., 256) = 256
+read(3, "bj:/lib*/ld-2.*.so*\n   obj:/usr/"..., 256) = 256
+read(3, " \n\n# There's something strange a"..., 256) = 256
+read(3, "te here.  Anyway, for the moment"..., 256) = 256
+read(3, "dFontConfigFont(QFontPrivate con"..., 256) = 256
+read(3, "6)\n{\n   XftFontOpenInfo-umod-127"..., 256) = 256
+read(3, "o*\n}\n\n{\n   More X padding stuff\n"..., 256) = 256
+read(3, "x9B5CCE6: ??? (in /usr/lib/libX1"..., 256) = 256
+read(3, "ibgdk-x11-2.0.so.0.1800.3)\n#  Ad"..., 256) = 256
+read(3, ".so.6.2.0)\n#    by 0x9B81818: ??"..., 256) = 256
+read(3, "---##\n# Completely inappropriate"..., 256) = 256
+read(3, "_lf_table\n}\n\n\n# zlib-1.2.x uses "..., 256) = 256
+read(3, "ickyness (1a): See http://www.zl"..., 256) = 256
+read(3, ":/*lib*/libz.so.1.2.*\n   fun:def"..., 256) = 256
+read(3, "p://www.zlib.net/zlib_faq.html#f"..., 256) = 256
+read(3, ".2.*\n   fun:deflate\n}\n{\n   zlib-"..., 256) = 256
+read(3, " versions of some of the old X s"..., 256) = 256
+read(3, "o.7.0/libXt(Cond)\n   Memcheck:Co"..., 256) = 256
+read(3, "ns for ld, the dynamic loader.\n#"..., 256) = 256
+read(3, " this could hide some real data "..., 256) = 256
+read(3, "itions of _IO_lock_lock() etc. i"..., 256) = 256
+read(3, "\n{\n   drd-libc-random\n   drd:Con"..., 256) = 256
+read(3, "2.2, 4.3.2, 4.4.0, 4.5.0\n# and t"..., 256) = 256
+read(3, "#    drd:ConflictingAccess\n#    "..., 256) = 256
+read(3, "onflictingAccess\n   ...\n   fun:p"..., 256) = 256
+read(3, "-libpthread-__free_stacks\n   drd"..., 256) = 256
+read(3, "\n   drd-libpthread-pthread_detac"..., 256) = 256
+read(3, ":pthread_cancel_init\n}\n{\n   drd-"..., 256) = 256
+read(3, "hread-_Unwind_GetCFA\n   drd:Conf"..., 256) = 256
+read(3, "-nanosleep\n   drd:ConflictingAcc"..., 256) = 256
+read(3, "gcc.gnu.org/bugzilla/show_bug.cg"..., 256) = 256
+read(3, "FontsWithInfo\n   obj:/usr/lib*/l"..., 256) = 256
+read(3, "atterns for libglib.\n#\n\n{\n   drd"..., 256) = 256
+read(3, "ntDispatcherGlibPrivateC1EP13_GM"..., 256) = 256
+read(3, "glib-g_private_get_posix_impl\n  "..., 256) = 256
+read(3, "fun:g_slice_free_chain_with_offs"..., 256) = 256
+read(3, "dData-destructor\n   drd:Conflict"..., 256) = 256
+read(3, "P7QObjectiiPPv\n   fun:_ZN11QMeta"..., 256) = 256
+read(3, "bjectD2Ev\n}\n{\n   drd-libQtCore-Q"..., 256) = 256
+read(3, "P7QObject\n   fun:_ZN7QObjectD2Ev"..., 256) = 256
+read(3, "tonic()\n   drd:ConflictingAccess"..., 256) = 256
+read(3, "e.hpp in the Boost source tree\n#"..., 256) = 256
+read(3, "EvRNS_9once_flagET_\n}\n{\n   drd-l"..., 256) = 256
+read(3, "boost.org/trac/boost/ticket/3526"..., 256) = 256
+read(3, "ataEv\n}\n{\n   drd-libboost-boost:"..., 256) = 256
+read(3, " with a lot of\n# other stuff.  T"..., 256) = 256
+read(3, "############\n# glibc-2.X specifi"..., 256) = 256
+read(3, "hat's fine, since it's mostly dy"..., 256) = 256
+read(3, " is, if we don't do\n#   this, th"..., 256) = 256
+read(3, "bc manipulate stdio\n#   FILE*s s"..., 256) = 256
+read(3, "X-001\n\n# helgrind-glibc2X-003 wa"..., 256) = 256
+read(3, "*so*\n}\n\n{\n   helgrind-glibc2X-00"..., 256) = 256
+read(3, "glibc2X-004\n\n# helgrind-glibc2X-"..., 256) = 256
+read(3, "\n# helgrind-glibc2X-013 was merg"..., 256) = 256
+read(3, " very ugly.  They are needed to "..., 256) = 256
+read(3, "(in\n# the glibc-2.5 sources) and"..., 256) = 256
+read(3, "ead-2.*so*\n   fun:pthread_*\n}\n{\n"..., 256) = 256
+read(3, "un:__lll_mutex_*\n}\n{\n   helgrind"..., 256) = 256
+read(3, "helgrind-glibc2X-108\n   Helgrind"..., 256) = 256
+read(3, "__lll_*lock_*\n}\n{\n   helgrind-gl"..., 256) = 256
+read(3, "n:_ZN6QMutex4lockEv\n   fun:_ZN6Q"..., 256) = 256
+read(3, "nlockEv                         "..., 256) = 256
+read(3, "#########################\n# Othe"..., 256) = 256
+read(3, "nd---*Unwind*-...-pthread_exit\n "..., 256) = 256
+read(3, "Helgrind:Race\n   ...\n   fun:_Unw"..., 256) = 256
+read(3, "free_stacks\n   fun:__deallocate_"..., 256) = 256
+read(3, "t}specific\n#\n{\n   helgrind---pth"..., 256) = 256
+read(3, "nking\n#\n# helgrind---ld.so-...-d"..., 256) = 256
+read(3, "te@*\n}\n\n{\n   helgrind---_dl_allo"..., 256) = 256
+read(3, "################\n# To do with GN"..., 256) = 256
+read(3, "ast\n}\n\n##-----------------------"..., 256) = 256
+read(3, "s file is:\n# {\n#     name_of_sup"..., 256) = 256
+read(3, "me)\n#  }\n#\n# For Memcheck, the s"..., 256) = 256
+read(3, "param\n\n##-----------------------"..., 256) = 256
+read(3, " Memcheck:Cond\n   fun:_dl_start\n"..., 256) = 256
+read(3, ".so*\n   obj:*/lib*/libc-2.26*.so"..., 256) = 256
+read(3, "obj:*/lib*/libdl-2.26*.so*\n}\n\n{\n"..., 256) = 256
+read(3, "\n   obj:*/lib*/libc-2.26*.so*\n}\n"..., 256) = 256
+read(3, "*.so\n   obj:*/lib*/ld-2.26*.so\n}"..., 256) = 256
+read(3, "6*.so*\n   obj:*/lib*/ld-2.26*.so"..., 256) = 256
+read(3, "---##\n{\n   glibc-2.5.x-on-SUSE-1"..., 256) = 256
+read(3, "eck:Addr4\n   fun:index\n   fun:ex"..., 256) = 256
+read(3, "py\n   obj:*lib*2.26.*.so\n}\n\n{\n  "..., 256) = 256
+read(3, "mapping\n   fun:__nscd_get_map_re"..., 256) = 256
+read(3, "heck:Param\n   socketcall.send(ms"..., 256) = 256
+read(3, "sr/lib*/libX11.so*\n   obj:/usr/l"..., 256) = 256
+read(3, "call.send(msg)\n   fun:send\n   ob"..., 256) = 256
+read(3, "mcheck:Param\n    write(buf)\n    "..., 256) = 256
+read(3, "#\n# Ubuntu 10.04 on ARM (Thumb)."..., 256) = 147
+read(3, "", 256)                        = 0
+close(3)                                = 0
+mmap(0x1002aa8000, 1064960, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002aa8000
+mprotect(0x1002aa8000, 8192, PROT_NONE) = 0
+mprotect(0x1002baa000, 8192, PROT_NONE) = 0
+gettid()                                = 15738
+read(1028, "A", 1)                      = 1
+gettid()                                = 15738
+getpid()                                = 15738
+getpid()                                = 15738
+open("/proc/sys/kernel/yama/ptrace_scope", O_RDONLY) = 3
+read(3, "1", 1)                         = 1
+prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY) = 0
+close(3)                                = 0
+unlink("/tmp/vgdb-pipe-from-vgdb-to-15738-by-djb-on-???") = -1 ENOENT (No such file or directory)
+unlink("/tmp/vgdb-pipe-to-vgdb-from-15738-by-djb-on-???") = -1 ENOENT (No such file or directory)
+unlink("/tmp/vgdb-pipe-shared-mem-vgdb-15738-by-djb-on-???") = -1 ENOENT (No such file or directory)
+open("/tmp/vgdb-pipe-shared-mem-vgdb-15738-by-djb-on-???", O_RDWR|O_CREAT, 0600) = 3
+write(3, "\0\0\0\0\0\0\0\0\220@\tX\0\0\0\0\240f\0\2\20\0\0\0\364\1\0\0\20\34\0\0"..., 48) = 48
+mmap(0x1002bac000, 48, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, 3, 0) = 0x1002bac000
+fstat(3, {st_mode=S_IFREG|0600, st_size=48, ...}) = 0
+readlink("/proc/self/fd/3", "/tmp/vgdb-pipe-shared-mem-vgdb-1"..., 4096) = 50
+close(3)                                = 0
+mknod("/tmp/vgdb-pipe-to-vgdb-from-15738-by-djb-on-???", S_IFIFO|0600) = 0
+mknod("/tmp/vgdb-pipe-from-vgdb-to-15738-by-djb-on-???", S_IFIFO|0600) = 0
+open("/tmp/vgdb-pipe-from-vgdb-to-15738-by-djb-on-???", O_RDONLY|O_NONBLOCK) = 3
+fcntl(3, F_DUPFD, 1024)                 = 1030
+close(3)                                = 0
+fcntl(1030, F_SETFD, FD_CLOEXEC)        = 0
+fcntl(1030, F_GETFL)                    = 0x8800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+fcntl(1030, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+mmap(0x1002bad000, 27597024, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1002bad000
+mmap(0x10045ff000, 4769856, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x10045ff000
+mmap(0x1004a8c000, 1362816, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004a8c000
+mmap(0x1004bd9000, 131042, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004bd9000
+mmap(0x1004bf9000, 65536, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004bf9000
+uname({sysname="Linux", nodename="XERXES", ...}) = 0
+--- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=0x1ffeffee04} ---
+gettid()                                = 15738
+mmap(0x1ffeffe000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1ffeffe000
+rt_sigreturn({mask=~[ILL TRAP BUS FPE KILL SEGV STOP]}) = 15233
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "C", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/valgrind/vgpreload_core-amd64-linux.so", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "C", 1)                      = 1
+gettid()                                = 15738
+write(1029, "D", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\5\0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "D", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=5504, ...}) = 0
+mmap(0x4a27000, 2101264, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x4a27000
+fstat(3, {st_mode=S_IFREG|0755, st_size=5504, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/valgrind/vgpreload_core"..., 4096) = 47
+stat("/usr/lib/valgrind/vgpreload_core-amd64-linux.so", {st_mode=S_IFREG|0755, st_size=5504, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\5\0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004c09000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c09000
+mmap(0x1004c0d000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c0d000
+mprotect(0x4a28000, 2093056, PROT_NONE) = 0
+mmap(0x4c27000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x4c27000
+fstat(3, {st_mode=S_IFREG|0755, st_size=5504, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/valgrind/vgpreload_core"..., 4096) = 47
+stat("/usr/lib/valgrind/vgpreload_core-amd64-linux.so", {st_mode=S_IFREG|0755, st_size=5504, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\5\0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/valgrind/vgpreload_core-amd64-linux.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=5504, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\5\0\0\0\0\0\0"..., 5504, 0) = 5504
+open("/usr/lib/debug/.build-id/1b/6750f7b24a39c9e6528e96460dc19ce882d28d.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+close(4)                                = 0
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "E", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "E", 1)                      = 1
+gettid()                                = 15738
+write(1029, "F", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P7\0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "F", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=62920, ...}) = 0
+mmap(0x4025000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x4025000
+mmap(0x4c29000, 2158880, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x4c29000
+fstat(3, {st_mode=S_IFREG|0755, st_size=62920, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/valgrind/vgpreload_memc"..., 4096) = 51
+stat("/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so", {st_mode=S_IFREG|0755, st_size=62920, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P7\0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004c11000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c11000
+mprotect(0x4c38000, 2093056, PROT_NONE) = 0
+mmap(0x4e37000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xe000) = 0x4e37000
+fstat(3, {st_mode=S_IFREG|0755, st_size=62920, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/valgrind/vgpreload_memc"..., 4096) = 51
+stat("/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so", {st_mode=S_IFREG|0755, st_size=62920, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P7\0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=62920, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P7\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "\3\206\2\0<\0\0\0\0\23\0\0t\247\377\377e\3\0\0\0F\16\20\206\2T\r\6F\214\3"..., 5576, 57344) = 5576
+pread64(4, "\223\300\204\300u\31H\211\370\303f\17\37D\0\0I\215D0\377H9\370\17\223\300\204\300t\347U"..., 8192, 49152) = 8192
+open("/usr/lib/debug/.build-id/6b/202adf6d7c53f547f8b0cb2a9aeaf175740593.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(4, "wmRKSt9nothrow_t\0_vgr10030ZU_lib"..., 8192, 8192) = 8192
+close(4)                                = 0
+close(3)                                = 0
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "G", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "G", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+mmap(0x4027000, 206658, PROT_READ, MAP_PRIVATE|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/ld.so.cache", 4096) = 16
+stat("/etc/ld.so.cache", {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+mmap(0x1004c15000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c15000
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "H", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "H", 1)                      = 1
+gettid()                                = 15738
+write(1029, "I", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0]\0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "I", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=145336, ...}) = 0
+mmap(0x4e39000, 2216400, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x4e39000
+fstat(3, {st_mode=S_IFREG|0755, st_size=145336, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libpthread-2.26.so", 4096) = 27
+stat("/usr/lib/libpthread-2.26.so", {st_mode=S_IFREG|0755, st_size=145336, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0]\0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004c19000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c19000
+mprotect(0x4e52000, 2093056, PROT_NONE) = 0
+mmap(0x5051000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x18000) = 0x5051000
+fstat(3, {st_mode=S_IFREG|0755, st_size=145336, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libpthread-2.26.so", 4096) = 27
+stat("/usr/lib/libpthread-2.26.so", {st_mode=S_IFREG|0755, st_size=145336, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0]\0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/libpthread-2.26.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=145336, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0]\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "_register_atfork@@GLIBC_2.3.2\0_I"..., 6072, 139264) = 6072
+pread64(4, "\26\1\0\0\0\0\0\0\0\0\0\0\310\0\0\0\0\0\0\0006\1\0\0\342\0\0\0\0\0\0\0"..., 8192, 98304) = 8192
+pread64(4, "read_kill_other_threads_np\0pthre"..., 8192, 16384) = 8192
+pread64(4, "\340\330\0\0\0\0\0\0d\3\0\0\0\0\0\0Q\t\0\0\22\0\v\0`\341\0\0\0\0\0\0"..., 8192, 8192) = 8192
+pread64(4, "ounts\0/etc/fstab\0tmpfs\0shm\0\0\0\0\0\0"..., 8192, 81920) = 8192
+pread64(4, "`\346\0\0\0\0\0\0\26\0\0\0\0\0\0\0Z\34\0\0\22\0\v\0\200\215\0\0\0\0\0\0"..., 8192, 122880) = 8192
+open("/usr/lib/debug/.build-id/60/cae7e4afd8b276ddfbc85a5a3e7982d59659aa.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(4, "read_getattr_default_np.c\0elisio"..., 8192, 131072) = 8192
+pread64(4, "\0\0\0\0\0\0\0\0\210\n\0\0\2\0\v\0\200\316\0\0\0\0\0\0Y\0\0\0\0\0\0\0"..., 8192, 106496) = 8192
+pread64(4, "\266#\0\0\2\0\v\0\320\n\1\0\0\0\0\0T\0\0\0\0\0\0\0\307#\0\0\2\0\v\0"..., 8192, 114688) = 8192
+pread64(4, "@\203\377\377>\0\0\0\0\0\0\0\0\0\0\0\34\0\0\0T\25\0\0h\203\377\377\213\0\0\0"..., 8192, 90112) = 8192
+close(4)                                = 0
+mmap(0x5053000, 12752, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x5053000
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "J", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "J", 1)                      = 1
+gettid()                                = 15738
+write(1029, "K", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\20\2\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "K", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+mmap(0x5057000, 3897552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x5057000
+fstat(3, {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libc-2.26.so", 4096) = 21
+stat("/usr/lib/libc-2.26.so", {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+pread64(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\20\2\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004c1d000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c1d000
+mprotect(0x5205000, 2097152, PROT_NONE) = 0
+mmap(0x5405000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ae000) = 0x5405000
+fstat(3, {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libc-2.26.so", 4096) = 21
+stat("/usr/lib/libc-2.26.so", {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+pread64(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\20\2\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/libc-2.26.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=2070008, ...}) = 0
+pread64(4, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\20\2\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "gnu.version_r\0.rela.dyn\0.rela.pl"..., 5624, 2064384) = 5624
+pread64(4, ";\260\27\0\0\0\0\0;\260\27\0\0\0\0\0;\260\27\0\0\0\0\0;\260\27\0\0\0\0\0"..., 8192, 1769472) = 8192
+pread64(4, "e\0argz_add\0fts64_children\0__strt"..., 8192, 90112) = 8192
+pread64(4, "nlocked_chk\0swab\0pthread_mutex_d"..., 8192, 2056192) = 8192
+pread64(4, "\304\370\3051j\6\347\214\276\\8\364I:\200\t\362\35\23x\275\2667&\6\26\31\377a\177\257\360"..., 8192, 8192) = 8192
+pread64(4, "0\247\17\0\0\0\0\0u\0\0\0\0\0\0\0\0067\0\0\"\0\f\0p\325\2\0\0\0\0\0"..., 8192, 65536) = 8192
+pread64(4, "(-\2\0\240'\372\377<-\2\0\360'\372\377d-\2\0\0(\372\377x-\2\0\360(\372\377"..., 8192, 1613824) = 8192
+pread64(4, "\1\0\0\0\177\3\0\0@\0\0\0\"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 8192, 1777664) = 8192
+pread64(4, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\3\0\1\0p\2\0\0\0\0\0\0"..., 8192, 1785856) = 8192
+pread64(4, "\37\0\0\0\0\0\0\0\326\r\1\0\22\0\f\0pk\22\0\0\0\0\0\321\0\0\0\0\0\0\0"..., 8192, 1966080) = 8192
+open("/usr/lib/debug/.build-id/46/6056d0995495995ad1a1fe696c9dc7fb3d421b.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(4, "semtimedop.c\0shmat.c\0shmdt.c\0shm"..., 8192, 1998848) = 8192
+pread64(4, "list\0use_initgroups_entry\0__PRET"..., 8192, 1990656) = 8192
+pread64(4, "ETTY_FUNCTION__.9565\0__PRETTY_FU"..., 8192, 1974272) = 8192
+pread64(4, "libc_multiple_threads\0__GI_llist"..., 8192, 2015232) = 8192
+pread64(4, "etpos\0xdrrec_setpos\0get_input_by"..., 8192, 2007040) = 8192
+pread64(4, "feof.c\0ferror.c\0fileno.c\0fputc.c"..., 8192, 1982464) = 8192
+pread64(4, "\0\0\0\0\0\0\0\0\25\17\0\0\4\0\361\377\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 8192, 1794048) = 8192
+pread64(4, "write_field\0_nl_C_LC_CTYPE_class"..., 8192, 2031616) = 8192
+pread64(4, "ync\0__libc_drand48_data\0__memcpy"..., 8192, 2048000) = 8192
+pread64(4, "\0\35\0\0\4\0\361\377\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\t\35\0\0\4\0\361\377"..., 8192, 1802240) = 8192
+pread64(4, "l\0__GI__IO_wdefault_uflow\0__unor"..., 8192, 2039808) = 8192
+pread64(4, "\320E\10\0\0\0\0\0\23\1\0\0\0\0\0\0?.\0\0\1\0 \0\260G;\0\0\0\0\0"..., 8192, 1810432) = 8192
+pread64(4, "tcredres\0__GI___res_iclose\0_gmon"..., 8192, 2023424) = 8192
+pread64(4, "\0\0\0\0\0\0\0\0K>\0\0\2\0\f\0\340>\v\0\0\0\0\0*\0\0\0\0\0\0\0"..., 8192, 1818624) = 8192
+pread64(4, "\33P\0\0\2\0\f\0p\370\r\0\0\0\0\0j\1\0\0\0\0\0\0DP\0\0\2\0\f\0"..., 8192, 1826816) = 8192
+pread64(4, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0#a\0\0\4\0\361\377\0\0\0\0\0\0\0\0"..., 8192, 1835008) = 8192
+pread64(4, "\10\0\0\0\0\0\0\0\243p\0\0\1\0 \0\200a;\0\0\0\0\0\10\0\0\0\0\0\0\0"..., 8192, 1843200) = 8192
+pread64(4, "B\201\0\0\4\0\361\377\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0O\201\0\0\1\0 \0"..., 8192, 1851392) = 8192
+pread64(4, "@\375\22\0\0\0\0\0@\0\0\0\0\0\0\0\311\222\0\0\1\0\17\0\10\"\30\0\0\0\0\0"..., 8192, 1859584) = 8192
+pread64(4, "U\2\0\0\0\0\0\0001\250\0\0\2\0\f\0000\234\2\0\0\0\0\0\323\4\0\0\0\0\0\0"..., 8192, 1867776) = 8192
+pread64(4, "\212\275\0\0\2\0\f\0\360n\22\0\0\0\0\0Y\0\0\0\0\0\0\0\237\275\0\0\2\0\f\0"..., 8192, 1875968) = 8192
+pread64(4, "@`\3\0\0\0\0\0\205\4\0\0\0\0\0\0\3\323\0\0\2\0\f\0\320U\4\0\0\0\0\0"..., 8192, 1884160) = 8192
+pread64(4, "\363\1\0\0\0\0\0\0\312\350\0\0\2\0\f\0\240\345\25\0\0\0\0\0Z\0\0\0\0\0\0\0"..., 8192, 1892352) = 8192
+pread64(4, "\333\376\0\0\1\0 \0\300x;\0\0\0\0\0\4\0\0\0\0\0\0\0\367\376\0\0\2\0\f\0"..., 8192, 1900544) = 8192
+pread64(4, "\200\206\3\0\0\0\0\0w\0\0\0\0\0\0\0\374\24\1\0\2\0\f\0ps\16\0\0\0\0\0"..., 8192, 1908736) = 8192
+pread64(4, "4\0\0\0\0\0\0\0I*\1\0\2\0\f\0p\256\21\0\0\0\0\0t\0\0\0\0\0\0\0"..., 8192, 1916928) = 8192
+pread64(4, "\2444\1\0\21\0\361\377\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\2574\1\0\22\0\f\0"..., 8192, 1925120) = 8192
+pread64(4, "0O\5\0\0\0\0\0\360\t\0\0\0\0\0\0\26<\1\0\22\0\f\0\240e\16\0\0\0\0\0"..., 8192, 1933312) = 8192
+pread64(4, "?\0\0\0\0\0\0\0\252\10\1\0\22\0\f\0\20k\17\0\0\0\0\0!\0\0\0\0\0\0\0"..., 8192, 1941504) = 8192
+pread64(4, "\7\364\0\0\"\0\f\0 h\v\0\0\0\0\0!\0\0\0\0\0\0\0)L\1\0\22\0\f\0"..., 8192, 1949696) = 8192
+pread64(4, "0t\16\0\0\0\0\0T\0\0\0\0\0\0\0\300T\1\0\22\0\f\0\240\20\23\0\0\0\0\0"..., 8192, 1957888) = 8192
+pread64(4, "_IO_file_overflow\0ulimit\0endspen"..., 8192, 73728) = 8192
+pread64(4, "on\0nftw\0__libc_start_main\0__strc"..., 8192, 81920) = 8192
+pread64(4, "po\20\0\0\0\0\0\23\0\0\0\0\0\0\0\177W\0\0\22\0\f\0\260m\17\0\0\0\0\0"..., 8192, 16384) = 8192
+pread64(4, "\22\0\0\0\0\0\0\0-@\0\0\22\0\f\0 \352\21\0\0\0\0\0:\0\0\0\0\0\0\0"..., 8192, 24576) = 8192
+pread64(4, "\320\1\0\0\"\0\f\0 \245\17\0\0\0\0\0z\0\0\0\0\0\0\0\367\20\0\0\"\0\f\0"..., 8192, 32768) = 8192
+pread64(4, " \324\2\0\0\0\0\0\17\0\0\0\0\0\0\0=U\0\0\22\0\f\0\200\235\22\0\0\0\0\0"..., 8192, 40960) = 8192
+pread64(4, "-\0\0\0\0\0\0\0\223X\0\0\22\0\f\0 m\17\0\0\0\0\0!\0\0\0\0\0\0\0"..., 8192, 49152) = 8192
+pread64(4, ")N\0\0\"\0\f\0\200\360\22\0\0\0\0\0\226\0\0\0\0\0\0\0y\24\0\0\22\0\f\0"..., 8192, 57344) = 8192
+mmap(0x1004c21000, 1048576, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004c21000
+pread64(4, "\0\16\352\377\350\0\0\0\0\0\0\0\20\0\0\0\0\24\0\0\334\16\352\377\27\0\0\0\0\0\0\0"..., 8192, 1622016) = 8192
+pread64(4, "\217\2B\16\30\216\3B\16 \215\4B\16(\214\5A\0160\206\6A\0168\203\7G\16\260\3\3"..., 8192, 1630208) = 8192
+pread64(4, "\16 \214\4A\16(\206\5D\0160\203\6O\16\300\4\3[\1\n\0160A\16(A\16 B\16"..., 8192, 1638400) = 8192
+pread64(4, "\360\2\2\255\n\0160A\16(A\16 B\16\30B\16\20B\16\10F\vH\0\0\0\ft\0\0"..., 8192, 1646592) = 8192
+pread64(4, "\360\223\0\0l\337\356\377C\1\0\0\0A\16\20\203\2v\16\220\1L\16\20\2W\16\220\1L\16"..., 8192, 1654784) = 8192
+pread64(4, "0 \372\377g+\0\0\0\0\0\0\20\0\0\0\0\264\0\0\214K\372\377\t\0\0\0\0\0\0\0"..., 8192, 1662976) = 8192
+pread64(4, "\250\0\0\0\0K\0160\2}\n\16\10A\v\0\20\0\0\0\4\324\0\0\250\277\361\377!\0\0\0"..., 8192, 1671168) = 8192
+pread64(4, "B\16\20B\16\10E\v(\0\0\0\374\363\0\0@9\363\377k\0\0\0\0B\16\20\214\2D\16"..., 8192, 1679360) = 8192
+pread64(4, "\0\0\0\0(\0\0\0\370\23\1\0$\242\364\377a\0\0\0\0B\16\20\214\2D\16\30\206\3F"..., 8192, 1687552) = 8192
+pread64(4, "\16 \215\4B\16(\214\5A\0160\206\6A\0168\203\7D\16@\2\224\n\0168A\0160A\16"..., 8192, 1695744) = 8192
+pread64(4, "\231\1\0\0\0B\16\20\216\2B\16\30\215\3G\16 \214\4A\16(\206\5D\0160\203\6D\16"..., 8192, 1703936) = 8192
+pread64(4, "\5Q\0160\2R\n\16(A\16 A\16\30B\16\20B\16\10F\v[\16(A\16 A\16\30"..., 8192, 1712128) = 8192
+pread64(4, "R\n\0168A\0160A\16(B\16 B\16\30B\16\20B\16\10H\v\30\0\0\0\f\224\1\0"..., 8192, 1720320) = 8192
+pread64(4, "\10D\v\0`\0\0\0\370\263\1\0\224\204\367\377k\1\0\0\0B\16\20\217\2B\16\30\216\3E"..., 8192, 1728512) = 8192
+pread64(4, "\10B\v\0\\\0\0\0\370\323\1\0\344\v\370\377|\0\0\0\0B\16\20\217\2B\16\30\216\3B"..., 8192, 1736704) = 8192
+mmap(0x1004d21000, 1048576, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d21000
+close(4)                                = 0
+mmap(0x540b000, 14544, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x540b000
+close(3)                                = 0
+mmap(0x405a000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x405a000
+mprotect(0x5405000, 16384, PROT_READ)   = 0
+mprotect(0x5051000, 4096, PROT_READ)    = 0
+mprotect(0x4e37000, 4096, PROT_READ)    = 0
+mprotect(0x4c27000, 4096, PROT_READ)    = 0
+mprotect(0x30d000, 4096, PROT_READ)     = 0
+mprotect(0x4224000, 4096, PROT_READ)    = 0
+munmap(0x4027000, 206658)               = 0
+set_tid_address(0x405aa10)              = 15738
+set_robust_list(0x405aa20, 24)          = 0
+rt_sigprocmask(SIG_SETMASK, ~[], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+rt_sigtimedwait(~[], 0x1002ba9c10, {tv_sec=0, tv_nsec=0}, 8) = -1 EAGAIN (Resource temporarily unavailable)
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+munmap(0x1004d21000, 1048576)           = 0
+mmap(0x540f000, 4194304, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x540f000
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "L", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/proc/sysvipc/sem", O_RDONLY) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "L", 1)                      = 1
+mmap(0x1004d21000, 65536, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d21000
+mmap(0x1004d31000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d31000
+fstat(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+gettid()                                = 15738
+write(1029, "M", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "       key      semid perms     "..., 1024) = 680
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "M", 1)                      = 1
+gettid()                                = 15738
+write(1029, "N", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "", 1024)                       = 0
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "N", 1)                      = 1
+close(3)                                = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+gettid()                                = 15738
+write(1029, "O", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "key\t\tsemid\t\towner\t\tperms\t\tnsems\n", 32) = 32
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "O", 1)                      = 1
+socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
+gettid()                                = 15738
+write(1029, "P", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "P", 1)                      = 1
+close(3)                                = 0
+socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
+gettid()                                = 15738
+write(1029, "Q", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "Q", 1)                      = 1
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "R", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+open("/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "R", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0644, st_size=312, ...}) = 0
+gettid()                                = 15738
+write(1029, "S", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "# Begin /etc/nsswitch.conf\n\npass"..., 4096) = 312
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "S", 1)                      = 1
+gettid()                                = 15738
+write(1029, "T", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "", 4096)                       = 0
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "T", 1)                      = 1
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "U", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "U", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+mmap(0x4027000, 206658, PROT_READ, MAP_PRIVATE|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/ld.so.cache", 4096) = 16
+stat("/etc/ld.so.cache", {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "V", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/libnss_compat.so.2", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "V", 1)                      = 1
+gettid()                                = 15738
+write(1029, "W", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300\20\0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "W", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=30968, ...}) = 0
+mmap(0x580f000, 2126688, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x580f000
+fstat(3, {st_mode=S_IFREG|0755, st_size=30968, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnss_compat-2.26.so", 4096) = 30
+stat("/usr/lib/libnss_compat-2.26.so", {st_mode=S_IFREG|0755, st_size=30968, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300\20\0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004d35000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d35000
+mmap(0x1004d39000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d39000
+mprotect(0x5816000, 2093056, PROT_NONE) = 0
+mmap(0x5a15000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000) = 0x5a15000
+fstat(3, {st_mode=S_IFREG|0755, st_size=30968, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnss_compat-2.26.so", 4096) = 30
+stat("/usr/lib/libnss_compat-2.26.so", {st_mode=S_IFREG|0755, st_size=30968, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300\20\0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/libnss_compat-2.26.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=30968, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300\20\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "\210\3\0\0\365\261\377\377\26\1\0\0\0B\16\20\217\2B\16\30\216\3F\16 \215\4B\16(\214"..., 6392, 24576) = 6392
+pread64(4, "H\215P\1L\211\346L\211\357\377\25P/ \0\351-\377\377\377\17\37\0L\211\347\377\25\247/ "..., 8192, 16384) = 8192
+open("/usr/lib/debug/.build-id/9b/ec140e226cc2620c4af0dcffee1c806e02db9f.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+close(4)                                = 0
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "X", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/libnsl.so.1", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "X", 1)                      = 1
+gettid()                                = 15738
+write(1029, "Y", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\3009\0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "Y", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=87872, ...}) = 0
+mmap(0x5a17000, 2193208, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x5a17000
+fstat(3, {st_mode=S_IFREG|0755, st_size=87872, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnsl-2.26.so", 4096) = 23
+stat("/usr/lib/libnsl-2.26.so", {st_mode=S_IFREG|0755, st_size=87872, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\3009\0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004d3d000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d3d000
+mprotect(0x5a2b000, 2097152, PROT_NONE) = 0
+mmap(0x5c2b000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x14000) = 0x5c2b000
+fstat(3, {st_mode=S_IFREG|0755, st_size=87872, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnsl-2.26.so", 4096) = 23
+stat("/usr/lib/libnsl-2.26.so", {st_mode=S_IFREG|0755, st_size=87872, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\3009\0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/libnsl-2.26.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=87872, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\3009\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 5952, 81920) = 5952
+pread64(4, "um\0xdr_ypstat\0xdr_ypxfrstat\0xdr_"..., 8192, 8192) = 8192
+pread64(4, "\0\0\10\0\31\0#\0006\0D\0]\0l\0\203\0\230\0\260\0\302\0\314\0\353\0\0\1\35\1"..., 8192, 65536) = 8192
+open("/usr/lib/debug/.build-id/56/a7daf4fe03deffd34130e36a795e2c5d02719f.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+pread64(4, "B\16\20B\16\10D\v4\0\0\0\24\17\0\0`Y\377\377\313\0\0\0\0B\16\20\215\2B\16"..., 8192, 73728) = 8192
+close(4)                                = 0
+mmap(0x5c2d000, 5944, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x5c2d000
+close(3)                                = 0
+mprotect(0x5c2b000, 4096, PROT_READ)    = 0
+mprotect(0x5a15000, 4096, PROT_READ)    = 0
+munmap(0x4027000, 206658)               = 0
+mmap(0x1004d41000, 65536, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d41000
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "Z", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "Z", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+mmap(0x4027000, 206658, PROT_READ, MAP_PRIVATE|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/ld.so.cache", 4096) = 16
+stat("/etc/ld.so.cache", {st_mode=S_IFREG|0644, st_size=206658, ...}) = 0
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "A", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/libnss_nis.so.2", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "A", 1)                      = 1
+gettid()                                = 15738
+write(1029, "B", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\35\0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "B", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=46936, ...}) = 0
+mmap(0x5c2f000, 2143272, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x5c2f000
+fstat(3, {st_mode=S_IFREG|0755, st_size=46936, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnss_nis-2.26.so", 4096) = 27
+stat("/usr/lib/libnss_nis-2.26.so", {st_mode=S_IFREG|0755, st_size=46936, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\35\0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004d51000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d51000
+mprotect(0x5c3a000, 2093056, PROT_NONE) = 0
+mmap(0x5e39000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xa000) = 0x5e39000
+fstat(3, {st_mode=S_IFREG|0755, st_size=46936, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnss_nis-2.26.so", 4096) = 27
+stat("/usr/lib/libnss_nis-2.26.so", {st_mode=S_IFREG|0755, st_size=46936, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\35\0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/libnss_nis-2.26.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=46936, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\35\0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "\5A\0160\203\6D\16\260\1\3\24\1\n\0160A\16(A\16 B\16\30B\16\20B\16\10E"..., 5976, 40960) = 5976
+pread64(4, "A\307\6\26\0\0\0\270\377\377\377\377\353\241\270\377\377\377\377\353\232\377\25\305. \0\17\37D\0\0"..., 8192, 32768) = 8192
+open("/usr/lib/debug/.build-id/84/798efec84bb08946aa88e091bfdfb9dff17093.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+close(4)                                = 0
+close(3)                                = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "C", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/usr/lib/libnss_files.so.2", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "C", 1)                      = 1
+gettid()                                = 15738
+write(1029, "D", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p \0\0\0\0\0\0"..., 832) = 832
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "D", 1)                      = 1
+fstat(3, {st_mode=S_IFREG|0755, st_size=46912, ...}) = 0
+mmap(0x5e3b000, 2168280, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0) = 0x5e3b000
+fstat(3, {st_mode=S_IFREG|0755, st_size=46912, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnss_files-2.26.so", 4096) = 29
+stat("/usr/lib/libnss_files-2.26.so", {st_mode=S_IFREG|0755, st_size=46912, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p \0\0\0\0\0\0"..., 1024, 0) = 1024
+mmap(0x1004d55000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d55000
+mprotect(0x5e46000, 2093056, PROT_NONE) = 0
+mmap(0x6045000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xa000) = 0x6045000
+fstat(3, {st_mode=S_IFREG|0755, st_size=46912, ...}) = 0
+readlink("/proc/self/fd/3", "/usr/lib/libnss_files-2.26.so", 4096) = 29
+stat("/usr/lib/libnss_files-2.26.so", {st_mode=S_IFREG|0755, st_size=46912, ...}) = 0
+pread64(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p \0\0\0\0\0\0"..., 1024, 0) = 1024
+open("/usr/lib/libnss_files-2.26.so", O_RDONLY) = 4
+fstat(4, {st_mode=S_IFREG|0755, st_size=46912, ...}) = 0
+pread64(4, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0p \0\0\0\0\0\0"..., 8192, 0) = 8192
+pread64(4, "(B\16 B\16\30B\16\20B\16\10I\v\0H\0\0\0\364\24\0\0(\335\377\377\351\0\0\0"..., 5952, 40960) = 5952
+pread64(4, "\210s\2\0\0L\213\205p\377\377\377L\211\341L\211\352H\213\265X\377\377\377H\213}\200\377\25\315"..., 8192, 32768) = 8192
+open("/usr/lib/debug/.build-id/13/1b5b0523f77ccf792eaeeee2d4497a18efe0c1.debug", O_RDONLY) = -1 ENOENT (No such file or directory)
+close(4)                                = 0
+mmap(0x6047000, 21976, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x6047000
+close(3)                                = 0
+mmap(0x1004d59000, 16384, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, 0, 0) = 0x1004d59000
+mprotect(0x6045000, 4096, PROT_READ)    = 0
+mprotect(0x5e39000, 4096, PROT_READ)    = 0
+munmap(0x4027000, 206658)               = 0
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "E", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "E", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "F", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t0\t\tdjb\t\t600\t\t1\n", 26) = 26
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "F", 1)                      = 1
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "G", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "G", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "H", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t32769\t\tdjb\t\t600\t\t1\n", 30) = 30
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "H", 1)                      = 1
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "I", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "I", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "J", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t65538\t\tdjb\t\t600\t\t1\n", 30) = 30
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "J", 1)                      = 1
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "K", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "K", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "L", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t98307\t\tdjb\t\t600\t\t1\n", 30) = 30
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "L", 1)                      = 1
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "M", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "M", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "N", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t131076\t\tdjb\t\t600\t\t1\n", 31) = 31
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "N", 1)                      = 1
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "O", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "O", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "P", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t163845\t\tdjb\t\t600\t\t1\n", 31) = 31
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "P", 1)                      = 1
+getpid()                                = 15738
+getpid()                                = 15738
+gettid()                                = 15738
+write(1029, "Q", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "Q", 1)                      = 1
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+mmap(0x4027000, 1444, PROT_READ, MAP_SHARED|MAP_FIXED, 3, 0) = 0x4027000
+fstat(3, {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+readlink("/proc/self/fd/3", "/etc/passwd", 4096) = 11
+stat("/etc/passwd", {st_mode=S_IFREG|0644, st_size=1444, ...}) = 0
+lseek(3, 1444, SEEK_SET)                = 1444
+munmap(0x4027000, 1444)                 = 0
+close(3)                                = 0
+gettid()                                = 15738
+write(1029, "R", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, [], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+write(1, "0x00000000\t393222\t\tdjb\t\t600\t\t1\n", 31) = 31
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "R", 1)                      = 1
+rt_sigprocmask(SIG_BLOCK, NULL, ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+munmap(0x580f000, 2126688)              = 0
+munmap(0x5c2f000, 2143272)              = 0
+munmap(0x5a17000, 2193208)              = 0
+munmap(0x5e3b000, 2168280)              = 0
+gettid()                                = 15738
+write(1029, "S", 1)                     = 1
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP RT_32], ~[ILL TRAP BUS FPE KILL SEGV STOP], 8) = 0
+futex(0x540df20, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+rt_sigprocmask(SIG_SETMASK, ~[ILL TRAP BUS FPE KILL SEGV STOP], NULL, 8) = 0
+gettid()                                = 15738
+read(1028, "S", 1)                      = 1
+getpid()                                = 15738
+write(1027, "==15738== \n", 11)         = 11
+getpid()                                = 15738
+getpid()                                = 15738
+getpid()                                = 15738
+getpid()                                = 15738
+write(1027, "==15738== HEAP SUMMARY:\n==15738="..., 159) = 159
+getpid()                                = 15738
+write(1027, "==15738== All heap blocks were f"..., 62) = 62
+getpid()                                = 15738
+write(1027, "==15738== \n", 11)         = 11
+getpid()                                = 15738
+write(1027, "==15738== For counts of detected"..., 71) = 71
+getpid()                                = 15738
+write(1027, "==15738== ERROR SUMMARY: 0 error"..., 73) = 73
+write(1027, "", 0)                      = 0
+getpid()                                = 15738
+close(1030)                             = 0
+unlink("/tmp/vgdb-pipe-from-vgdb-to-15738-by-djb-on-???") = 0
+unlink("/tmp/vgdb-pipe-to-vgdb-from-15738-by-djb-on-???") = 0
+unlink("/tmp/vgdb-pipe-shared-mem-vgdb-15738-by-djb-on-???") = 0
+exit_group(0)                           = ?
++++ exited with 0 +++

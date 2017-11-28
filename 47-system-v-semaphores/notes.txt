@@ -55,7 +55,7 @@ int semctl(int semid, int semnum, int cmd, .. /* union semun arg */);
 
 "semid" is the id of a semaphore set
 
-"semnum" is the index of the semaphore in the set. for other operations, this argument is ignored and can be set to 0.
+"semnum" is the index of the semaphore in the set that is being operated on. For other operations, this argument is ignored and can be set to 0.
 
 "cmd": some command:
 
@@ -84,10 +84,186 @@ int semctl(int semid, int semnum, int cmd, .. /* union semun arg */);
         You can use "semid_ds.sem_nsems" from an IPC_STAT call.
 
     SETALL
-        
+        Initialize all semaphores in the set referred to by "semid"
+        "semnum" is ignored
+
+    GETPID
+        Get the PID of the last process to perform semop() on this semaphore. Returns 0 if no process has touched this semaphore.
+
+    GETNCNT
+        Return the number of processes currently waiting for the value of this semaphore to increase
+
+    GETZCNT
+        Return the number of processes currently waiting for the value of this semaphore to become 0.
+
         
 
 Some operations require a fourth argument, which is the union shown in the "semun.h" header file...
 
 "semun" was a required parameter in older linux/unix, but is now optional. For portability you may want to specify a dummy argument even if it isnt needed.
 
+Here's the messed up union you have to pass:
+
+====================================================
+
+#ifndef SEMUN_H
+#define SEMUN_H
+
+#include <sys/types.h>
+#include <sys/sem.h>
+
+union semun {
+    int val;
+    struct semid_ds *buf;
+    unsigned short *array;
+#if defined(__linux__)
+    struct seminfo *__buf;
+#endif
+};
+
+#endif
+
+====================================================
+
+
+
+******************** 47.4 Semaphore Associated Data Structure ********************
+
+The values of these structures are implicitly updated by various semaphore system calls.
+
+
+struct semid_ds {
+    struct ipc_perm sem_perm; // ownership permissions
+    time_t sem_otime; // time of last semop(). Initialized to 0.
+    time_t sem_ctime; // time of last change. Initialized to current time.
+    unsigned long sem_nsems; // number of semaphores in set
+};
+
+=====================================================
+
+
+******************** 47.5 Semaphore initialization ********************
+
+Semaphores are not automatically initialized when a set is created. To be portable, a program must initialized them separately from creating them.
+
+See sem_init.c on how to initialize a semaphore set in the use case where multiple programs are looking for the set. (avoids race conditions)
+
+
+
+
+******************** 47.6 Semaphore Operations ********************
+
+
+=====================================================
+
+#include <sys/type.h> // portability
+#include <sys/sem.h>
+
+int semop(int semid, struct sembuf *sops, size_t nsops);
+
+    Returns 0 on success, or -1 on error
+
+=====================================================
+
+"semid": the semaphore set id
+
+"sops": an array of operations to be performed
+
+"nsops": length of "sops"
+
+
+Here is sembuf:
+
+=====================================================
+
+struct sembuf {
+    unsigned short sem_num; // index of the semaphore in the set
+    short sem_op; // oprtation to be formed
+    short sem_flg; // operation flags (IPC_NOWAIT and SEM_UNDO)
+};
+
+=====================================================
+
+sem_op > 0: value of sem_op is added to the semaphore
+
+sem_op == 0: value of the semaphore is checked if it is equal to 0. If it does, it succeeds immediately. If not, it blocks until it becomes 0.
+
+sem_op < 0: Decrease semaphore by the absolute value of sem_op. If doing this does not reduce the value of the semaphore below 0, it succeeds immediately. Otherwise, it blocks until the operation would not reduce the semaphore below 0.
+
+
+Semantically, adding to a semaphore is making a resource available. Reducing it is reserving a resource for use.
+
+A process can be blocked on a semop() until the semaphore value satisfies the operation, is interupted by a signal (EINTR, semop() is NEVER restarted), or the semaphore is deleted (EIDRM).
+
+Keep in mind semop() can operate on multiple semaphores atomically.
+
+Here is semop() that times out if you want:
+
+
+=====================================================
+
+#define _GNU_SOURCE
+#include <sys/types.h>
+#include <sys/sem.h>
+
+int semtimedop(int semid, struct sembuf *sops, size_t nsops, struct timespec *timeout);
+
+    Returns 0 on success, or -1 on error
+
+=====================================================
+
+
+******************** 47.7 Handling of Multiple Blocked Semaphore Operations ********************
+
+Be careful of semaphore starvation (see text). Maybe best to stick to binary semaphores if at all possible.
+
+
+
+******************** 47.8 Semaphore Undo Values ********************
+
+Suppose a semaphore subtracts 1 from a semaphore, bringing it to 0. If the process then terminates (normally or abnormally) before increasing the semaphore, then all other processes are potentially starved. If you specify SEM_UNDO in semop(), the kernel will take note of the changes to the semaphore, and undo the change if the proceess terminates normally or abnormally.
+
+Now, there are situations where some UNIX implementations will not honor SEM_UNDO (because it would lower it past 0). Linux opts to reduce the semaphore as much as possible (without going lower than 0).
+
+
+
+******************** 47.9 Implementing a Binary Semaphores Protocol ********************
+
+See example program. 1 is free, 0 is reserved.
+
+
+******************** 47.10 Semaphore Limits ********************
+
+SEMAEM
+    This is the maximum value that can be recorded in a semadj total. SEMAEM is
+    defined to have the same value as SEMVMX (described below). (semop(), ERANGE )
+
+SEMMNI
+    This is a system-wide limit on the number of semaphore identifiers (in
+    other words, semaphore sets) that can be created. (semget(), ENOSPC )
+
+SEMMSL
+    This is the maximum number of semaphores that can be allocated in a
+    semaphore set. (semget(), EINVAL )
+
+SEMMNS
+    This is a system-wide limit on the number of semaphores in all semaphore
+    sets. The number of semaphores on the system is also limited by SEMMNI and
+    SEMMSL ; in fact, the default value for SEMMNS is the product of the defaults for
+    these two limits. (semget(), ENOSPC )
+
+SEMOPM
+    This is the maximum number of operations per semop() call. (semop(), E2BIG )
+
+SEMVMX
+    This is the maximum value for a semaphore. (semop(), ERANGE )
+
+
+(NOT ON LINUX)
+
+SEMMNU
+    This is a system-wide limit on the total number of semaphore undo structures.
+    Undo structures are allocated to store semadj values.
+
+SEMUME
+    This is the maximum number of undo entries per semaphore undo structure.

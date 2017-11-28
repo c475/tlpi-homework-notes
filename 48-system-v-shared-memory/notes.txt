@@ -1,0 +1,430 @@
+******************** 48.1 Overview ********************
+
+Steps to working with shared memory:
+
+1. create or get with shmmget()
+2. shmat() to "attach" the memory, which makes it part of the process' virtual memory
+3. at this point it can be used like normal memory, just refer to it with the address that shmat() returns
+4. shmdt() to "detach" the memory. This is optional, as it is done when the process terminates
+5. shmctl() to delete the shared memory segment.
+
+
+******************** 48.2 Creating or Opening a Shared Memory Segment ********************
+
+=======================================
+
+#include <sys/types.h>
+#include <sys/shm.h>
+
+int shmget(key_t key, size_t size, int smhflg);
+
+    Returns shared memory id on success, or -1 on error
+
+=======================================
+
+
+"key": IPC_PRIVATE or ftok()
+
+"size": size in bytes of the shared memory
+
+"shmflg":
+
+    IPC_CREAT
+        create the memory
+
+    IPC_EXCL
+        exclusive creation
+
+    (LINUX ONLY DOWN HERE)
+
+    SHM_HUGETLB
+
+        Use "huge" virtual memory pages. If applications use a lot of memory, and the system has a lot of memopry, this can possibly be a good thing.
+        See "Documentation/vm/hugetlbpage.txt" in kernel source documentation.
+
+    SHM_NORESERVE
+
+        Same as MAM_NORESERVE in mmap().
+
+******************** 48.3 Using Shared Memory ********************
+
+=======================================
+
+#include <sys/types.h>
+#include <sys/shm.h>
+
+void *shmat(int shmid, const void *shmaddr, int shmflg);
+
+    Returns address at which shared memory is attached on success, or (void *)-1 on error
+
+=======================================
+
+
+"shmaddr":
+
+    If it is NULL, the kernel finds an address for you and gives it back
+
+    If it is NOT NULL and SHM_RND is NOT set, then the address is placed at "shmaddr", and it must be a multiple of the system page size (or EINVAL results)
+
+    If "shmaddr" is NOT NULL and SHM_RND is set, then "shmaddr" is rounded to the nearest multiple of the system page size. (has to do with CPU cache performance).
+
+"shmflg":
+
+    SHM_RDONLY
+
+        Attach the memory for read-only. Attempts to write to it with result in SIGSEGV.
+
+    SHM_REMAP
+
+        Replace any existing sysv shared memory at "shmaddr"
+
+    SHM_RND
+
+        Round "shmaddr" to nearest multiple of the system page size
+
+
+It is highly recommended that you set "shmaddr" as NULL.
+
+
+
+******************** 48.4 Example: Transferring Data via Shared Memory ********************
+
+See example program
+
+
+
+******************** 48.5 Location of Shared Memory in Virtual Memory ********************
+
+If you let the kernel decide, then shared memory exists sandwiched between the stack and unallocated heap memory (along with shared libraries and memory mappings).
+
+/proc/PID/maps is an interesting file showing much more than just the sysv shared memory of a process. Here's a map of systemd running right now
+
+
+(systemd binary)
+556137cf8000-556137e48000 r-xp 00000000 103:03 12335586                  /usr/lib/systemd/systemd
+
+(systemd program text read-only)
+556138048000-556138089000 r--p 00150000 103:03 12335586                  /usr/lib/systemd/systemd
+556138089000-55613808a000 rw-p 00191000 103:03 12335586                  /usr/lib/systemd/systemd
+
+(the heap)
+556139018000-556139130000 rw-p 00000000 00:00 0                          [heap]
+
+
+
+                            MEMORY MAPPING SEGMENT BEGIN
+
+
+7f5a8c000000-7f5a8c021000 rw-p 00000000 00:00 0 
+7f5a8c021000-7f5a90000000 ---p 00000000 00:00 0 
+7f5a94000000-7f5a94021000 rw-p 00000000 00:00 0 
+7f5a94021000-7f5a98000000 ---p 00000000 00:00 0 
+7f5a9ab9f000-7f5a9aba0000 ---p 00000000 00:00 0 
+7f5a9aba0000-7f5a9b3a0000 rw-p 00000000 00:00 0 
+7f5a9b3a0000-7f5a9b3a1000 ---p 00000000 00:00 0 
+7f5a9b3a1000-7f5a9bba1000 rw-p 00000000 00:00 0
+
+(systemd shared library) 
+7f5a9bba1000-7f5a9bc1c000 r-xp 00000000 103:03 12333137                  /usr/lib/libsystemd.so.0.19.1
+7f5a9bc1c000-7f5a9be1b000 ---p 0007b000 103:03 12333137                  /usr/lib/libsystemd.so.0.19.1
+7f5a9be1b000-7f5a9be1e000 r--p 0007a000 103:03 12333137                  /usr/lib/libsystemd.so.0.19.1
+7f5a9be1e000-7f5a9be1f000 rw-p 0007d000 103:03 12333137                  /usr/lib/libsystemd.so.0.19.1
+
+(some random 4kb)
+7f5a9be1f000-7f5a9be20000 rw-p 00000000 00:00 0 
+
+(libdbus shared lib, and others)
+7f5a9be20000-7f5a9be6e000 r-xp 00000000 103:03 12333247                  /usr/lib/libdbus-1.so.3.19.4
+7f5a9be6e000-7f5a9c06e000 ---p 0004e000 103:03 12333247                  /usr/lib/libdbus-1.so.3.19.4
+7f5a9c06e000-7f5a9c070000 r--p 0004e000 103:03 12333247                  /usr/lib/libdbus-1.so.3.19.4
+7f5a9c070000-7f5a9c071000 rw-p 00050000 103:03 12333247                  /usr/lib/libdbus-1.so.3.19.4
+7f5a9c071000-7f5a9c090000 r-xp 00000000 103:03 12333285                  /usr/lib/libnl-3.so.200.26.0
+7f5a9c090000-7f5a9c28f000 ---p 0001f000 103:03 12333285                  /usr/lib/libnl-3.so.200.26.0
+7f5a9c28f000-7f5a9c291000 r--p 0001e000 103:03 12333285                  /usr/lib/libnl-3.so.200.26.0
+7f5a9c291000-7f5a9c292000 rw-p 00020000 103:03 12333285                  /usr/lib/libnl-3.so.200.26.0
+7f5a9c292000-7f5a9c297000 r-xp 00000000 103:03 12333288                  /usr/lib/libnl-genl-3.so.200.26.0
+7f5a9c297000-7f5a9c496000 ---p 00005000 103:03 12333288                  /usr/lib/libnl-genl-3.so.200.26.0
+7f5a9c496000-7f5a9c497000 r--p 00004000 103:03 12333288                  /usr/lib/libnl-genl-3.so.200.26.0
+7f5a9c497000-7f5a9c498000 rw-p 00005000 103:03 12333288                  /usr/lib/libnl-genl-3.so.200.26.0
+7f5a9c498000-7f5a9c5e3000 r-xp 00000000 103:03 12322937                  /usr/lib/libm-2.26.so
+7f5a9c5e3000-7f5a9c7e2000 ---p 0014b000 103:03 12322937                  /usr/lib/libm-2.26.so
+7f5a9c7e2000-7f5a9c7e3000 r--p 0014a000 103:03 12322937                  /usr/lib/libm-2.26.so
+7f5a9c7e3000-7f5a9c7e4000 rw-p 0014b000 103:03 12322937                  /usr/lib/libm-2.26.so
+7f5a9c7e4000-7f5a9c800000 r-xp 00000000 103:03 12333138                  /usr/lib/libudev.so.1.6.7
+7f5a9c800000-7f5a9ca00000 ---p 0001c000 103:03 12333138                  /usr/lib/libudev.so.1.6.7
+7f5a9ca00000-7f5a9ca01000 r--p 0001c000 103:03 12333138                  /usr/lib/libudev.so.1.6.7
+7f5a9ca01000-7f5a9ca02000 rw-p 0001d000 103:03 12333138                  /usr/lib/libudev.so.1.6.7
+7f5a9ca02000-7f5a9ca44000 r-xp 00000000 103:03 12333364                  /usr/lib/libpcap.so.1.8.1
+7f5a9ca44000-7f5a9cc43000 ---p 00042000 103:03 12333364                  /usr/lib/libpcap.so.1.8.1
+7f5a9cc43000-7f5a9cc45000 r--p 00041000 103:03 12333364                  /usr/lib/libpcap.so.1.8.1
+7f5a9cc45000-7f5a9cc46000 rw-p 00043000 103:03 12333364                  /usr/lib/libpcap.so.1.8.1
+7f5a9cc46000-7f5a9cc4a000 r-xp 00000000 103:03 12327518                  /usr/lib/libattr.so.1.1.0
+7f5a9cc4a000-7f5a9ce49000 ---p 00004000 103:03 12327518                  /usr/lib/libattr.so.1.1.0
+7f5a9ce49000-7f5a9ce4a000 r--p 00003000 103:03 12327518                  /usr/lib/libattr.so.1.1.0
+7f5a9ce4a000-7f5a9ce4b000 rw-p 00004000 103:03 12327518                  /usr/lib/libattr.so.1.1.0
+7f5a9ce4b000-7f5a9ce5f000 r-xp 00000000 103:03 12333049                  /usr/lib/libgpg-error.so.0.22.0
+7f5a9ce5f000-7f5a9d05e000 ---p 00014000 103:03 12333049                  /usr/lib/libgpg-error.so.0.22.0
+7f5a9d05e000-7f5a9d05f000 r--p 00013000 103:03 12333049                  /usr/lib/libgpg-error.so.0.22.0
+7f5a9d05f000-7f5a9d060000 rw-p 00014000 103:03 12333049                  /usr/lib/libgpg-error.so.0.22.0
+7f5a9d060000-7f5a9d0b1000 r-xp 00000000 103:03 12333150                  /usr/lib/libdevmapper.so.1.02
+7f5a9d0b1000-7f5a9d2b1000 ---p 00051000 103:03 12333150                  /usr/lib/libdevmapper.so.1.02
+7f5a9d2b1000-7f5a9d2b2000 r--p 00051000 103:03 12333150                  /usr/lib/libdevmapper.so.1.02
+7f5a9d2b2000-7f5a9d2b5000 rw-p 00052000 103:03 12333150                  /usr/lib/libdevmapper.so.1.02
+
+(some random 1kb...)
+7f5a9d2b5000-7f5a9d2b6000 rw-p 00000000 00:00 0 
+
+
+7f5a9d2b6000-7f5a9d2cc000 r-xp 00000000 103:03 12333498                  /usr/lib/libz.so.1.2.11
+7f5a9d2cc000-7f5a9d4cb000 ---p 00016000 103:03 12333498                  /usr/lib/libz.so.1.2.11
+7f5a9d4cb000-7f5a9d4cc000 r--p 00015000 103:03 12333498                  /usr/lib/libz.so.1.2.11
+7f5a9d4cc000-7f5a9d4cd000 rw-p 00016000 103:03 12333498                  /usr/lib/libz.so.1.2.11
+7f5a9d4cd000-7f5a9d4d0000 r-xp 00000000 103:03 12322938                  /usr/lib/libdl-2.26.so
+7f5a9d4d0000-7f5a9d6cf000 ---p 00003000 103:03 12322938                  /usr/lib/libdl-2.26.so
+7f5a9d6cf000-7f5a9d6d0000 r--p 00002000 103:03 12322938                  /usr/lib/libdl-2.26.so
+7f5a9d6d0000-7f5a9d6d1000 rw-p 00003000 103:03 12322938                  /usr/lib/libdl-2.26.so
+7f5a9d6d1000-7f5a9d6d7000 r-xp 00000000 103:03 12333195                  /usr/lib/libuuid.so.1.3.0
+7f5a9d6d7000-7f5a9d8d6000 ---p 00006000 103:03 12333195                  /usr/lib/libuuid.so.1.3.0
+7f5a9d8d6000-7f5a9d8d7000 r--p 00005000 103:03 12333195                  /usr/lib/libuuid.so.1.3.0
+7f5a9d8d7000-7f5a9d8d8000 rw-p 00006000 103:03 12333195                  /usr/lib/libuuid.so.1.3.0
+7f5a9d8d8000-7f5a9d8ec000 r-xp 00000000 103:03 12333074                  /usr/lib/liblz4.so.1.8.0
+7f5a9d8ec000-7f5a9daeb000 ---p 00014000 103:03 12333074                  /usr/lib/liblz4.so.1.8.0
+7f5a9daeb000-7f5a9daec000 r--p 00013000 103:03 12333074                  /usr/lib/liblz4.so.1.8.0
+7f5a9daec000-7f5a9daed000 rw-p 00014000 103:03 12333074                  /usr/lib/liblz4.so.1.8.0
+7f5a9daed000-7f5a9db12000 r-xp 00000000 103:03 12333077                  /usr/lib/liblzma.so.5.2.3
+7f5a9db12000-7f5a9dd11000 ---p 00025000 103:03 12333077                  /usr/lib/liblzma.so.5.2.3
+7f5a9dd11000-7f5a9dd12000 r--p 00024000 103:03 12333077                  /usr/lib/liblzma.so.5.2.3
+7f5a9dd12000-7f5a9dd13000 rw-p 00025000 103:03 12333077                  /usr/lib/liblzma.so.5.2.3
+7f5a9dd13000-7f5a9dd45000 r-xp 00000000 103:03 12334413                  /usr/lib/libidn.so.11.6.16
+7f5a9dd45000-7f5a9df45000 ---p 00032000 103:03 12334413                  /usr/lib/libidn.so.11.6.16
+7f5a9df45000-7f5a9df46000 r--p 00032000 103:03 12334413                  /usr/lib/libidn.so.11.6.16
+7f5a9df46000-7f5a9df47000 rw-p 00033000 103:03 12334413                  /usr/lib/libidn.so.11.6.16
+7f5a9df47000-7f5a9df4d000 r-xp 00000000 103:03 12333447                  /usr/lib/libip4tc.so.0.1.0
+7f5a9df4d000-7f5a9e14d000 ---p 00006000 103:03 12333447                  /usr/lib/libip4tc.so.0.1.0
+7f5a9e14d000-7f5a9e14e000 r--p 00006000 103:03 12333447                  /usr/lib/libip4tc.so.0.1.0
+7f5a9e14e000-7f5a9e14f000 rw-p 00007000 103:03 12333447                  /usr/lib/libip4tc.so.0.1.0
+7f5a9e14f000-7f5a9e264000 r-xp 00000000 103:03 12333057                  /usr/lib/libgcrypt.so.20.2.1
+7f5a9e264000-7f5a9e463000 ---p 00115000 103:03 12333057                  /usr/lib/libgcrypt.so.20.2.1
+7f5a9e463000-7f5a9e465000 r--p 00114000 103:03 12333057                  /usr/lib/libgcrypt.so.20.2.1
+7f5a9e465000-7f5a9e46a000 rw-p 00116000 103:03 12333057                  /usr/lib/libgcrypt.so.20.2.1
+
+(1kb randomness...)
+7f5a9e46a000-7f5a9e46b000 rw-p 00000000 00:00 0 
+
+7f5a9e46b000-7f5a9e472000 r-xp 00000000 103:03 12327584                  /usr/lib/libacl.so.1.1.0
+7f5a9e472000-7f5a9e672000 ---p 00007000 103:03 12327584                  /usr/lib/libacl.so.1.1.0
+7f5a9e672000-7f5a9e673000 r--p 00007000 103:03 12327584                  /usr/lib/libacl.so.1.1.0
+7f5a9e673000-7f5a9e674000 rw-p 00008000 103:03 12327584                  /usr/lib/libacl.so.1.1.0
+7f5a9e674000-7f5a9e69a000 r-xp 00000000 103:03 12333211                  /usr/lib/libcryptsetup.so.4.7.0
+7f5a9e69a000-7f5a9e89a000 ---p 00026000 103:03 12333211                  /usr/lib/libcryptsetup.so.4.7.0
+7f5a9e89a000-7f5a9e89b000 r--p 00026000 103:03 12333211                  /usr/lib/libcryptsetup.so.4.7.0
+7f5a9e89b000-7f5a9e89d000 rw-p 00027000 103:03 12333211                  /usr/lib/libcryptsetup.so.4.7.0
+7f5a9e89d000-7f5a9e8a1000 r-xp 00000000 103:03 12327602                  /usr/lib/libcap.so.2.25
+7f5a9e8a1000-7f5a9eaa0000 ---p 00004000 103:03 12327602                  /usr/lib/libcap.so.2.25
+7f5a9eaa0000-7f5a9eaa1000 rw-p 00003000 103:03 12327602                  /usr/lib/libcap.so.2.25
+7f5a9eaa1000-7f5a9eab6000 r-xp 00000000 103:03 12334318                  /usr/lib/libkmod.so.2.3.2
+7f5a9eab6000-7f5a9ecb5000 ---p 00015000 103:03 12334318                  /usr/lib/libkmod.so.2.3.2
+7f5a9ecb5000-7f5a9ecb6000 r--p 00014000 103:03 12334318                  /usr/lib/libkmod.so.2.3.2
+7f5a9ecb6000-7f5a9ecb7000 rw-p 00015000 103:03 12334318                  /usr/lib/libkmod.so.2.3.2
+7f5a9ecb7000-7f5a9ecc4000 r-xp 00000000 103:03 12334026                  /usr/lib/libpam.so.0.84.2
+7f5a9ecc4000-7f5a9eec3000 ---p 0000d000 103:03 12334026                  /usr/lib/libpam.so.0.84.2
+7f5a9eec3000-7f5a9eec4000 r--p 0000c000 103:03 12334026                  /usr/lib/libpam.so.0.84.2
+7f5a9eec4000-7f5a9eec5000 rw-p 0000d000 103:03 12334026                  /usr/lib/libpam.so.0.84.2
+7f5a9eec5000-7f5a9ef0c000 r-xp 00000000 103:03 12333197                  /usr/lib/libblkid.so.1.1.0
+7f5a9ef0c000-7f5a9f10b000 ---p 00047000 103:03 12333197                  /usr/lib/libblkid.so.1.1.0
+7f5a9f10b000-7f5a9f110000 r--p 00046000 103:03 12333197                  /usr/lib/libblkid.so.1.1.0
+7f5a9f110000-7f5a9f111000 rw-p 0004b000 103:03 12333197                  /usr/lib/libblkid.so.1.1.0
+
+7f5a9f111000-7f5a9f112000 rw-p 00000000 00:00 0 
+
+7f5a9f112000-7f5a9f164000 r-xp 00000000 103:03 12333203                  /usr/lib/libmount.so.1.1.0
+7f5a9f164000-7f5a9f363000 ---p 00052000 103:03 12333203                  /usr/lib/libmount.so.1.1.0
+7f5a9f363000-7f5a9f366000 r--p 00051000 103:03 12333203                  /usr/lib/libmount.so.1.1.0
+7f5a9f366000-7f5a9f367000 rw-p 00054000 103:03 12333203                  /usr/lib/libmount.so.1.1.0
+
+7f5a9f367000-7f5a9f368000 rw-p 00000000 00:00 0 
+
+7f5a9f368000-7f5a9f394000 r-xp 00000000 103:03 12334435                  /usr/lib/libseccomp.so.2.3.2
+7f5a9f394000-7f5a9f594000 ---p 0002c000 103:03 12334435                  /usr/lib/libseccomp.so.2.3.2
+7f5a9f594000-7f5a9f5a9000 r--p 0002c000 103:03 12334435                  /usr/lib/libseccomp.so.2.3.2
+7f5a9f5a9000-7f5a9f5aa000 rw-p 00041000 103:03 12334435                  /usr/lib/libseccomp.so.2.3.2
+7f5a9f5aa000-7f5a9f5b1000 r-xp 00000000 103:03 12322934                  /usr/lib/librt-2.26.so
+7f5a9f5b1000-7f5a9f7b0000 ---p 00007000 103:03 12322934                  /usr/lib/librt-2.26.so
+7f5a9f7b0000-7f5a9f7b1000 r--p 00006000 103:03 12322934                  /usr/lib/librt-2.26.so
+7f5a9f7b1000-7f5a9f7b2000 rw-p 00007000 103:03 12322934                  /usr/lib/librt-2.26.so
+7f5a9f7b2000-7f5a9f956000 r-xp 00000000 103:03 12335584                  /usr/lib/systemd/libsystemd-shared-235.so
+7f5a9f956000-7f5a9fb56000 ---p 001a4000 103:03 12335584                  /usr/lib/systemd/libsystemd-shared-235.so
+7f5a9fb56000-7f5a9fbe1000 r--p 001a4000 103:03 12335584                  /usr/lib/systemd/libsystemd-shared-235.so
+7f5a9fbe1000-7f5a9fbe2000 rw-p 0022f000 103:03 12335584                  /usr/lib/systemd/libsystemd-shared-235.so
+
+7f5a9fbe2000-7f5a9fbe4000 rw-p 00000000 00:00 0 
+
+7f5a9fbe4000-7f5a9fd92000 r-xp 00000000 103:03 12322992                  /usr/lib/libc-2.26.so
+7f5a9fd92000-7f5a9ff92000 ---p 001ae000 103:03 12322992                  /usr/lib/libc-2.26.so
+7f5a9ff92000-7f5a9ff96000 r--p 001ae000 103:03 12322992                  /usr/lib/libc-2.26.so
+7f5a9ff96000-7f5a9ff98000 rw-p 001b2000 103:03 12322992                  /usr/lib/libc-2.26.so
+
+7f5a9ff98000-7f5a9ff9c000 rw-p 00000000 00:00 0 
+
+7f5a9ff9c000-7f5a9ffb5000 r-xp 00000000 103:03 12323011                  /usr/lib/libpthread-2.26.so
+7f5a9ffb5000-7f5aa01b4000 ---p 00019000 103:03 12323011                  /usr/lib/libpthread-2.26.so
+7f5aa01b4000-7f5aa01b5000 r--p 00018000 103:03 12323011                  /usr/lib/libpthread-2.26.so
+7f5aa01b5000-7f5aa01b6000 rw-p 00019000 103:03 12323011                  /usr/lib/libpthread-2.26.so
+
+7f5aa01b6000-7f5aa01ba000 rw-p 00000000 00:00 0 
+
+7f5aa01ba000-7f5aa01df000 r-xp 00000000 103:03 12322993                  /usr/lib/ld-2.26.so
+7f5aa039a000-7f5aa03ab000 rw-p 00000000 00:00 0 
+7f5aa03de000-7f5aa03df000 r--p 00024000 103:03 12322993                  /usr/lib/ld-2.26.so
+7f5aa03df000-7f5aa03e0000 rw-p 00025000 103:03 12322993                  /usr/lib/ld-2.26.so
+
+7f5aa03e0000-7f5aa03e1000 rw-p 00000000 00:00 0 
+
+
+                            MEMORY MAPPING SEGMENT END
+
+
+(the stack)
+7ffe4eff7000-7ffe4f018000 rw-p 00000000 00:00 0                          [stack]
+
+
+7ffe4f1cb000-7ffe4f1ce000 r--p 00000000 00:00 0                          [vvar]
+
+(linux-gate virtual dynamic shared object: http://www.trilithium.com/johan/2005/08/linux-gate/)
+7ffe4f1ce000-7ffe4f1d0000 r-xp 00000000 00:00 0                          [vdso]
+
+(a small chunk of system call implementation(s) for optimization: https://stackoverflow.com/questions/19938324/what-are-vdso-and-vsyscall)
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+
+1. Address range
+2. rwx protection on the memory (and "p" for private, or "s" for shared)
+3. hex offset of the segment within the mapped file (mmap())
+4. device number (maj:minor) of the device on which the memory mapped file is located.
+5. inode number of the mapped file
+
+
+******************** 48.6 Storing Pointers in Shared Memory ********************
+
+When dealing with pointers to an address inside shared memory, you have to use it's offset from the base of the shared memory instead of an absolute address.
+
+This is because the shared memory segment may be attached to a different address in another process (when letting the kernel handle addressing).
+
+*p = target; (WRONG)
+
+*p = target - baseptr; (CORRECT)
+
+target = baseptr + *p; (GET THE ADDRESS OF THE DATA IN SHARED MEMORY)
+
+
+Alternatively, you can cast the shared memory (or part of it) as an array and index it.
+
+
+
+******************** 48.7 Shared Memory Control Operations ********************
+
+=================================================
+
+#include <sys/types.h>
+#include <sys/shm.h>
+
+int shmctl(int shmid, int cmd, struct shmid_ds *buf);
+
+    Returns 0 on success, -1 on error
+
+=================================================
+
+"shmid": shared memory identifier
+
+"cmd": 
+
+    IPC_RMID
+
+        Mark the shared memory segment for deletion.
+        It is not immediately deleted. Only after all processes have detached it, or all processes have terminated.
+        An easy way to guarantee cleanup is attaching the shared memory, then immediately calling IPC_RMID.
+
+    IPC_STAT
+
+        Get info on the shared memory segment
+
+    IPC_SET
+
+        Update selected fields in shmid_ds in "buf"
+
+    SHM_LOCK
+
+        Lock memory into RAM so it is not swapped out.
+        It is not guarantee that the memory is locked immediately. Instead, they may be locked as the virtual memory pages are "faulted" in.
+        Once they are "faulted" in, they 
+
+    SHM_UNLOCK
+
+        Unlock the memory
+
+"buf": only needed for IPC_STAT, and IPC_SET
+
+
+
+
+LOCKING AND UNLOCKING SHARED MEMORY:
+
+You can lock shared memory into RAM so it's not swapped out.
+
+
+******************** 48.8 Shared Memory Associated Data Structure ********************
+
+struct shmid_ds {
+    struct ipc_perm shm_perm; // ownership permissions
+    size_t shm_segsz; // size of segment in bytes
+    time_t shm_atime; // time of last shmat()
+    time_t shm_dtime; // time of last shmdt()
+    time_t shm_ctime; // time of last change
+    pid_t shm_cpid; // PID of creator
+    pid_t shm_lpid; // PID of last shmat() / shmdt()
+    shmatt_t shm_nattch; // number of currently attached processes
+};
+
+
+
+******************** 48.8 Shared Memory Limits ********************
+
+SHMMNI
+
+    System wide limit on number of shared memory segments
+
+SHMMIN
+    
+    Mininum size in bytes of a shared memory segment (It's 1 and can't be changed. But the real minumum is the system page size)
+
+SHMMAX
+
+    Max size in bytes of a shared memory segment.
+
+SHMALL
+
+    System wide limit on number of shared memory pages.
+
+SHMSEG (NOT ON LINUX)
+
+    This is a per-process limit on the number of attached shared memory segments.
+
+
+$ cd /proc/sys/kernel
+$ cat shmmni
+4096
+$ cat shmmax
+33554432
+$ cat shmall
+2097152
+
+
+The linux specific IPC_INFO gives info on shared memory limits:
+
+struct shminfo buf;
+
+shmctl(0, IPC_INFO, (struct shmid_ds *)&buf);
+
+
+There is also SHM_INFO that contains info about actual resources used for the shared memory segments. struct shm_info.
+
