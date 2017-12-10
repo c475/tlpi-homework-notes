@@ -4,6 +4,8 @@
 #define _STRTOK_CONTENT_BUFFER_MAX 4084
 #define _STRTOK_TOKENR_MAX 1024
 
+#include <sys/stat.h>
+
 
 struct WindowDimensions {
 	int width;
@@ -32,5 +34,6 @@ struct WindowDimensions getWindowSize(void);
 Status *getProcessStatus(pid_t pid);
 int endswith(char *buffer, char *suffix);
 int startswith(char *buffer, char *prefix);
+void displayStatInfo(const struct stat *sb);
 
 #endif

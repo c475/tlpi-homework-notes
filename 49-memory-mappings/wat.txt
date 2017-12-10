@@ -1,0 +1,1 @@
+cc -Wall -g -pthread mmap/mmcat.c ../lib/print_rlimit.c ../lib/error_functions.c ../lib/caps_only.c ../lib/lib.c ../lib/signal_functions.c ../lib/tlpi_time.c ../lib/print_wait_status.c ../lib/become_daemon.c ../lib/file_perms.c ../lib/get_num.c ../lib/strerror_nosafe.c ../lib/strerror_safe.c ../lib/event_flags.c -o "bin/mmcat"

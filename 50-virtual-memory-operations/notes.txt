@@ -1,0 +1,163 @@
+******************** 50.1 Changing Memory Protection: mprotect() ********************
+
+============================================
+
+#include <sys/mman.h>
+
+int mprotect(void *addr, size_t length, int prot);
+
+    Returns 0 on success, -1 on error
+
+============================================
+
+"addr": must be a multiple of sysconf(_SC_PAGESIZE); "May" need to be page-aligned also.
+
+"prot":
+
+    PROT_NONE: no protection
+
+    PROT_READ: read access
+
+    PROT_WRITE: write access
+
+    PROT_EXEC: may be executed
+
+    for example PROT_READ | PROT_WRITE | PROT_EXEC
+
+    has the same meaning as mmap()
+
+If the process attempts to use the memory in a way that violates the specified protections, it generates SIGSEGV.
+
+One use of mprotect() is to change the PROT_* flags specified in an mmap() call.
+
+
+******************** 50.2 Memory Locking: mlock() and mlockall() ********************
+
+Major use of this is if you need fast memory access time. Locked memory is guaranteed not to be delayed by a page fault.
+
+Another reason is security. If you have a buffer with sensitive data, then you should lock it in memory so it doesn't get swapped out to disk.
+An attacker could purposefully engineer this by writing a program that exhausts memory, forcing other applications to swap pages out.
+The buffer in swap space could potentially be read even after the process terminates (since the kernel may not zero it out).
+Though usually only a privileged process can read from swap space.
+Suspend mode on laptops, and some desktops, saves a copy of RAM contents to disk, regardless of memory locks.
+
+
+RLIMIT_MEMLOCK: the limit on the number of bytes that a process can lock into memory.
+
+    privileged process: Limit is ignored (no limit)
+
+    unprivileged process: default soft and hard limit of 8 pages (32,768 bytes on x86-32)
+
+
+    This effects mlock(), mlockall(), mmap() with the MAP_LOCKED flag, and shmctl() SHM_LOCK operation.
+
+    mlock(), mlockall(), mmap(): per-process
+
+    shmctl(): per shared memory segment by real user id
+
+
+============================================
+
+#include <sys/mman.h>
+
+int mlock(void *addr, size_t length);
+int munlock(void *addr, size_t length);
+
+    Return 0 on success, or -1 on error
+
+============================================
+
+Locks all pages starting at address and continuing for "length" bytes.
+
+"addr": should be page aligned (just rely on mmap(NULL))
+
+"length": length of segment to be locked (will be rounded up to a multiple of the page size)
+
+munlock() doesnt guarantee the memory is paged out. It is paged out only as the kernel needs to.
+
+Pages are unlocked if these happen:
+
+    1. munlock()
+    2. process termination
+    3. locked pages are overlaid with mmap() and MAP_FIXED method
+
+MEMORY LOCKING SEMANTICS (fun...):
+
+    1. Memory locks are not inherited by a fork()
+    2. Not preserved through exec()
+    3. Where multiple processes share a page (MAP_SHARED), these pages remain locked as long as one process holds a lock
+    4. Locks cannot be "nested"
+    5. SHM_LOCK locks all the pages into memory only when they are faulted in. mlock() and mlockall() faults them in, AND locks them immediately.
+
+
+============================================
+
+#include <sys/mman.h>
+
+int mlockall(int flags);
+int munlockall(void);
+
+    Return 0 on success, or -1 on error
+
+============================================
+
+mlockall() locks all currently mapped pages in the process.
+
+"flags":
+
+    MCL_CURRENT
+
+        Lock all pages that are currently mapped into the current process's virtual address space.
+        THis inclided the text segment, data segments, memory mappings, and the stack.
+        THis doesnt include pages subsequently mapped.
+
+    MCL_FUTURE
+
+        Lock all pages subsequently mapped in the process.
+        As a consequence, later pages (via brk(), malloc(), mmap(), etc) may generate SIGSEGV because of RLIMIT_MEMLCOK.
+
+
+******************** 50.3 Determining Memory Residence: mincore() ********************
+
+============================================
+
+#define _BSD_SOURCE // or _SVID_SOURCE
+#include <sys/mman.h>
+
+int mincore(void *addr, size_t length, unsigned char *vec);
+
+    Returns 0 on success, or -1 on error
+
+============================================
+
+Returns memory residence information about the memory starting at "addr" through "length".
+
+"addr": must be page aligned.
+
+"vec": a char array that must be (length + PAGE_SIZE - 1) / PAGE_SIZE bytes... The least significant byte is set if the corresponding page is memory-resident. The settings of the other bits is undefined so don't check them.
+
+The information returned by mincore() can change between the time the call is made and the time the elements of "vec" are checked.
+
+See example program.
+
+
+******************** 50.4 Advising Future Memory Usage Patterns: madvise() ********************
+
+============================================
+
+#define _BSD_SOURCE
+#include <sys/mman.h>
+
+int madvise(void *addr, size_t length, int advice);
+
+    Returns 0 on success, or -1 on error
+
+============================================
+
+"addr": must be page aligned
+
+"length": rounded up to next multiple of page size
+
+"advice":
+
+    MADV_NORMAL: default behavior
