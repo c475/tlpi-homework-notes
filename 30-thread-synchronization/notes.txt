@@ -92,7 +92,7 @@ pthread_mutexattr_t is s struct discussed shortly.
 
 Reasons for dynamically allocating a mutex:
 
-	1. The mutex was heap allocated, for example a linked list of structs with a "mutex" field to controll access to that struct.
+	1. The mutex was heap allocated, for example a linked list of structs with a "mutex" field to control access to that struct.
 
 	2. the mutex is an automatic variable allocated on the stack.
 

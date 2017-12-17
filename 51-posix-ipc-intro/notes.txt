@@ -1,0 +1,83 @@
+Message queues:
+
+    #include <mqueue.h>
+
+    1. Preserves message boundries
+    2. Allows priority assignment (for priority queues)
+
+Semaphores:
+
+    #include <semaphore.h>
+
+    1. They are allocated individually (instead of sets)
+    2. Operated on individually with operations that allow you to add 1 or subtract 1 (as opposed to arbitrary numbers via semop())
+    3. There are "named" semaphores (normal, inter-process), or "unnamed" semaphores (these tend)
+
+Shared memory:
+
+    #include <sys/mman.h>
+
+    1. Changes to memory are immediately visible to other programs.
+
+
+******************** 51.1 API Overview ********************
+
+============================================================================================
+Interface           Message Queues          Semaphores              Shared memory
+============================================================================================
+Header file         <mqueue.h>              <semaphore.h>           <sys/mman.h>
+Object handle       mqd_t                   sem_t *                 int (file descriptor)
+============================================================================================
+Create/open         mq_open()               sem_open()              shm_open() + mmap()
+Close               mq_close()              sem_close()             munmap()
+Unlink              mq_unlink()             sem_unlink()            shm_unlink()
+Perform IPC         mq_send()               sem_post()              operate on locations in shared region
+                    mq_receive()            sem_wait()
+                                            sem_getvalue()
+Misc                mq_setattr()            sem_init() - initialize unanmed semaphore
+                    mq_getattr()            sem_destroy - destroy unnamed semaphore
+                    mq_notify() - request notification
+============================================================================================
+
+
+POSIX IPC objects are "named". The name Must start with a "/". Like "/myobject".
+
+Message queues and hared memory names are limited by NAME_MAX (255 bytes)
+
+Semaphores: 4 characters less than NAME_MAX, because the implementation prepends "sem" to the name.
+
+Some implemtations have weird open() semantics to maybe be aware of (and shim it in a header file or something if you really care).
+
+
+====== Creating or opening an IPC object ======
+
+Each IPC mechanism has its own open() call, that is analogous to the notmal open() call for files.
+
+The identifier it returns is analogous to a file descriptor.
+
+example:
+
+fd = shm_open("/mymem", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+
+
+All mechanisms have a close() call except shared memory, which is closed by calling munmap().
+
+IPC mechanisms are also reference counted like files are. The various unlink() calls work similarly to unlinking files.
+This means the message queue or semaphore is deleted (resources freed) after all proceses close() it or terminate, or in the case of shared memory, munmap() it.
+However, then name is immediately deleted.
+
+As with System V IPC, POSIX IPC objects have kernel persistence.
+
+Though, they exist on the filesystem on Linux.
+
+Programs must be linked with -lrt for message queues and shared memory, or -pthread for semaphores.
+
+
+Advantages over SysV IPC:
+
+    1. Easier
+
+Disadvantages:
+
+    1. Less portable. SysV is on pretty much all UNIX, whereas in SUSv3 POSIX IPC is optional.
+    2. No commands are specified for listing all POSIX IPC objects (usually is standard filesystem commands (rm, ls, etc))

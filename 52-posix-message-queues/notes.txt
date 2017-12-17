@@ -1,0 +1,479 @@
+FOR A GOOD RUNDOWN OR REFRESHER: 
+
+
+                                            man mq_overview
+
+
+
+Main differences with Sysv Message Queues:
+
+1. Reference counted like files
+2. POSIX message queues have a priority, and are queued strictly by priority (cannot be selected for like in SysV)
+3. POSIX message queues have a feature where a process can be asynchronously notified of a message
+
+
+******************** 52.1 Overview ********************
+
+mq_open(): opens or creates a new message queue, and returns an identifier
+mq_send(): write a message to the queue
+mq_receive(): reads a message from the queue
+mq_close(): close a message queue
+mq_unlink(): remove a message queue name and marks the queue for deletion
+mq_getattr(): set attributes on a message queue
+mq_setattr(): set attributes on a message queue
+
+
+******************** 52.2 Opening, Closing, and Unlinking a Message Queue ********************
+
+=================================================
+
+#include <fcntl.h> // O_*
+#include <sys/stat.h>
+#include <mqueue.h>
+
+mqd_t mq_open(const char *name, int oflag, ... /* mode_t mode, struct mq_attr *attr */);
+
+    Returns a message queue descriptor on success, or (mqd_t)-1 on error
+
+=================================================
+
+"name": name of the message queue like "/myqueue"
+
+"oflag":
+
+    O_CREAT:
+
+        Create a queue if it doesn exist
+
+    O_EXCL:
+
+        Exclusively create
+
+    O_RDONLY:
+
+        Open for read only
+
+    O_WRONLY:
+
+        Open for write only
+
+    O_RDWR:
+
+        Open for reading and writing
+
+    O_NONBLOCK:
+
+        Open in non-blocking mode
+
+    Only two arguments to mq_open() are needed if you're just opoening an existing message queue. Otherwise, you need to specify permissions, just like open()
+
+"attr":
+
+    Attributes of the message qeue. If this is NULL, then defaults are set
+
+On fork() the child inherits the mqd_t message queues. However it does not inherit its parent's message notification registrations.
+
+On exec(), all of the program's open message queues are closed, and all message notification registrations are discarded.
+
+
+=================================================
+
+#include <mqueue.h>
+
+int mq_close(mqd_t mqdes);
+
+    Returns 0 on success, or -1 on error
+
+=================================================
+
+In addition to closing the message queue, all message notification registrations are discarded, 
+and another process can subsequently register for message notification from the queue.
+
+Closing it does not delete it.
+
+
+=================================================
+
+#include <mqueue.h>
+
+int mq_unlink(const char *name);
+
+    Returns 0 on success, or -1 on error
+
+=================================================
+
+Removes a message queue.
+
+
+
+******************** 52.3 Relationship Between Descriptors and Message Queues ********************
+
+Basically just more file descriptor analogies.
+
+A handle to a message queue is analogous to a file descriptor. The handle is a per-process thing. It refers to an entry in the system-wide table of open message queue descriptions. The table of message queue descriptions refers to the system-wide table record of message queue objects.
+
+On linux message queues are implemented as i-nodes in a virtual file system, and message queue descriptors/descriptions are implemented as file descriptors. But not all UNIX implementations act this way since it isn't a hard requirement.
+
+
+
+******************** 52.4 Message Queue Attributes ********************
+
+
+struct mq_attr {
+    long mq_flags; // message queue description flags: 0 or O_NONBLOCK
+    long mq_maxmsg; // maximum number of messages on queue (used by mq_open(), mq_setattr())
+    long mq_msgsize; // maximum message size (in bytes) (used by mq_open(), mq_getattr())
+    long mq_curmsgs; // Number of messages currently in queue (used by mq_getattr())
+};
+
+
+mq_open() semantics:
+
+    when calling mq_open() with a mq_attr, then these fields are used
+
+        mq_maxmsg: max number of messages that can be placed on the queue with mq_send(). Must be greater than 0.
+
+        mq_msgsize: upper limit on the size of a message
+
+        These allow the kernel to determine how many bytes are needed for the whole queue.
+
+        These are also FIXED and cannot be changed after creating the message queue.
+
+See example program.
+
+
+
+=================================================
+
+#include <mqueue.h>
+
+int mq_getattr(mqd_t mqdes, struct mq_attr *attr);
+
+    Returns 0 on success, or -1 on error
+
+=================================================
+
+Get message queue attributes.
+
+
+=================================================
+
+#include <mqueue.h>
+
+int mq_setattr(mqd_t mqdes, struct mq_attr *attr);
+
+    Returns 0 on success, or -1 on error
+
+=================================================
+
+Basically, set mq_flags on the message queue (the only of which is O_NONBLOCK). You can get the old attribute structure if you want.
+
+To enable O_NONBLOCK:
+
+
+=================================================
+
+// this sets O_NONBLOCK properly, since at some point in the future more flags may be added
+
+struct mq_attr attr;
+
+if (mq_getattr(mqd, &attr) == -1) {
+    errExit("mq_getattr");
+}
+
+attr.mq_flags |= O_NONBLOCK;
+
+if (mq_getattr(mqd, &attr, NULL) == -1) {
+    errExit("mq_setattr");
+}
+
+=================================================
+
+
+
+******************** 52.5 Exchanging Messages ********************
+
+
+=================================================
+
+#include <mqueue.h>
+
+int mq_send(mqd_t mqdes, const char *msg_ptr, size_t len, unsigned int msg_prio);
+
+    Returns 0 on success, or -1 on error
+
+=================================================
+
+Pretty obvious params
+
+"mqdes": the message queue identifier
+
+"msg_ptr": the messahe
+
+"len": the length of "msg_ptr" in bytes. Zero length messages are permitted. Must be equal to or less than mq_msgsize.
+
+"msq_prio": 0 is the lowest priority. The higher the number, the higher the priority. Messages are delivered by priority first, then time it was put in the queue. Must be non-negative. If a queue doesnt need to use priorities, it is sufficient to always specify 0. sysconf(_SC_MQ_PRIO_MAX) will get the maximum priority allowed, which is always at least 32. Meaning 0 through 31 are always available.
+
+If the message queue is full, then mq_send() blocks until space is freed in the queue. Unless O_NONBLOCK is specified, then EAGAIN is set and it returns immediately.
+
+See example program.
+
+
+RECEIVING MESSAGES:
+
+
+=================================================
+
+#include <mqueue.h>
+
+ssize_t mq_receive(mqd_t mqdes, char *msg_ptr, size_t msg_len, unsigned int *msg_prio);
+
+    Returns number of bytes received in message on success, or -1 on error
+
+=================================================
+
+"msg_ptr": the buffer to put the message in
+
+"msg_len": available bytes in the "msg_ptr" buffer. REGARDLESS OF THE ACTUAL SIZE OF THE MESSAGE "msg_len" and thus "msg_ptr" MUST BE GREATER THAN OR EQUAL TO mq_msgsize.
+    Otherwise, mq_receive() fails with EMSGSIZE.
+    If you don't know the value of mq_msgsize, get it with mq_getattr().
+    In the case of cooperating processes, this method can usually be forgone since they can all agree on a message size in a header file.
+
+"msg_prio": If this isn't NULL, then the priority of the received message is copied into it.
+
+If a message is unavailable, mq_receive() blocks until it receives a message, or if O_NONBLOCK is specified, returns immediately and sets errno = EAGAIN.
+
+
+SENDING AND RECEIVING WITH TIMEOUTS:
+
+=================================================
+
+#include <mqueue.h>
+#include <time.h>
+
+int mq_timedsend(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned int *msg_prio, const struct timespec *abs_timeout);
+
+    Returns 0 on success, or -1 on error
+
+int mq_timedreceive(mqd_t mqdes, char *msg_ptr, size_t msg_len, unsigned int *msg_prio, const struct timespec *abs_timeout);
+
+    Returns number of bytes received in message on success, or -1 on error
+
+=================================================
+
+Basically the same thing except it takes a struct timespec.
+
+As a refresher:
+
+struct timespec {
+    time_t tv_sec; // seconds
+    long tv_nsec; // nanoseconds
+};
+
+Unfortunately this isn't a "countdown", and the exect time since epoch you want the timeout to happen must be specified.
+
+You can get the current time by using clock_gettime() with CLOCK_REALTIME, then adding a number of seconds and nano seconds to it.
+
+If one of these calls times out, then they return -1 and set errno to ETIMEDOUT.
+
+On linux specifying abs_timeout as NULL means infinite timeout. This isn't portable though.
+
+
+******************** 52.6 Message Notification ********************
+
+A big difference between System V message queues and POSIX message queues is the ability to be asynchronously notified of an incoming message (that is, when a queue goes from empty to non-empty). You can choose whether to be notified via signal, or to execute a specified function in a separate thread.
+
+
+=================================================
+
+#include <mqueue.h>
+
+int mq_notify(mqd_t mqdes, const struct sigevent *notification);
+
+    Returns 0 on success, or -1 on error
+
+=================================================
+
+"notification": The mechanism by which the calling process is to be notified of an incoming message. Some notes about this:
+
+    1. Only one process can be "registered" to receive a notification on a message queue. Attempts to register when another process has already done so results in mq_notify() failing and errno being set to EBUSY.
+
+    2. The process only receives a notification if a message queue goes from empty to non-empty. If a message queue receives another message after going from empty to nonempty, the process is not notified.
+
+    3. After one notification is sent to the registered process, then the registration is automatically removed (and allows another process to register itself). Therefore if a process wishes to continue being notified, it must re-register itself.
+
+    4. The registered process is notified only if some other process is not currently blocked in a call to mq_receive() for the queue. If this is the case, then the process that is blocked receives the message, and a notification is not sent.
+
+    5. A process can explicitly de-register itself as the target for message notification by calling mq_notify() with "notification" as NULL.
+
+
+I guess this structure was briefly talked about earlier in the book but it's pretty hazy.
+
+Looking back at that section I can see why it was glossed over.
+
+HERE IT IS IN EVEN MORE SIMPLIFIED FORMAT, PERTAINING ONLY TO USAGE IN mq_notify()
+
+=================================================
+
+union sigval { // data passed with notification
+    int sigval_int; // integer value for accompanying data
+    void *sigval_ptr; // pointer value for accompanying data
+};
+
+
+struct sigevent {
+    int sigev_notify; // notification method
+
+    int sigev_signo; // notification signal for SIGEV_SIGNAL
+
+    union sigval sigev_value; // value passed to signal handler or thread function
+
+    void (*sigev_notify_function)(union sigval); // thread notification function
+
+    void *sigev_notify_attributes; // really pthread_attr_t
+};
+
+
+// ALSO RELEVANT TO THE DISCUSSION, AS SEEN PREVIOUSLY
+
+#include <sys/siginfo.h>
+
+typedef struct {
+    int si_signo;
+    int si_code;
+    union sigval si_value;
+    int si_errno;
+    pid_t si_pid;
+    uid_t si_uid;
+    void *si_addr;
+    int si_status;
+    int si_band;
+} siginfo_t;
+
+
+General notes about the "attr" argument (pthread_attr_t):
+
+    1. control the size and location of the thread stack
+    2. scheduling priority
+    3. joinable or detached
+    4. a lot of other things not explicitly mentioned in the book, look at references.
+
+CREATING A DETACHED THREAD BY DEFAULT:
+
+pthread_t thr;
+pthread_attr_t attr;
+int s;
+
+// default values
+s = pthread_attr_init(&attr);
+if (s != 0) {
+    errExitEN(s, "pthread_attr_init");
+}
+
+s = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+if (s != 0) {
+    errExitEN(s, "pthread_attr_setdetachstate");
+}
+
+s = pthread_create(&thr, &attr, threadFunc, (void *)1);
+if (s != 0) {
+    errExitEN(s, "pthread_create");
+}
+
+
+=================================================
+
+"sigev_notify" is set to one of these values:
+
+    SIGEV_NONE:
+
+        Register this process for notification, but when a message arrives on a previously empty queue, don't actually notify the process.
+        As usual, registration is removed when the notification "arrives"
+
+    SIGEV_SIGNAL:
+
+        Notify the process by generating the signal specified in the "sigev_signo" field.
+        "sigev_value" specifies data to accompany the signal. This data can be retrieved via the si_value field of the siginfo_t structure that is passed to the signal handler, or returned by a call to sigwaitinfo() or sigtimedwait().
+
+        The following fields of siginfo_t are also filled in:
+
+        si_code = SI_MESGQl
+
+        si_signo = the signal number
+
+        si_pid = with the pid of the process that sent the message
+
+        si_uid = the real user id of the process that send the message
+
+    SIGEV_THREAD
+
+        Notify the process by calling the function specified in sigev_notify_function as if it were the "start" function in a new thread.
+        "sigev_notify_attributes" can be specified as NULL or as a pointer to a thread pthread_attr_t structure that defines attributes for the thread.
+        The union sigval is passes as an argument to the start function.
+
+NOTIFICATION VIA SIGNAL: see example program
+
+NOTIFICATION VIA THREAD: see example program
+
+
+All in all it seems you have to get pretty creative to make good use of notifications. Not as useful as I was expecting.
+
+
+
+******************** 52.7 Linux-Specific Features ********************
+
+Displaying and deleting message queue objects from the command line.
+
+The message queues are stored in their own filesystem.
+
+$ su
+# mkdir /dev/mqueue
+# mount -t mqueue none /opt/mqueue
+# ls -ld /opt/mqueue # sticky bit is set on directory, meaning unprivileged process can only delete its own queues
+drwxrwxrwt 2 root root 60 Dec 13 16:32 mqueue/
+# cat /opt/mqueue/mq
+QSIZE:0          NOTIFY:0     SIGNO:0     NOTIFY_PID:0     
+# ls -l /opt/mqueue/
+total 0
+-rw------- 1 me me 80 Dec 13 16:33 mq
+#exit
+
+$ ./pmsg_create -c /newq
+$ ls /opt/mqueue
+mq  newq
+$ rm -f /opt/mqueue/newq
+$ ./mpsg_send /mq abcdefg
+$ cat /opt/mqueue/mq
+QSIZE:7          NOTIFY:0     SIGNO:0     NOTIFY_PID:0     
+$ ./mq_notify_sig /mq &
+[1] 23289
+$ cat /opt/mqueue/mq 
+QSIZE:7          NOTIFY:0     SIGNO:10    NOTIFY_PID:23289 
+$ kill %1
+$ jobs
+[1]+  Terminated              ./mq_notify_sig /mq
+$ ./mq_notify_thread /mq &
+[1] 23307
+$ cat /opt/mqueue/mq
+QSIZE:7          NOTIFY:2     SIGNO:0     NOTIFY_PID:23307 
+$ kill %1
+
+
+And lastly, on linux message queue descriptors are actually just file descriptors, so you can use all the interesting things like epoll() on them.
+But this may not translate to other UNIX implementations.
+
+
+******************** 52.8 Message Queue Limits ********************
+
+MQ_PRIO_MAX: max priority value for a message queue
+
+MQ_OPEN_MAX: max number of message queues a process can have open. Since they are file descriptors on Linux, it is actually RLIMIT_NOFILE.
+
+These are the files in /proc/sys/fs/mqueue:
+
+msg_max: ceiling for mq_maxmsg
+
+msgsize_max: ceiling fro mq_msgsize
+
+queues_max: system wide limit on the number of messag queues that may be created.
+

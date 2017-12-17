@@ -1,3 +1,8 @@
+Everything in this chapter is pretty mmap()-centric (though not all of it)
+
+Because basically every address you pass into these system calls needs to be page-aligned.
+
+
 ******************** 50.1 Changing Memory Protection: mprotect() ********************
 
 ============================================
@@ -154,10 +159,37 @@ int madvise(void *addr, size_t length, int advice);
 
 ============================================
 
+
+Virtual memory optimization.
+
+
 "addr": must be page aligned
 
 "length": rounded up to next multiple of page size
 
 "advice":
 
-    MADV_NORMAL: default behavior
+    MADV_NORMAL:
+
+        Default behavior. Pages are transferred in clusters (small multiples of page size). This results in some read-ahead and read-behind on access.
+
+    MADV_RANDOM:
+
+        Memory segment will be accessed at random, so read-ahead and behind will not be a benefit. Kernel should fetch the minimum amount of memory possible.
+
+    MADV_SEQUENTIAL:
+
+        Pages in this range will be accessed once, sequentially. Thus, the kernel can aggressively read agead, and pages can be quickly freed after access.
+
+    MADV_WILLNEED:
+
+        Read pages in this range ahead, in preparation for future access.
+        Similar to readahead() system call and posix_fadvise() POSIX_FADV_WILLNEED operation.
+
+    MADV_DONTNEED:
+
+        Process no longer needs the page. But it gets more complicated than that.
+
+        On Linux with MAP_PRIVATE, the pages are "discarded", getting rid of any modifications to it. On next access, the pages are "reinitialized" with either zeros, or the underlying file. So this can be used to explicitly reinitialize a MAP_PRIVATE. Don't rely on this though since not all UNIX act this way.
+
+    
