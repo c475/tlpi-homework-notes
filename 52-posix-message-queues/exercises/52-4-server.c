@@ -1,11 +1,13 @@
 #include <mqueue.h>
 #include <fcntl.h>
+#include <assert.h>
 #include "../../lib/tlpi_hdr.h"
 
 #define MESSAGE_MAX 4096
 #define SERVER_MQ "/chat"
 #define CLIENT_MQ_TEMPLATE "/%ld"
-#define JOIN_MESSAGE_TEMPLATE "%s has joined the chat\n"
+#define JOIN_TEMPLATE "%s has joined the chat\n"
+#define CHAT_TEMPLATE "%s: %s\n"
 #define CLIENT_MQ_NAME_MAX 32
 #define NAME_MAX 32
 
@@ -27,9 +29,15 @@ struct response {
 
 
 struct client {
-    mqd_t *mq;
+    mqd_t mq;
     pid_t pid;
     char name[NAME_MAX];
+};
+
+
+struct ChatPacket {
+    struct client *client;
+    struct response *response;
 };
 
 
@@ -39,64 +47,100 @@ void logError(const char *msg, struct request *req)
 }
 
 
-void sendJoinMessage(void *client, void *resp)
+int findClient(void *arg, void *pid)
 {
-    struct client *cl;
+    assert(arg);
+    assert(pid);
 
-    cl = (struct client *)client;
+    struct client *c;
+    pid_t *p;
 
-    mq_send(cl->mq, (char *)resp, sizeof(struct response), 0);
+    c = (struct client *)arg;
+    p = (pid_t *)pid;
+
+    return c->pid == *p;
 }
 
 
-void sendChatMessage(void *client, void *resp)
+int sendJoined(void *arg, void *resp)
 {
-    
-}
+    struct client *c;
 
+    c = (struct client *)arg;
 
-int clientJoin(struct request *req, struct List *list)
-{
-    mqd_t mq;
-    struct client cl;
-    char client_mq[CLIENT_MQ_NAME_MAX];
-    struct response resp;
-
-    cl.pid = req->pid;
-    memset(cl.name, 0, NAME_MAX);
-    memset(resp.content, 0, MESSAGE_MAX);
-    snprintf(cl.name, NAME_MAX, "%s", req->content);
-    snprintf(client_mq, CLIENT_MQ_NAME_MAX, CLIENT_MQ_TEMPLATE, (long)cl.pid);
-    snprintf(resp.content, MESSAGE_MAX, JOIN_MESSAGE_TEMPLATE, cl.name);
-
-    mq = mq_open(client_mq, O_WRONLY | O_NONBLOCK);
-    if (mq == (mqd_t)-1) {
-        return -1;
-    }
-
-    cl.mq = mq;
-
-    listForeach(list, sendJoinMessage, &resp);
-    listAdd(list, &cl);
+    mq_send(c->mq, (char *)resp, sizeof(struct response), 0);
 
     return 0;
 }
 
 
-int clientChat(struct request *req, struct List *list)
+int sendChat(void *arg, void *pack)
 {
-    listForeach()
+    struct ChatPacket *packet;
+    struct client *c;
+
+    packet = (struct ChatPacket *)pack;
+    c = (struct client *)arg;
+
+    if (c->pid != packet->client->pid) {
+        mq_send(c->mq, (char *)packet->response, sizeof(struct response), 0);
+    }
+
+    return 0;
 }
 
 
+int clientJoin(struct List *list, struct request *req)
+{
+    struct client cl;
+    struct response resp;
+    char client_mq[CLIENT_MQ_NAME_MAX];
 
+    assert(list);
+    assert(req);
+
+    cl.pid = req->pid;
+    snprintf(client_mq, CLIENT_MQ_NAME_MAX, CLIENT_MQ_TEMPLATE, (long)req->pid);
+    cl.mq = mq_open(client_mq, O_WRONLY | O_NONBLOCK);
+    snprintf(cl.name, NAME_MAX, "%s", req->content);
+
+    snprintf(resp.content, MESSAGE_MAX, JOIN_TEMPLATE, cl.name);
+
+    listForeach(list, sendJoined, (void *)&resp);
+    listAppend(list, &cl);
+
+    return 0;
+}
+
+
+int clientChat(struct List *list, struct request *req, struct client *client)
+{
+    struct response resp;
+    struct ChatPacket packet;
+
+    assert(list);
+    assert(req);
+    assert(client);
+
+    memset(resp.content, 0, MESSAGE_MAX);
+    snprintf(resp.content, MESSAGE_MAX, CHAT_TEMPLATE, client->name, req->content);
+
+    packet.client = client;
+    packet.response = &resp;
+
+    listForeach(list, sendChat, (void *)&packet);
+
+    return 0;
+}
+
+// man that's enough
 int main(int argc, char *argv[])
 {
     mqd_t servermq;
     struct mq_attr attr;
     struct request req;
-    struct response resp;
-    struct List *clients;
+    struct List *clientList;
+    struct client *client;
 
     memset(&attr, 0, sizeof(struct mq_attr));
 
@@ -108,8 +152,8 @@ int main(int argc, char *argv[])
         errExit("mq_open");
     }
 
-    clients = listCreate(sizeof(struct client));
-    if (clients == NULL) {
+    clientList = listCreate(sizeof(struct client));
+    if (clientList == NULL) {
         errExit("listCreate");
     }
 
@@ -118,24 +162,22 @@ int main(int argc, char *argv[])
             errExit("mq_receive");
         }
 
+        printf("GOT REQ\n");
+
         switch (req.type) {
             // Add client to the list and round-robin "User joined" to all connected clients
             case JOIN:
-                if (clientJoin(&req, clients) == -1) {
+                if (clientJoin(clientList, &req) == -1) {
                     logError("Client join failed", &req);
                 }
                 break;
 
             // Round-robin message to all connected clients
             case CHAT:
-                if (clientChat(&req, clients) == -1) {
-                    logError("Client chat failed", &req);
-                }
-                break;
-
-            // Round-robin "User left" to all connected clients
-            case LEAVE:
-                if (clientLeave(&req, clients) == -1) {
+                client = listFindFirst(clientList, findClient, (void *)&req.pid);
+                if (!client) {
+                    logError("Couldnt find client", &req);
+                } else if (clientChat(clientList, &req, client) == -1) {
                     logError("Client chat failed", &req);
                 }
                 break;
@@ -155,7 +197,7 @@ int main(int argc, char *argv[])
         errExit("mq_unlink");
     }
 
-    listDestroy(list);
+    listDestroy(clientList);
 
     exit(EXIT_SUCCESS);
 }

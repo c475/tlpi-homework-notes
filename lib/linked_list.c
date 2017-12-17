@@ -231,7 +231,7 @@ size_t listSize(struct List *list)
 }
 
 
-void *listFindFirst(struct List *list, int (*searchFunc)(void *data))
+void *listFindFirst(struct List *list, int (*searchFunc)(void *data, void *ex1), void *extra)
 {
     void *data;
     struct Node *node;
@@ -246,7 +246,7 @@ void *listFindFirst(struct List *list, int (*searchFunc)(void *data))
     data = NULL;
     node = list->first;
     while (node != NULL) {
-        if (searchFunc(node->data)) {
+        if (searchFunc(node->data, extra)) {
             data = node->data;
             break;
         }
@@ -267,7 +267,7 @@ void *listFindFirst(struct List *list, int (*searchFunc)(void *data))
 // 1: stop iteration
 // can get more complex later like skipping elements, going back to elements, starting from the beginning, etc
 // foreachFunc is free to mutate the data in the style of map()
-void listForeach(struct List *list, int (*foreachFunc)(void *data, void *extra), void *extra)
+void listForeach(struct List *list, int (*foreachFunc)(void *data, void *ex1), void *extra)
 {
     int code;
     struct Node *node;

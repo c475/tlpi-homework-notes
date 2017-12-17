@@ -48,7 +48,7 @@ size_t listSize(struct List *list); // return the list size in bytes (does not c
         - Return 0 to skip the element
         - Return 1 to return the matching element
 */
-void *listFindFirst(struct List *list, int (*searchFunc)(void *data));
+void *listFindFirst(struct List *list, int (*searchFunc)(void *data, void *extra), void *extra);
 
 void listRemove(struct List *list, void *data); // remove the node where node->data == data
 
@@ -58,7 +58,7 @@ void listRemove(struct List *list, void *data); // remove the node where node->d
         - Return 0 to continue iteration
         - Return 1 to halt iteration
 */
-void listForeach(struct List *list, int (*foreachFunc)(void *data, void *extra), void *extra); // roundrobin the list with some function
+void listForeach(struct List *list, int (*foreachFunc)(void *data, void *ex1), void *extra); // roundrobin the list with some function
 
 struct List *listCopy(struct List *list); // make and return a copy of the list
 
