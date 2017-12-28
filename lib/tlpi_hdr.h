@@ -208,7 +208,15 @@
 
 #include "semun.h"
 
-#include "linked_list.h"
+#include "ds/list.h"
+
+#include "ds/darray.h"
+
+#include "ds/hashmap.h"
+
+#include "wordlist.h"
+
+#include "hashing/hash.h"
 
 typedef enum { FALSE, TRUE } Boolean;
 
