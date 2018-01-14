@@ -186,33 +186,27 @@
 
 #include <string.h>
 
+// categorize these better eventually
 #include "get_num.h"
-
 #include "error_functions.h"
-
 #include "tlpi_time.h"
-
 #include "lib.h"
-
 #include "signal_functions.h"
-
 #include "print_wait_status.h"
-
 #include "strerror_nosafe.h"
-
 #include "strerror_safe.h"
-
 #include "print_rlimit.h"
-
 #include "event_flags.h"
-
 #include "semun.h"
 
-#include "ds/list.h"
-
 #include "ds/darray.h"
-
+#include "ds/list.h"
 #include "ds/hashmap.h"
+#include "ds/heap.h"
+
+#include "algo/list_algo.h"
+#include "algo/darray_algo.h"
+// #include "algo/hashmap_algo.h"
 
 #include "wordlist.h"
 

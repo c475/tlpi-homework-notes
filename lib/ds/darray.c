@@ -62,6 +62,21 @@ void Darray_clear(Darray *array)
 }
 
 
+void Darray_debug(Darray *array)
+{
+    int i;
+    void *val;
+
+    printf("===========================================================\n");
+    printf("idx\t\tarrayp\t\taddr\t\tval\t\t\n");
+    printf("===========================================================\n");
+    for (i = 0; i < Darray_count(array); i++) {
+        val = Darray_get(array, i);
+        printf("%06d\t\t%08lx\t\t%08lx\t\t%d\n", i, (long)array, (long)val, *(int *)val);
+    }
+}
+
+
 static inline int Darray_resize(Darray *array, size_t newSize)
 {
     void *contents;
@@ -192,19 +207,44 @@ Darray *Darray_copy(Darray *array)
 {
     int i;
     Darray *new;
-    void *data;
 
-    assert(pthread_mutex_lock(array->mtx) == 0);
-
-    new = Darray_create(array->elementSize, array->max - 1);
+    new = Darray_create(array->elementSize, array->max);
     if (new == NULL) {
         return NULL;
     }
 
-    for (i = 0; i < array->max; i++) {
-        data = Darray_get(array, i);
-        if (data != NULL) {
-            Darray_set(new, i, data);
+    assert(pthread_mutex_lock(array->mtx) == 0);
+
+    new->end = array->end;
+
+    for (i = 0; i < array->end; i++) {
+        new->contents[i] = array->contents[i];
+    }
+
+    assert(pthread_mutex_unlock(array->mtx) == 0);
+
+    return new;
+}
+
+
+Darray *Darray_filter(Darray *array, Darray_filter_cb cb)
+{
+    int i;
+    void *value;
+    Darray *new;
+
+    assert(pthread_mutex_lock(array->mtx) == 0);
+
+    new = Darray_create(array->elementSize, DARRAY_DEFAULT_SIZE);
+    if (new == NULL) {
+        assert(pthread_mutex_unlock(array->mtx) == 0);
+        return NULL;
+    }
+
+    for (i = 0; i < Darray_end(array); i++) {
+        value = array->contents[i];
+        if (value != NULL && cb(value)) {
+            Darray_push(new, value);
         }
     }
 

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     displayStatInfo(&sb);
     printf("\n\n");
 
-    addr = mmap(NULL, sb.st_blksize * 25, PROT_READ, MAP_PRIVATE, fd, 0);
+    addr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (addr == MAP_FAILED) {
         errExit("mmap");
     }

@@ -1,0 +1,42 @@
+const getNum = () => {
+    var x = Math.random();
+    if (x >= 0.5) {
+        x = -x;
+    }
+
+    return x;
+}
+
+const abs_math = (x) => {
+    return Math.sqrt(Math.pow(x, 2));
+}
+
+const abs_ignorant = (x) => {
+    return x < 0 ? -x : x;
+}
+
+const test = (what) => {
+    if (what == 'ignorant') {
+        for (var i = 0; i < 10000000; i++) {
+            var x = abs_ignorant(getNum());
+        }
+    } else {
+        for (var i = 0; i < 10000000; i++) {
+            var x = abs_math(getNum());
+        }
+    }
+}
+
+
+var start = +new Date();  // log start timestamp
+test('math');
+var end =  +new Date();  // log end timestamp
+var diff = end - start;
+console.log(diff);
+
+var start = +new Date();  // log start timestamp
+test('ignorant');
+var end =  +new Date();  // log end timestamp
+var diff = end - start;
+console.log(diff);
+

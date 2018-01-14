@@ -47,5 +47,9 @@ int main(int argc, char *argv[])
         printf("Copied '%s' to shared memory\n", argv[2]);
     }
 
+    if (munmap(addr, MEM_SIZE) == -1) {
+        errExit("munmap");
+    }
+
     exit(EXIT_SUCCESS);
 }

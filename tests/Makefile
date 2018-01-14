@@ -1,6 +1,6 @@
 CC=cc
 
-CFLAGS=-Wall -g -pthread -lrt
+CFLAGS=-Wall -g -pthread -lrt -lbsd
 
 OUTPUT="bin/$(OUT)"
 DIRECT=$(D)

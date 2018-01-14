@@ -1,7 +1,7 @@
 #include "../../lib/tlpi_hdr.h"
 #include <pthread.h>
 
-#define NUM_THREADS 20
+#define NUM_THREADS 40
 
 
 void *threadFunc(void *arg)
@@ -12,17 +12,13 @@ void *threadFunc(void *arg)
 
     array = (Darray *)arg;
 
-    for (i = 0; i < 20; i++) {
+    for (i = 0; i < 10000; i++) {
         val = malloc(sizeof(int));
         if (val == NULL) {
             errExit("malloc");
         }
         *val = i;
         Darray_push(array, val);
-    }
-
-    for (i = 0; i < 20; i++) {
-        free(Darray_pop(array));
     }
 
     return NULL;
@@ -192,7 +188,7 @@ int shitload_of_values_test(Darray *array)
     int i;
     int *val;
 
-    for (i = 0; i < 1000000; i++) {
+    for (i = 0; i < 5000; i++) {
         val = calloc(1, sizeof(int));
         if (val == NULL) {
             errExit("calloc");
@@ -207,6 +203,91 @@ int shitload_of_values_test(Darray *array)
 }
 
 
+int is_sorted_asc(Darray *array)
+{
+    int i;
+    int *val1;
+    int *val2;
+
+    for (i = 0; i < Darray_count(array) - 1; i++) {
+        val1 = Darray_get(array, i);
+        val2 = Darray_get(array, i + 1);
+        if (*val1 > *val2) {
+
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+
+int is_sorted_desc(Darray *array)
+{
+    int i;
+    int *val1;
+    int *val2;
+
+    for (i = 0; i < Darray_count(array) - 1; i++) {
+        val1 = Darray_get(array, i);
+        val2 = Darray_get(array, i + 1);
+        if (*val1 < *val2) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+
+int sort_asc(const void *a, const void *b)
+{
+    int *v1, *v2;
+
+    v1 = (int *)a;
+    v2 = (int *)b;
+
+    return *v1 < *v2;
+}
+
+
+int sort_desc(const void *a, const void *b)
+{
+    int *v1, *v2;
+
+    v1 = (int *)a;
+    v2 = (int *)b;
+
+    return *v1 > *v2;
+}
+
+
+int mergesort_test(Darray *array)
+{
+    Darray_mergesort(array, (Darray_compare)sort_asc);
+    Darray_debug(array);
+    assert(is_sorted_asc(array));
+    return 0;
+}
+
+
+int heapsort_test(Darray *array)
+{
+    Darray_mergesort(array, (Darray_compare)sort_desc);
+    Darray_debug(array);
+    assert(is_sorted_desc(array));
+    return 0;
+}
+
+
+int quicksort_test(Darray *array)
+{
+    Darray_mergesort(array, sort_asc);
+    Darray_debug(array);
+    return 0;
+}
+
+
 int main(int argc, char *argv[])
 {
     Darray *array;
@@ -216,10 +297,11 @@ int main(int argc, char *argv[])
         errExit("Darray_create");
     }
 
-    // push_pop_test(array);
-    // thread_test(array);
-    // expand_contract_test(array);
+    push_pop_test(array);
+    expand_contract_test(array);
+    thread_test(array);
     shitload_of_values_test(array);
+    mergesort_test(array);
 
     Darray_clear_destroy(array);
 

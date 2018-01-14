@@ -1,71 +1,48 @@
-#ifndef _LINKED_LIST_H_
-#define _LINKED_LIST_H_
+#ifndef __LINKED_LIST_HEADER__
+#define __LINKED_LIST_HEADER__
 
-#include <stddef.h>
+#include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
+#include <assert.h>
 #include "darray.h"
+
+#define DARRAY_INITIAL_MAX 300
 
 
 typedef struct ListNode {
-    struct ListNode *prev;
     struct ListNode *next;
-    void *data;
+    struct ListNode *prev;
+    void *value;
 } ListNode;
 
-
 typedef struct List {
-    size_t length;
+    int count;
+    ListNode *first;
+    ListNode *last;
+    pthread_mutex_t *mtx;
     size_t elementSize;
-    struct ListNode *first;
-    struct ListNode *last;
-    pthread_mutex_t *mtx; // threadsafety
 } List;
 
 
-List *List_create(size_t elementSize); // create a list with the size of the elements that go in it
-ListNode *list_create_node(List *list, void *data); // internal call to wrap (void *) in a ListNode
-void list_free_node(ListNode *node); // internal call for freeing a node (used in various rm calls and listDestroy())
-void List_append(List *list, void *data); // append data to the list
-void List_prepend(List *list, void *data); // prepend data to the list
-void *List_pop(List *list, void *buffer); // pop the last element and place its contents in the user-supplied buffer
-void *List_pop_left(List *list, void *buffer); // pop the first element and place its contents in the user-supplied buffer
+List *List_create(size_t elementSize);
+void List_destroy(List *list);
+void List_clear(List *list);
 
-/* 
-    Not a very good solution but can't think of a better one right now. User is still free to manually search the list.
+#define List_count(A) ((A)->count)
+#define List_first(A) ((A)->first != NULL ? (A)->first->value : NULL)
+#define List_last(A) ((A)->last != NULL ? (A)->last->value : NULL)
+#define List_size(A) ((A)->count * (A)->elementSize)
 
-    deleteFunc callback return codes:
-        - Return 0 from the callback to pass on the element
-        - Return 1 from the callback to delete first matching element and stop.
-        - Return 2 from the callback to delete the element, and continue searching for elements to delete
-*/
-void List_remove_when(List *list, int (*deleteFunc)(void *data));
-void *List_remove(List *list, void *data);
-
-void List_destroy(List *list); // destroy and free the list's resources
-size_t List_length(List *list); // return the length of the list
-size_t List_size(List *list); // return the list size in bytes (does not count internal bookkeeping, only length * elementSize)
-
-/*
-    Not a very good solution but can't think of a better one right now. User is still free to manually search the list.
-
-    searchFunc callback return codes:
-        - Return 0 to skip the element
-        - Return 1 to return the matching element
-*/
-void *List_find_first(List *list, int (*searchFunc)(void *data, void *ex1), void *extra);
-
-void *List_remove(List *list, void *data); // remove the node where node->data == data
-
-/*
-    foreachFunc return codes:
-        - Return -1 to abort the process
-        - Return 0 to continue iteration
-        - Return 1 to halt iteration
-*/
-void List_foreach(List *list, int (*foreachFunc)(void *data, void *ex1), void *extra); // roundrobin the list with some function
-
-List *List_copy(List *list); // make and return a copy of the list
-
+void List_push(List *list, void *value);
+void List_push_deep(List *list, void *value); // same as push except makes a deep copy of the underlying value
+void *List_pop(List *list);
+void *List_pop_left(List *list);
+List *List_copy(List *list); // perform deep copy of list
+List *List_split(List *list, int index);
+List *List_join(List *left, List *right);
 Darray *List_to_darray(List *list);
+
+void List_debug(List *list);
 
 #endif

@@ -18,115 +18,115 @@
 
 char *_strtok(char *content, char delim)
 {
-	static char _strtok_content_buffer[_STRTOK_CONTENT_BUFFER_MAX];
-	static char _strtok_token_buffer[_STRTOK_TOKENR_MAX];
+    static char _strtok_content_buffer[_STRTOK_CONTENT_BUFFER_MAX];
+    static char _strtok_token_buffer[_STRTOK_TOKENR_MAX];
 
-	static char *_strtok_token = NULL;
-	static char *_strtok_tbp;
+    static char *_strtok_token = NULL;
+    static char *_strtok_tbp;
 
-	if (content != NULL) {
-		_strtok_token = NULL;
-		_strtok_tbp = NULL;
-		memset(_strtok_content_buffer, 0, _STRTOK_CONTENT_BUFFER_MAX);
-		memcpy(_strtok_content_buffer, content, _STRTOK_CONTENT_BUFFER_MAX);
-	}
+    if (content != NULL) {
+        _strtok_token = NULL;
+        _strtok_tbp = NULL;
+        memset(_strtok_content_buffer, 0, _STRTOK_CONTENT_BUFFER_MAX);
+        memcpy(_strtok_content_buffer, content, _STRTOK_CONTENT_BUFFER_MAX);
+    }
 
-	if (_strtok_token == NULL) {
-		_strtok_token = _strtok_content_buffer;
-		_strtok_tbp = _strtok_token;
-	}
+    if (_strtok_token == NULL) {
+        _strtok_token = _strtok_content_buffer;
+        _strtok_tbp = _strtok_token;
+    }
 
-	while (*_strtok_tbp && *_strtok_tbp != delim) _strtok_tbp++;
+    while (*_strtok_tbp && *_strtok_tbp != delim) _strtok_tbp++;
 
-	if (*_strtok_tbp == '\0') {
-		return NULL;
-	}
+    if (*_strtok_tbp == '\0') {
+        return NULL;
+    }
 
-	memset(_strtok_token_buffer, 0, _STRTOK_TOKENR_MAX);
+    memset(_strtok_token_buffer, 0, _STRTOK_TOKENR_MAX);
 
-	*_strtok_tbp = '\0';
-	snprintf(_strtok_token_buffer, _STRTOK_TOKENR_MAX-1, "%s", _strtok_token);
-	*_strtok_tbp++ = delim;
-	_strtok_token = _strtok_tbp;
+    *_strtok_tbp = '\0';
+    snprintf(_strtok_token_buffer, _STRTOK_TOKENR_MAX-1, "%s", _strtok_token);
+    *_strtok_tbp++ = delim;
+    _strtok_token = _strtok_tbp;
 
-	return _strtok_token_buffer;
+    return _strtok_token_buffer;
 }
 
 
 int isNumericString(char *str)
 {
-	char *strp = str;
+    char *strp = str;
 
-	if (strp == NULL || *strp == '\0') {
-		return 0;
-	}
+    if (strp == NULL || *strp == '\0') {
+        return 0;
+    }
 
-	for (; *strp; strp++) {
-		if (!(*strp >= '0' && *strp <= '9')) {
-			return 0;
-		}
-	}
+    for (; *strp; strp++) {
+        if (!(*strp >= '0' && *strp <= '9')) {
+            return 0;
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 
 char *userNameFromId(uid_t uid)
 {
-	struct passwd *pwd = getpwuid(uid);
-	return (pwd == NULL) ? NULL : pwd->pw_name;
+    struct passwd *pwd = getpwuid(uid);
+    return (pwd == NULL) ? NULL : pwd->pw_name;
 }
 
 
 uid_t userIdFromName(const char *name)
 {
-	struct passwd *pwd;
+    struct passwd *pwd;
 
-	if (name == NULL || *name == '\0') {
-		return -1;
-	}
+    if (name == NULL || *name == '\0') {
+        return -1;
+    }
 
-	pwd = getpwnam(name);
-	if (pwd == NULL) {
-		return -1;
-	}
+    pwd = getpwnam(name);
+    if (pwd == NULL) {
+        return -1;
+    }
 
-	return pwd->pw_uid;
+    return pwd->pw_uid;
 }
 
 
 char *groupNameFromId(gid_t gid)
 {
-	struct group *grp = getgrgid(gid);
-	return grp == NULL ? NULL : grp->gr_name;
+    struct group *grp = getgrgid(gid);
+    return grp == NULL ? NULL : grp->gr_name;
 }
 
 
 gid_t groupIdFromName(const char *name)
 {
-	struct group *grp;
+    struct group *grp;
 
-	if (name == NULL || *name == '\0') {
-		return -1;
-	}
+    if (name == NULL || *name == '\0') {
+        return -1;
+    }
 
-	grp = getgrnam(name);
-	if (grp == NULL) {
-		return -1;
-	}
+    grp = getgrnam(name);
+    if (grp == NULL) {
+        return -1;
+    }
 
-	return grp->gr_gid;
+    return grp->gr_gid;
 }
 
 
 struct WindowDimensions getWindowSize(void)
 {
-	struct winsize ws;
-	struct WindowDimensions win;
-	ioctl(0, TIOCGWINSZ, &ws);
-	win.width = ws.ws_col;
-	win.height = ws.ws_row;
-	return win;
+    struct winsize ws;
+    struct WindowDimensions win;
+    ioctl(0, TIOCGWINSZ, &ws);
+    win.width = ws.ws_col;
+    win.height = ws.ws_row;
+    return win;
 }
 
 
@@ -168,37 +168,37 @@ Status *getProcessStatus(pid_t pid)
 
 int endswith(char *buffer, char *suffix)
 {
-	char *substring;
+    char *substring;
 
-	if (!buffer || !suffix || !(*buffer) || !(*suffix)) {
-		return 0;
-	}
+    if (!buffer || !suffix || !(*buffer) || !(*suffix)) {
+        return 0;
+    }
 
-	substring = strstr(buffer, suffix);
+    substring = strstr(buffer, suffix);
 
-	if (substring == NULL) {
-		return 0;
-	}
+    if (substring == NULL) {
+        return 0;
+    }
 
-	substring += strlen(suffix);
+    substring += strlen(suffix);
 
-	return *substring == '\0';
+    return *substring == '\0';
 }
 
 
 int startswith(char *buffer, char *prefix)
 {
-	if (!buffer || !prefix || !(*buffer) || !(*prefix)) {
-		return 0;
-	}
+    if (!buffer || !prefix || !(*buffer) || !(*prefix)) {
+        return 0;
+    }
 
-	return strncmp(buffer, prefix, strlen(prefix)) == 0;
+    return strncmp(buffer, prefix, strlen(prefix)) == 0;
 }
 
 
 void displayStatInfo(const struct stat *sb)
 {
-    printf("File type:            ");
+    printf("File type:                   ");
 
     switch(sb->st_mode & S_IFMT) {
         case S_IFREG:
@@ -228,15 +228,15 @@ void displayStatInfo(const struct stat *sb)
     }
 
     printf(
-        "Device containing i-node: major=%ld   minor=%ld\n",
+        "Device containing i-node:    major=%ld   minor=%ld\n",
         (long)major(sb->st_dev),
         (long)minor(sb->st_dev)
     );
 
-    printf("I-node number:        %ld\n", sb->st_ino);
+    printf("I-node number:               %ld\n", sb->st_ino);
 
     printf(
-        "Mode:                 %lo (%s)\n",
+        "Mode:                        %lo (%s)\n",
         // 700, 777, 600, etc
         (unsigned long)sb->st_mode,
         filePermStr(sb->st_mode, 0)
@@ -253,28 +253,28 @@ void displayStatInfo(const struct stat *sb)
     }
 
     printf(
-        "Number of (hard) links:    %ld\n",
+        "Number of (hard) links:      %ld\n",
         (long)sb->st_nlink
     );
 
     printf(
-        "Ownership:              UID=%ld   GID=%ld\n",
+        "Ownership:                   UID=%ld   GID=%ld\n",
         (long)sb->st_uid,
         (long)sb->st_gid
     );
 
     if (S_ISCHR(sb->st_mode) || S_ISBLK(sb->st_mode)) {
         printf(
-            "Device number (st_rdev): major=%ld; minor=%ld\n",
+            "Device number (st_rdev):     major=%ld; minor=%ld\n",
             (long)major(sb->st_rdev),
             (long)minor(sb->st_rdev)
         );
     }
 
-    printf("File size:               %lld bytes\n", (long long)sb->st_size);
-    printf("Optimal I/O block size:  %ld bytes\n",  (long)sb->st_blksize);
-    printf("512B blocks allocated:   %lld\n",       (long long)sb->st_blocks);
-    printf("Last file access:        %s",           ctime(&sb->st_atime));
-    printf("Last file modification:  %s",           ctime(&sb->st_mtime));
-    printf("Last status change:      %s",           ctime(&sb->st_ctime));
+    printf("File size:                   %lld bytes\n", (long long)sb->st_size);
+    printf("Optimal I/O block size:      %ld bytes\n",  (long)sb->st_blksize);
+    printf("512B blocks allocated:       %lld\n",       (long long)sb->st_blocks);
+    printf("Last file access:            %s",           ctime(&sb->st_atime));
+    printf("Last file modification:      %s",           ctime(&sb->st_mtime));
+    printf("Last status change:          %s",           ctime(&sb->st_ctime));
 }

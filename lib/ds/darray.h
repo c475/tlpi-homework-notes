@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
-#include "list.h"
+#include <stdio.h>
 
 
 // jacked from https://github.com/zedshaw/liblcthw
@@ -24,6 +24,9 @@ typedef struct Darray {
 } Darray;
 
 
+typedef int (*Darray_filter_cb)(void *value);
+
+
 Darray *Darray_create(size_t elementSize, size_t initialMax);
 
 void Darray_destroy(Darray *array);
@@ -40,6 +43,12 @@ void *Darray_pop(Darray *array);
 
 void Darray_clear_destroy(Darray *array);
 
+Darray *Darray_copy(Darray *array);
+
+Darray *Darray_filter(Darray *array, Darray_filter_cb cb);
+
+void Darray_debug(Darray *array);
+
 
 #define Darray_last(A) ((A)->contents[(A)->end - 1])
 #define Darray_first(A) ((A)->contents[0])
@@ -48,6 +57,7 @@ void Darray_clear_destroy(Darray *array);
 #define Darray_max(A) ((A)->max)
 
 #define DEFAULT_EXPAND_RATE 300
+#define DARRAY_DEFAULT_SIZE 100
 
 
 static inline void Darray_set(Darray *array, int i, void *el)
@@ -81,10 +91,7 @@ static inline void *Darray_get(Darray *array, int i)
     return contents;
 }
 
-// cannot be safely called inside of a thread
-// could make it so but I'm not going to go that far with it
-// just stick to push()/pop()/set()/get() in a thread
-// But, it can be ok if wrapped by another mutex protected data structure like a Hashmap
+
 static inline void *Darray_remove(Darray *array, int i)
 {
     void *el;
@@ -96,24 +103,6 @@ static inline void *Darray_remove(Darray *array, int i)
     array->contents[i] = NULL;
 
     return el;
-}
-
-
-static inline void *Darray_new(Darray *array)
-{
-    size_t size;
-
-    assert(array);
-    assert(array->elementSize > 0);
-    // probably unnecessary, since elementSize is unlikely to ever change
-    // (especially while running in a thread)
-    assert(pthread_mutex_lock(array->mtx) == 0);
-
-    size = array->elementSize;
-
-    assert(pthread_mutex_unlock(array->mtx) == 0);
-
-    return calloc(1, size);
 }
 
 

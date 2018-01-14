@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
         errExit("open");
     }
 
+    // have to make sure the destination file is as large as the source file
     if (ftruncate(destfd, sb.st_size) == -1) {
         errExit("ftruncate");
     }
